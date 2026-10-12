@@ -24,6 +24,7 @@ export function createWechatPlatform(api) {
   const canvas = api.createCanvas();
   return {
     canvas,
+    createImage: () => api.createImage(),
     now: () => Date.now(),
     wallNow: () => Date.now(),
     readStorage: (key) => api.getStorageSync(key),

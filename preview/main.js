@@ -6,6 +6,7 @@ const params = new URLSearchParams(location.search);
 let toastTimer;
 const app = createApp({
   canvas,
+  createImage: () => new Image(),
   now: () => performance.now(),
   wallNow: () => Date.now(),
   readStorage: (key) => JSON.parse(localStorage.getItem(key) || 'null'),

@@ -1,5 +1,6 @@
 import { circle, line, panel, text } from './draw.js';
 import { theme } from './theme.js';
+import { drawArt } from './art.js';
 
 // Vector drawings use a local coordinate space and work at any device pixel ratio.
 export function illustration(ctx, kind, x, y, size, options = {}) {
@@ -8,6 +9,8 @@ export function illustration(ctx, kind, x, y, size, options = {}) {
   ctx.rotate(options.rotation || 0);
   ctx.translate(-size / 2, -size / 2);
   ctx.scale(size / 44, size / 44);
+  const animatedTarget = kind === 'target' && Number.isFinite(options.frameAlpha);
+  if (!animatedTarget && drawArt(ctx, kind, 0, 0, 44)) { ctx.restore(); return; }
   if (kind === 'crate' || kind === 'done') {
     const done = kind === 'done';
     panel(ctx, 2, 2, 40, 40, { fill: done ? '#2ECC71' : '#D9944E' });
@@ -20,9 +23,12 @@ export function illustration(ctx, kind, x, y, size, options = {}) {
       panel(ctx, 9, 9, 5, 4, { fill: 'rgba(255,255,255,0.35)', lineWidth: 0, radius: 1 });
     }
   } else if (kind === 'target') {
-    circle(ctx, 22, 22, 15, '#FFE87C', 3);
-    circle(ctx, 22, 22, 9, theme.star, 2.5);
-    circle(ctx, 22, 22, 4, '#C9810E', 2.5);
+    illustration(ctx, 'crate', 11, 11, 22);
+    ctx.globalAlpha *= animatedTarget ? options.frameAlpha : 1;
+    if (drawArt(ctx, 'targetFrame', 0, 0, 44)) { ctx.restore(); return; }
+    [[[3, 14], [3, 3], [14, 3]], [[30, 3], [41, 3], [41, 14]],
+      [[41, 30], [41, 41], [30, 41]], [[14, 41], [3, 41], [3, 30]]]
+      .forEach(points => line(ctx, points, '#D9F5F5', 4));
   } else if (kind === 'question') {
     panel(ctx, 2, 2, 40, 40, { fill: theme.yellow, shadow: options.shadow ? theme.ink : null });
     text(ctx, '?', 22, 23, { size: 24 });
@@ -75,6 +81,7 @@ export function logo(ctx, x, y, size = 100) {
   panel(ctx, 10, 10, 80, 80, { fill: theme.yellow, lineWidth: 4, radius: 8 });
   [16, 42, 68].forEach((left, index) => panel(ctx, left, 16, index === 2 ? 16 : 20, 20,
     { fill: theme.brick, lineWidth: 2, radius: 3 }));
+  if (drawArt(ctx, 'player', 25, 38, 50)) { ctx.restore(); return; }
   panel(ctx, 38, 68, 24, 18, { fill: '#E74C3C', lineWidth: 2.5, radius: 6 });
   panel(ctx, 44, 74, 12, 7, { fill: '#2ECC71', lineWidth: 2, radius: 2 });
   circle(ctx, 50, 56, 11, '#FFE0B1', 2.5);
@@ -94,6 +101,7 @@ export function ground(ctx, width, height, bottomInset = 0) {
   const brickTop = grassTop - 36;
   const brickWidth = width / 8;
   for (let i = 0; i < 8; i += 1) {
+    if (drawArt(ctx, 'wall', i * brickWidth, brickTop, brickWidth, 36)) continue;
     panel(ctx, i * brickWidth, brickTop, brickWidth, 36,
       { fill: theme.brick, radius: 0 });
     line(ctx, [[i * brickWidth + 6, brickTop + 28], [i * brickWidth + 6, brickTop + 6],

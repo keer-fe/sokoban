@@ -5,9 +5,11 @@ import { GameController } from './game/controller.js';
 import { LevelsPage } from './pages/levels/index.js';
 import { GamePage } from './pages/game/index.js';
 import { Modal } from './ui/modal.js';
+import { loadArt } from './ui/art.js';
 
 export function createApp(platform, actions = {}) {
   const ctx = platform.canvas.getContext('2d');
+  loadArt(ctx, platform);
   const controller = new GameController(platform);
   const dispatch = (id) => {
     if (actions[id]) actions[id](); else controller.handle(id);

@@ -17,6 +17,7 @@
   "simulatorPluginLibVersion": {},
   "packOptions": {
     "ignore": [
+      { "type": "folder", "value": "assets/source" },
       { "type": "folder", "value": "docs" },
       { "type": "folder", "value": "preview" },
       { "type": "folder", "value": "tools" },

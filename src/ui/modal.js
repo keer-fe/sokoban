@@ -55,7 +55,7 @@ export class Modal extends Screen {
     } else if (c.modal === 'tutorial') {
       caption('点击方向键，每次移动一格', 173);
       caption('箱子只能推，不能拉', 208);
-      caption('所有箱子到达金色目标点即可通关', 243, { size: 14 });
+      caption('箱子到达四角标记的目标格即可通关', 243, { size: 14 });
     } else if (c.modal === 'signin') {
       caption('每天一份小礼物，解谜更从容', 169, { size: 13 });
       caption('+5 张撤销卡', 216, { size: 26, color: theme.yellow, outline: 1 });

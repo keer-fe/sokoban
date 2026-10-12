@@ -4,13 +4,13 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json' };
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml' };
 http.createServer(async (request, response) => {
   try {
     const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
     const relative = pathname === '/' ? 'preview/index.html' : pathname.slice(1);
     const target = path.resolve(root, relative);
-    if (!target.startsWith(root) || !['preview/', 'src/', 'docs/'].some((prefix) => relative.startsWith(prefix))) {
+    if (!target.startsWith(root) || !['preview/', 'src/', 'docs/', 'assets/'].some((prefix) => relative.startsWith(prefix))) {
       response.writeHead(403).end(); return;
     }
     const contents = await readFile(target);
