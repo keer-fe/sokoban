@@ -12,7 +12,7 @@ export class ProgressStore {
     const records = {};
     catalog.forEach(({ id }) => {
       const record = saved.records && saved.records[id];
-      if (record && integer(record.bestSteps) > 0 && integer(record.stars) >= 1 && record.stars <= 3) {
+      if (record && integer(record.bestSteps) > 0 && Number.isInteger(record.stars) && record.stars >= 0 && record.stars <= 3) {
         records[id] = { stars: record.stars, bestSteps: record.bestSteps };
       }
     });

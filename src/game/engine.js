@@ -13,7 +13,7 @@ export function parseLevel(level) {
       const pos = y * width + x;
       if (cell === '#') walls.add(pos);
       else if (' .$@*+'.includes(cell)) floors.add(pos);
-      else throw new Error(`Unknown tile: ${cell}`);
+      else if (cell !== '_') throw new Error(`Unknown tile: ${cell}`);
       if ('.*+'.includes(cell)) goals.add(pos);
       if ('$*'.includes(cell)) boxes.push(pos);
       if ('@+'.includes(cell)) players.push(pos);

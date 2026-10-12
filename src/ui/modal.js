@@ -47,7 +47,8 @@ export class Modal extends Screen {
       caption('音乐与音效资源即将上线', 490, { size: 12 });
     } else if (c.modal === 'win') {
       caption(`第 ${c.levelIndex + 1} 关完成`, 157);
-      stars(ctx, c.result.stars, 140, top + 182, 38, 10);
+      if (c.result.stars) stars(ctx, c.result.stars, 140, top + 182, 38, 10);
+      else caption('挑战完成！', 206, { size: 24, color: theme.yellow });
       const record = c.progress.state.records[c.game.level.id];
       caption(`本次 ${c.result.steps} 步  ·  最佳 ${record ? record.bestSteps : c.result.steps} 步`, 247);
       if (!c.result.saved) caption('记录保存失败，请检查存储空间', 485, { size: 12 });

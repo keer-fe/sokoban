@@ -19,6 +19,10 @@ export class GamePage extends Screen {
         .map(([id, label, x, buttonY]) => ({ id, label, x, y: buttonY, width: 62, height: 62,
           fill: theme.green, color: theme.white, fontSize: 32 })),
     ];
+    if (this.controller.game && Math.max(this.controller.game.board.width, this.controller.game.board.height) > 12) {
+      this.buttons.push({ id: 'zoom', label: this.controller.zoom ? '查看全图' : '放大棋盘',
+        x: 26, y: y + 88, width: 100, height: 36, fontSize: 13 });
+    }
   }
   render(ctx) {
     this.layout();
@@ -26,12 +30,14 @@ export class GamePage extends Screen {
     const game = c.game;
     const record = c.progress.state.records[game.level.id];
     header(ctx, this.top, `第 ${c.levelIndex + 1} 关`, game.level.name);
-    panel(ctx, 26, this.top + 91, 87, 31, { fill: theme.green, lineWidth: 2 });
-    text(ctx, game.level.difficulty, 69, this.top + 107, { size: 13, color: theme.white });
+    if (!this.buttons.some((button) => button.id === 'zoom')) {
+      panel(ctx, 26, this.top + 91, 87, 31, { fill: theme.green, lineWidth: 2 });
+      text(ctx, `${game.board.boxes.length} 个箱子`, 69, this.top + 107, { size: 13, color: theme.white });
+    }
     text(ctx, `${game.state.steps} 步`, 211, this.top + 107, { size: 20, color: theme.yellow, outline: 1 });
     text(ctx, record ? `最佳 ${record.bestSteps} 步` : '最佳 —', 387, this.top + 107,
       { size: 13, color: theme.white, align: 'right' });
-    drawBoard(ctx, game, this.boardBounds);
+    drawBoard(ctx, game, this.boardBounds, c.zoom);
     text(ctx, `撤销卡 × ${c.progress.state.cards}`, 289, this.top + 507, { size: 17, color: theme.white, outline: 1 });
     illustration(ctx, 'crate', 184, this.top + 618, 42);
     this.drawButtons(ctx);

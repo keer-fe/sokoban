@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { levels } from '../src/game/levels.js';
+import { levels } from './fixtures/levels.js';
 import { GameSession, score } from '../src/game/engine.js';
 import { solve } from '../tools/solve-levels.js';
 import { GameController } from '../src/game/controller.js';
@@ -71,7 +71,7 @@ test('签到按北京时间刷新、防重复领取和回拨；存储失败不�
 });
 
 test('导航、弹窗阻断、撤销卡、重开和完整通关流程', () => {
-  const p = platform(); const c = new GameController(p);
+  const p = platform(); const c = new GameController(p, levels);
   c.handle('level:1'); assert.equal(c.route, 'home');
   c.handle('start'); assert.equal(c.modal, 'tutorial');
   c.handle('up'); assert.equal(c.game.state.steps, 0);
@@ -95,12 +95,12 @@ test('导航、弹窗阻断、撤销卡、重开和完整通关流程', () => {
   c.handle('home'); c.handle('start'); assert.equal(c.route, 'home');
   assert.equal(p.messages.at(-1), '地图关卡正在开发中');
   c.handle('levels'); c.handle('level:0'); assert.equal(c.game.state.steps, 0);
-  const restored = new GameController(p);
+  const restored = new GameController(p, levels);
   assert.equal(restored.progress.allComplete, true); assert.equal(restored.progress.state.cards, 4);
 });
 
 test('小屏和全面屏上的方向键、棋盘、弹窗均在安全区域内', () => {
-  const c = new GameController(platform()); c.openLevel(0);
+  const c = new GameController(platform(), levels); c.openLevel(0);
   for (const info of [{ width: 320, height: 568 }, { width: 390, height: 844, safeTop: 91, safeBottom: 34 }]) {
     const viewport = createViewport(info);
     const page = new GamePage(c, () => {}); page.resize(viewport);

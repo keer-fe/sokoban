@@ -9,11 +9,12 @@ export class GameController {
     this.progress = new ProgressStore(platform, catalog);
     this.route = 'home';
     this.modal = null;
-    this.filter = '简单';
+    this.filter = catalog[0].difficulty;
     this.listPage = 0;
     this.levelIndex = 0;
     this.game = null;
     this.result = null;
+    this.zoom = false;
   }
   now() { return this.platform.wallNow ? this.platform.wallNow() : Date.now(); }
   openLevel(index) {
@@ -24,12 +25,17 @@ export class GameController {
     this.route = 'game';
     this.modal = index === 0 && !this.progress.state.tutorialDone ? 'tutorial' : null;
     this.result = null;
+    this.zoom = false;
   }
   navigate(route) {
     this.route = route;
     this.modal = null;
-    if (route === 'levels') this.filter = this.levels[this.levelIndex].difficulty;
-    this.listPage = 0;
+    if (route === 'levels') {
+      this.filter = this.levels[this.levelIndex].difficulty;
+      const indexInGroup = this.levels.filter((level) => level.difficulty === this.filter)
+        .findIndex((level) => level.id === this.levels[this.levelIndex].id);
+      this.listPage = Math.floor(Math.max(0, indexInGroup) / 12);
+    }
   }
   handle(action) {
     if (this.modal) { this.handleModal(action); return; }
@@ -49,6 +55,7 @@ export class GameController {
       return;
     }
     if (this.route !== 'game') return;
+    if (action === 'zoom') { this.zoom = !this.zoom; return; }
     if (action === 'menu') { this.modal = 'menu'; return; }
     if (action === 'undo') {
       if (!this.game.history.length) this.platform.notify('暂无可撤销的操作');
@@ -57,7 +64,7 @@ export class GameController {
       return;
     }
     if (directions[action] && this.game.move(action) && this.game.complete) {
-      const stars = score(this.game.state.steps, this.game.level.minSteps);
+      const stars = this.game.level.minSteps ? score(this.game.state.steps, this.game.level.minSteps) : 0;
       const saved = this.progress.finish(this.game.level, this.game.state.steps, stars);
       this.result = { stars, steps: this.game.state.steps, saved };
       this.modal = 'win';

@@ -7,7 +7,7 @@ export const homeConfig = Object.freeze({
     { id: 'levels', label: '选择关卡', primary: false },
   ],
   stats: [
-    { value: '—', label: '体验关卡' },
+    { value: '—', label: '关卡' },
     { value: '0', label: '已通关' },
     { value: '0', label: '撤销卡' },
   ],

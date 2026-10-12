@@ -1,17 +1,19 @@
-// Original small maps for exercising the UI flow. This is not the final release catalog.
-export const levels = [
-  { id: 'intro-1', name: '初次搬运', difficulty: '简单', minSteps: 5,
-    rows: ['#######', '# . . #', '# $ $ #', '# @   #', '#######'] },
-  { id: 'intro-2', name: '并肩前进', difficulty: '简单', minSteps: 10,
-    rows: ['#######', '#  .. #', '# $$  #', '#  @  #', '#     #', '#######'] },
-  { id: 'intro-3', name: '绕个小弯', difficulty: '中等', minSteps: 9,
-    rows: ['#######', '# . . #', '#     #', '# $#$ #', '#  @  #', '#     #', '#######'] },
-  { id: 'intro-4', name: '错位搬运', difficulty: '中等', minSteps: 10,
-    rows: ['########', '#      #', '# .  . #', '# $  $ #', '#  ##  #', '#  @   #', '########'] },
-  { id: 'intro-5', name: '三箱同行', difficulty: '困难', minSteps: 16,
-    rows: ['########', '# . . .#', '#      #', '# $ $ $#', '#   @  #', '#      #', '########'] },
-  { id: 'intro-6', name: '各就各位', difficulty: '困难', minSteps: 15,
-    rows: ['########', '#      #', '# . .. #', '#      #', '# $$ $ #', '#   @  #', '########'] },
-];
+import { mapRows } from './maps.js';
+import { minimumSteps } from './minimum-steps.js';
 
-export const difficulties = ['简单', '中等', '困难'];
+// Group by original level number, without claiming an unverified difficulty rating.
+export const difficulties = ['1–30关', '31–60关', '61–100关'];
+const tiles = { 0: '_', 1: '#', 2: ' ', 3: '.', 4: '$', 5: '*', 6: '@', 7: '+' };
+
+export const levels = mapRows.map((grid, index) => ({
+  id: `selfboot-${index + 1}`,
+  sourceNumber: index + 1,
+  name: `推箱子 · 第 ${index + 1} 关`,
+  difficulty: difficulties[index < 30 ? 0 : index < 60 ? 1 : 2],
+  boxCount: grid.join('').split('').filter((cell) => cell === '4' || cell === '5').length,
+  minSteps: minimumSteps[index + 1] || null,
+  rows: grid.map((row) => Array.from(row, (cell) => {
+    if (!(cell in tiles)) throw new Error(`Unknown source tile: ${cell}`);
+    return tiles[cell];
+  }).join('')),
+}));
