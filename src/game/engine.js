@@ -43,7 +43,7 @@ export function transition(board, state, direction) {
     if (!board.floors.has(target) || boxes.includes(target)) return null;
     boxes[boxIndex] = target;
   }
-  return { player: next, boxes, steps: state.steps + 1 };
+  return { player: next, boxes, steps: state.steps + 1, facing: direction };
 }
 
 export class GameSession {
@@ -53,7 +53,7 @@ export class GameSession {
     this.restart();
   }
   restart() {
-    this.state = { player: this.board.player, boxes: [...this.board.boxes], steps: 0 };
+    this.state = { player: this.board.player, boxes: [...this.board.boxes], steps: 0, facing: 'down' };
     this.history = [];
   }
   get complete() { return isComplete(this.board, this.state); }

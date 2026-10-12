@@ -1,7 +1,7 @@
 import { panel, circle, line } from './draw.js';
 import { illustration } from './illustrations.js';
 import { theme } from './theme.js';
-import { drawArt } from './art.js';
+import { drawArt, playerSprites } from './art.js';
 
 export function drawBoard(ctx, game, bounds, zoom = false, elapsed = 0) {
   const { board, state } = game;
@@ -37,14 +37,14 @@ export function drawBoard(ctx, game, bounds, zoom = false, elapsed = 0) {
         }
       }
       if (state.boxes.includes(pos)) illustration(ctx, board.goals.has(pos) ? 'done' : 'crate', px + 2, py + 2, cell - 4);
-      if (pos === state.player) drawPlayer(ctx, px, py, cell);
+      if (pos === state.player) drawPlayer(ctx, px, py, cell, state.facing);
     }
   }
   ctx.restore();
 }
 
-function drawPlayer(ctx, x, y, size) {
-  if (drawArt(ctx, 'player', x, y, size)) return;
+function drawPlayer(ctx, x, y, size, facing = 'down') {
+  if (drawArt(ctx, playerSprites[facing] || 'player', x, y, size)) return;
   ctx.save(); ctx.translate(x, y); ctx.scale(size / 44, size / 44);
   panel(ctx, 11, 26, 22, 15, { fill: '#E74C3C', radius: 5, lineWidth: 2 });
   panel(ctx, 17, 31, 10, 7, { fill: '#2ECC71', radius: 2, lineWidth: 1.5 });

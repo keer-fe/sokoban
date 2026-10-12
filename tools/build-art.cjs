@@ -3,7 +3,8 @@
 const sharp = require(process.argv[2] || 'sharp');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
-const regions = [[444, 444], [814, 0], [74, 0], [296, 0], [74, 222], [0, 370], [0, 222]];
+const regions = [[444, 444], [814, 0], [74, 0], [296, 0], [74, 222], [0, 370], [0, 222],
+  [222, 370], [222, 518], [0, 518]];
 async function main() {
   const sheet = await sharp(path.join(root, 'assets/source/sokoban.svg'), { density: 216 }).png().toBuffer();
   const sprites = await Promise.all(regions.map(async ([x, y], index) => ({

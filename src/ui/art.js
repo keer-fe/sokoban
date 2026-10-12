@@ -1,6 +1,8 @@
 // One image per canvas context, shared by the board and decorative illustrations.
 const atlases = new WeakMap();
-export const sprites = { wall: 0, floor: 1, crate: 2, done: 3, target: 4, player: 5, targetFrame: 6 };
+export const sprites = { wall: 0, floor: 1, crate: 2, done: 3, target: 4, player: 5, targetFrame: 6,
+  playerUp: 7, playerLeft: 8, playerRight: 9 };
+export const playerSprites = { down: 'player', up: 'playerUp', left: 'playerLeft', right: 'playerRight' };
 
 export function loadArt(ctx, platform) {
   if (!platform.createImage || atlases.has(ctx)) return;

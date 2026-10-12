@@ -29,6 +29,23 @@ test('全部体验关卡可解，最少步数通过逐步 BFS 验证', () => {
   });
 });
 
+test('四向移动更新朝向，撤销恢复朝向，重开朝下，撞墙不改变状态', () => {
+  const game = new GameSession({ id: 'facing', rows: ['#######', '#     #', '#  @  #', '# $ . #', '#######'] });
+  assert.equal(game.state.facing, 'down');
+  for (const direction of ['up', 'right', 'down', 'left']) {
+    assert.equal(game.move(direction), true);
+    assert.equal(game.state.facing, direction);
+  }
+  assert.equal(game.undo(), true);
+  assert.equal(game.state.facing, 'down');
+  game.restart();
+  assert.equal(game.state.facing, 'down');
+  game.move('up');
+  const before = game.state;
+  assert.equal(game.move('up'), false);
+  assert.equal(game.state, before);
+});
+
 test('撞墙和连箱无效；撤销恢复箱子和步数；重开清空历史', () => {
   const game = new GameSession(levels[0]);
   const initial = JSON.parse(JSON.stringify(game.state));
