@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>推箱子 · 首页预览</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #5C94FC; }
+    canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+    #toast { position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%);
+      padding: 14px 22px; border-radius: 8px; background: #000c; color: white;
+      font: 15px sans-serif; white-space: nowrap; pointer-events: none; }
+    #toast:empty { display: none; }
+  </style>
+</head>
+<body>
+  <canvas aria-label="推箱子首页，包含开始游戏和选择关卡按钮"></canvas>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
