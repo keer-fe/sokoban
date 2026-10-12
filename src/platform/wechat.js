@@ -25,6 +25,9 @@ export function createWechatPlatform(api) {
   return {
     canvas,
     now: () => Date.now(),
+    wallNow: () => Date.now(),
+    readStorage: (key) => api.getStorageSync(key),
+    writeStorage: (key, value) => api.setStorageSync(key, value),
     requestFrame: (callback) => requestAnimationFrame(callback),
     cancelFrame: (id) => cancelAnimationFrame(id),
     getWindowInfo() {

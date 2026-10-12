@@ -1,4 +1,4 @@
-// Design copy, not playable level metadata. Replace stats when the level catalog is connected.
+// Shared home copy. Runtime statistics are supplied by the progress controller.
 export const homeConfig = Object.freeze({
   title: '一起推箱子吧',
   subtitle: 'SOKOBAN',
@@ -7,8 +7,8 @@ export const homeConfig = Object.freeze({
     { id: 'levels', label: '选择关卡', primary: false },
   ],
   stats: [
-    { value: '100', label: '关卡' },
-    { value: '3', label: '难度' },
-    { value: '∞', label: '乐趣' },
+    { value: '—', label: '体验关卡' },
+    { value: '0', label: '已通关' },
+    { value: '0', label: '撤销卡' },
   ],
 });

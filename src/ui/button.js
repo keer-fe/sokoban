@@ -7,17 +7,18 @@ export function contains(rect, point) {
 }
 
 export function drawButton(ctx, button, pressed = false) {
-  const { x, y, width, height, label, primary } = button;
+  const { x, y, width, height, label, primary, disabled, icon = primary,
+    fill, color = theme.ink, fontSize } = button;
   const shift = pressed ? theme.shadow : 0;
   ctx.save();
   ctx.translate(shift, shift);
   panel(ctx, x, y, width, height, {
-    fill: primary ? theme.yellow : theme.white,
+    fill: disabled ? '#A7B4C8' : fill || (primary ? theme.yellow : theme.white),
     radius: theme.radius,
     lineWidth: theme.border,
     shadow: pressed ? null : primary ? theme.yellowShadow : theme.ink,
   });
-  if (primary) {
+  if (icon) {
     circle(ctx, x + width / 2 - 68, y + height / 2, 14, theme.ink);
     ctx.beginPath();
     ctx.moveTo(x + width / 2 - 72, y + height / 2 - 7);
@@ -27,8 +28,8 @@ export function drawButton(ctx, button, pressed = false) {
     ctx.fillStyle = theme.white;
     ctx.fill();
   }
-  text(ctx, label, x + width / 2 + (primary ? 18 : 0), y + height / 2,
-    { size: primary ? 20 : 16, spacing: primary ? 3 : 2 });
+  text(ctx, label, x + width / 2 + (icon ? 18 : 0), y + height / 2,
+    { size: fontSize || (primary ? 20 : 16), spacing: width < 120 ? 0 : 2, color: disabled ? '#526078' : color });
   ctx.restore();
 }
 
@@ -46,7 +47,7 @@ export class ButtonInput {
     if (type === 'cancel') { this.reset(); return; }
     if (type === 'start') {
       if (this.pointerId !== null) return;
-      const button = this.getButtons().find((item) => contains(item, point));
+      const button = this.getButtons().find((item) => !item.disabled && contains(item, point));
       if (button) { this.activeId = button.id; this.pointerId = point.id; }
       return;
     }
@@ -55,7 +56,7 @@ export class ButtonInput {
     if (type === 'move' && button && !contains(button, point)) this.reset();
     if (type === 'end') {
       this.reset();
-      if (button && contains(button, point)) this.onActivate(button.id);
+      if (button && !button.disabled && contains(button, point)) this.onActivate(button.id);
     }
   }
 }

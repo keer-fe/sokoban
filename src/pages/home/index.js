@@ -6,7 +6,8 @@ import { cloud, ground, illustration, logo } from '../../ui/illustrations.js';
 import { ButtonInput, drawButton } from '../../ui/button.js';
 
 export class HomePage {
-  constructor({ onAction }) {
+  constructor({ onAction, controller }) {
+    this.controller = controller;
     this.layout = null;
     this.input = new ButtonInput(() => this.layout ? this.layout.buttons : [], onAction);
   }
@@ -51,7 +52,12 @@ export class HomePage {
     buttons.forEach((button) => drawButton(ctx, button, this.input.activeId === button.id));
     panel(ctx, stats.x, stats.y, stats.width, stats.height,
       { fill: theme.brick, lineWidth: 4, radius: 8, shadow: theme.ink });
-    homeConfig.stats.forEach((stat, i) => {
+    const statsData = this.controller ? [
+      { value: this.controller.levels.length, label: '体验关卡' },
+      { value: Object.keys(this.controller.progress.state.records).length, label: '已通关' },
+      { value: this.controller.progress.state.cards, label: '撤销卡' },
+    ] : homeConfig.stats;
+    statsData.forEach((stat, i) => {
       const cellWidth = stats.width / homeConfig.stats.length;
       const center = stats.x + cellWidth * (i + 0.5);
       if (i) {

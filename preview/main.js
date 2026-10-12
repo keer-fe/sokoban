@@ -7,6 +7,9 @@ let toastTimer;
 const app = createApp({
   canvas,
   now: () => performance.now(),
+  wallNow: () => Date.now(),
+  readStorage: (key) => JSON.parse(localStorage.getItem(key) || 'null'),
+  writeStorage: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
   requestFrame: (callback) => requestAnimationFrame(callback),
   cancelFrame: (id) => cancelAnimationFrame(id),
   getWindowInfo: () => ({ width: innerWidth, height: innerHeight, pixelRatio: devicePixelRatio,
@@ -16,7 +19,7 @@ const app = createApp({
     toast.textContent = message;
     toastTimer = setTimeout(() => { toast.textContent = ''; }, 1800);
   },
-  subscribe({ pointer, show, hide, resize }) {
+  subscribe({ pointer, show, hide, resize, key }) {
     const events = { pointerdown: 'start', pointermove: 'move', pointerup: 'end', pointercancel: 'cancel' };
     const handlers = Object.entries(events).map(([event, type]) => {
       const handler = (e) => {
@@ -27,12 +30,18 @@ const app = createApp({
       return [event, handler];
     });
     const visibility = () => document.hidden ? hide() : show();
+    const keyboard = (event) => {
+      const action = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', u: 'undo', Escape: 'menu' }[event.key];
+      if (action) { event.preventDefault(); if (!event.repeat) key(action); }
+    };
+    window.addEventListener('keydown', keyboard);
     document.addEventListener('visibilitychange', visibility);
     window.addEventListener('resize', resize);
     return () => {
       handlers.forEach(([event, handler]) => canvas.removeEventListener(event, handler));
       document.removeEventListener('visibilitychange', visibility);
       window.removeEventListener('resize', resize);
+      window.removeEventListener('keydown', keyboard);
       clearTimeout(toastTimer);
     };
   },
