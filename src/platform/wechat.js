@@ -1,3 +1,5 @@
+import { createFriendBoard } from './friend-board.js';
+
 // The simulator can return {} for the menu capsule. Never pass undefined into layout math.
 export function normalizeWechatWindowInfo(info, capsule) {
   const validInset = (value, max) => Number.isFinite(value) && value >= 0 && value < max;
@@ -24,6 +26,7 @@ export function createWechatPlatform(api) {
   const canvas = api.createCanvas();
   return {
     canvas,
+    friendBoard: createFriendBoard(api),
     createImage: () => api.createImage(),
     now: () => Date.now(),
     wallNow: () => Date.now(),

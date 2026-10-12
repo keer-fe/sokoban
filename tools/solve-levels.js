@@ -24,13 +24,17 @@ export function solve(level, { maxStates = 500000, maxMs = 5000 } = {}) {
 }
 
 if (process.argv[1] && import.meta.url.endsWith('/' + process.argv[1].split('/').pop())) {
+  const maxStates = Number(process.env.SOLVER_MAX_STATES || 4_000_000);
+  const maxMs = Number(process.env.SOLVER_MAX_MS || 60_000);
+  const only = process.env.SOLVER_ONLY ? new Set(process.env.SOLVER_ONLY.split(',').map(Number)) : null;
   for (const level of levels) {
-    if (level.boxCount > 4) continue;
+    if (only && !only.has(level.sourceNumber)) continue;
+    const started = Date.now();
     try {
-      const path = solve(level, { maxStates: 75000, maxMs: 1500 });
-      console.log(JSON.stringify({ id: level.id, sourceNumber: level.sourceNumber, minSteps: path.length, path }));
+      const path = solve(level, { maxStates, maxMs });
+      console.log(JSON.stringify({ id: level.id, sourceNumber: level.sourceNumber, boxCount: level.boxCount, minSteps: path.length, ms: Date.now() - started }));
     } catch (error) {
-      console.log(JSON.stringify({ id: level.id, pending: true, reason: error.message }));
+      console.log(JSON.stringify({ id: level.id, sourceNumber: level.sourceNumber, boxCount: level.boxCount, pending: true, ms: Date.now() - started, reason: error.message }));
     }
   }
 }

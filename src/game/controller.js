@@ -17,6 +17,9 @@ export class GameController {
     this.zoom = false;
   }
   now() { return this.platform.wallNow ? this.platform.wallNow() : Date.now(); }
+  syncFriends() {
+    if (this.platform.friendBoard) this.platform.friendBoard.send('sync', { completed: this.progress.completedLevels });
+  }
   openLevel(index) {
     if (!Number.isInteger(index) || index < 0 || index >= this.levels.length) return;
     if (index > this.progress.unlocked) { this.platform.notify('先完成前面的关卡吧'); return; }
@@ -41,6 +44,13 @@ export class GameController {
     if (this.modal) { this.handleModal(action); return; }
     if (action === 'home') { this.navigate('home'); return; }
     if (action === 'levels') { this.navigate('levels'); return; }
+    if (action === 'friends') { this.navigate('friends'); return; }
+    if (action.startsWith('friends:')) {
+      if (this.route === 'friends' && this.platform.friendBoard) {
+        this.platform.friendBoard.send(action.slice(8), { completed: this.progress.completedLevels });
+      }
+      return;
+    }
     if (action === 'start') {
       if (this.progress.allComplete) this.platform.notify('地图关卡正在开发中');
       else this.openLevel(this.progress.unlocked);
@@ -66,6 +76,7 @@ export class GameController {
     if (directions[action] && this.game.move(action) && this.game.complete) {
       const stars = this.game.level.minSteps ? score(this.game.state.steps, this.game.level.minSteps) : 0;
       const saved = this.progress.finish(this.game.level, this.game.state.steps, stars);
+      if (saved) this.syncFriends();
       this.result = { stars, steps: this.game.state.steps, saved };
       this.modal = 'win';
     }
@@ -87,7 +98,10 @@ export class GameController {
       if (action === 'retry') this.openLevel(this.levelIndex);
       if (action === 'home' || action === 'levels') this.navigate(action);
       if (action === 'next') {
-        if (!this.result.saved) this.result.saved = this.progress.finish(this.game.level, this.result.steps, this.result.stars);
+        if (!this.result.saved) {
+          this.result.saved = this.progress.finish(this.game.level, this.result.steps, this.result.stars);
+          if (this.result.saved) this.syncFriends();
+        }
         if (this.result.saved) this.openLevel(this.levelIndex + 1);
       }
     }

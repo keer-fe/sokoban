@@ -35,6 +35,7 @@ export class ProgressStore {
     return firstUnfinished === -1 ? this.catalog.length - 1 : firstUnfinished;
   }
   get allComplete() { return this.catalog.every(({ id }) => this.state.records[id]); }
+  get completedLevels() { return this.allComplete ? this.catalog.length : this.unlocked; }
   finish(level, steps, stars) {
     const previous = this.state.records[level.id];
     return this.commit({ ...this.state, records: { ...this.state.records, [level.id]: {

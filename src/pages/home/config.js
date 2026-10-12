@@ -1,6 +1,6 @@
 // Shared home copy. Runtime statistics are supplied by the progress controller.
 export const homeConfig = Object.freeze({
-  title: '一起推箱子吧',
+  title: '箱不到八',
   subtitle: 'SOKOBAN',
   buttons: [
     { id: 'start', label: '开始游戏', primary: true },

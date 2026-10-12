@@ -1,4 +1,5 @@
 import { createApp } from '../src/app.js';
+import { createDemoFriends } from './friends.js';
 
 const canvas = document.querySelector('canvas');
 const toast = document.querySelector('#toast');
@@ -6,6 +7,8 @@ const params = new URLSearchParams(location.search);
 let toastTimer;
 const app = createApp({
   canvas,
+  friendBoard: ['demo', 'empty', 'error', 'offline'].includes(params.get('friends'))
+    ? createDemoFriends(params.get('friends')) : null,
   createImage: () => new Image(),
   now: () => performance.now(),
   wallNow: () => Date.now(),

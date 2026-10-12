@@ -10,7 +10,7 @@ http.createServer(async (request, response) => {
     const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
     const relative = pathname === '/' ? 'preview/index.html' : pathname.slice(1);
     const target = path.resolve(root, relative);
-    if (!target.startsWith(root) || !['preview/', 'src/', 'docs/', 'assets/'].some((prefix) => relative.startsWith(prefix))) {
+    if (!target.startsWith(root) || !['preview/', 'src/', 'docs/', 'assets/', 'open-data/'].some((prefix) => relative.startsWith(prefix))) {
       response.writeHead(403).end(); return;
     }
     const contents = await readFile(target);

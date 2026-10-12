@@ -7,7 +7,7 @@ async function files(directory) {
     ? files(`${directory}/${entry.name}`) : [`${directory}/${entry.name}`]));
   return nested.flat();
 }
-const sources = ['game.js', ...(await files('src')), ...(await files('preview')),
+const sources = ['game.js', ...(await files('src')), ...(await files('open-data')), ...(await files('preview')),
   ...(await files('tools')), ...(await files('tests'))];
 for (const file of sources.filter((name) => name.endsWith('.js'))) {
   const result = spawnSync(process.execPath, ['--check', file], { stdio: 'inherit' });

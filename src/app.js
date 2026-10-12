@@ -6,6 +6,7 @@ import { LevelsPage } from './pages/levels/index.js';
 import { GamePage } from './pages/game/index.js';
 import { Modal } from './ui/modal.js';
 import { loadArt } from './ui/art.js';
+import { FriendsPage } from './pages/friends/index.js';
 
 export function createApp(platform, actions = {}) {
   const ctx = platform.canvas.getContext('2d');
@@ -21,6 +22,7 @@ export function createApp(platform, actions = {}) {
     home: new HomePage({ onAction: dispatch, controller }),
     levels: new LevelsPage(controller, dispatch),
     game: new GamePage(controller, dispatch),
+    friends: new FriendsPage(controller, dispatch),
   };
   const modal = new Modal(controller, dispatch);
   let viewport;
@@ -30,10 +32,18 @@ export function createApp(platform, actions = {}) {
   let unsubscribe = null;
   let elapsed = 0;
   let previousTime = 0;
+  let visibleRoute = null;
 
   function refreshLayout() {
     if (!viewport) return;
     pages[controller.route].resize(viewport);
+    if (visibleRoute !== controller.route) {
+      if (platform.friendBoard) {
+        if (visibleRoute === 'friends') platform.friendBoard.send('hide');
+        if (controller.route === 'friends') platform.friendBoard.send('show', { completed: controller.progress.completedLevels });
+      }
+      visibleRoute = controller.route;
+    }
     if (controller.modal) modal.resize(viewport);
   }
 
@@ -69,6 +79,10 @@ export function createApp(platform, actions = {}) {
     running = true;
     previousTime = platform.now();
     resize();
+    controller.syncFriends();
+    if (controller.route === 'friends' && platform.friendBoard) {
+      platform.friendBoard.send('show', { completed: controller.progress.completedLevels });
+    }
     frameId = platform.requestFrame(tick);
   }
 
@@ -78,6 +92,7 @@ export function createApp(platform, actions = {}) {
     frameId = null;
     Object.values(pages).forEach((page) => page.pause());
     modal.pause();
+    if (platform.friendBoard) platform.friendBoard.send('pause');
   }
 
   return {
