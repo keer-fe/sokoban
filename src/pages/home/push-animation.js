@@ -37,10 +37,17 @@ function drawPushGroup(ctx, x, baseline, elapsed, scale) {
   const frame = Math.floor(elapsed * 8) % 8;
   const characterHeight = 88;
   const unit = characterHeight / 180;
-  const [left, right] = POSES[frame];
+  const [poseLeft, poseRight] = POSES[frame];
+  const left = poseLeft - 2;
+  const right = poseRight + 2;
   const characterWidth = (right - left) * unit;
   const crateX = 70;
-  const characterX = crateX - characterWidth + 1;
+  const characterX = crateX - (poseRight - left) * unit + 1;
+  const characterRight = characterX + characterWidth;
+  const previousRight = frame > 0 ? POSES[frame - 1][1] : left;
+  const nextLeft = frame < POSES.length - 1 ? POSES[frame + 1][0] : right;
+  const handInset = Math.max(0, previousRight - left + (frame > 0 ? 1 : 0)) * unit;
+  const heelInset = Math.max(0, right - nextLeft + (frame < 7 ? 1 : 0)) * unit;
   ctx.fillStyle = 'rgba(65, 38, 12, 0.18)';
   for (const [cx, rx] of [[characterWidth / 2, 27], [crateX + 32, 32]]) {
     ctx.beginPath();
@@ -48,21 +55,23 @@ function drawPushGroup(ctx, x, baseline, elapsed, scale) {
     ctx.fill();
   }
   ctx.save();
-  // Adjacent poses overlap horizontally at the hands/heels. Exclude those
-  // neighboring pixels while retaining this pose's hands and feet.
+  // Only mask the neighboring hand at arm height. A fixed inset running all
+  // the way to the top cuts the hair off the narrower walking poses.
   ctx.beginPath();
-  ctx.moveTo(characterX + 9 * unit, -88);
-  ctx.lineTo(crateX + 1, -88);
-  ctx.lineTo(crateX + 1, -26);
-  ctx.lineTo(crateX + 1 - 12 * unit, -26);
-  ctx.lineTo(crateX + 1 - 12 * unit, 0);
-  ctx.lineTo(characterX, 0);
+  ctx.moveTo(characterX, -characterHeight - 2 * unit);
+  ctx.lineTo(characterRight, -characterHeight - 2 * unit);
+  ctx.lineTo(characterRight, -26);
+  ctx.lineTo(characterRight - heelInset, -26);
+  ctx.lineTo(characterRight - heelInset, 2 * unit);
+  ctx.lineTo(characterX, 2 * unit);
   ctx.lineTo(characterX, -26);
-  ctx.lineTo(characterX + 9 * unit, -26);
+  ctx.lineTo(characterX + handInset, -26);
+  ctx.lineTo(characterX + handInset, -56);
+  ctx.lineTo(characterX, -56);
   ctx.closePath();
   ctx.clip();
-  const drawn = drawHomeRegion(ctx, 'pushCharacterCycle', [left, 90, right - left, 180],
-    characterX, -characterHeight, characterWidth, characterHeight);
+  const drawn = drawHomeRegion(ctx, 'pushCharacterCycle', [left, 88, right - left, 184],
+    characterX, -characterHeight - 2 * unit, characterWidth, 184 * unit);
   ctx.restore();
   if (!drawn) {
     drawFallbackCharacter(ctx, 0, -88, 88);
