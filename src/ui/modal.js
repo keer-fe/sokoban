@@ -6,8 +6,9 @@ import { theme } from './theme.js';
 export class Modal extends Screen {
   layout() {
     const c = this.controller;
+    const height = c.modal === 'win' ? 700 : 540;
     this.top = this.viewport.safeTop + Math.max(24,
-      (this.viewport.height - this.viewport.safeTop - this.viewport.safeBottom - 540) / 2);
+      (this.viewport.height - this.viewport.safeTop - this.viewport.safeBottom - height) / 2);
     const y = this.top;
     const button = (id, label, row, options = {}) => ({ id, label, x: 59, y: y + 226 + row * 64,
       width: 296, height: 50, icon: false, ...options });
@@ -20,8 +21,10 @@ export class Modal extends Screen {
       { ...button('music', `音乐 ${c.progress.state.music ? '开' : '关'}`, 3), width: 142 },
       { ...button('sound', `音效 ${c.progress.state.sound ? '开' : '关'}`, 3), x: 213, width: 142 }];
     if (c.modal === 'win') this.buttons = [button(c.levelIndex === c.levels.length - 1 ? 'home' : 'next',
-      c.levelIndex === c.levels.length - 1 ? '返回首页' : '下一关', 1, { primary: true }),
-    button('retry', '再玩一次', 2), button('levels', '返回选关', 3)];
+      c.levelIndex === c.levels.length - 1 ? '返回首页' : '下一关', 0, { y: y + 494, primary: true }),
+    button('retry', '再玩一次', 0, { y: y + 554 }), button('levels', '返回选关', 0, { y: y + 614 }),
+    ...[['level-previous', '上一页'], ['level-refresh', '刷新'], ['level-next', '下一页']].map(([id, label], i) =>
+      ({ id, label, x: 59 + i * 102, y: y + 458, width: 92, height: 28, fontSize: 12 }))];
     if (c.modal === 'tutorial') this.buttons = [button('understood', '开始尝试', 1, { primary: true }), button('skip', '跳过引导', 2)];
     if (c.modal === 'signin') this.buttons = [button('claim', c.progress.canSignIn(c.now()) ? '领取 5 张撤销卡' : '今日已领取', 1,
       { primary: true, disabled: !c.progress.canSignIn(c.now()) }), button('close', '返回', 2)];
@@ -36,7 +39,7 @@ export class Modal extends Screen {
     // Cover the full physical viewport, including any horizontal letterboxing.
     const extra = this.viewport.offsetX / this.viewport.scale;
     ctx.fillRect(-extra, 0, 414 + extra * 2, this.viewport.height);
-    panel(ctx, 37, top, 340, 520, { fill: theme.sky, radius: 10, lineWidth: 5, shadow: theme.ink, offset: 7 });
+    panel(ctx, 37, top, 340, c.modal === 'win' ? 680 : 520, { fill: theme.sky, radius: 10, lineWidth: 5, shadow: theme.ink, offset: 7 });
     for (let i = 0; i < 8; i += 1) panel(ctx, 41 + i * 41.5, top + 3, 41.5, 13,
       { fill: theme.brick, lineWidth: 2, radius: 0 });
     const titles = { menu: '休息一下', win: '太棒了！', tutorial: '推箱子小课堂', signin: '每日签到', cards: '撤销卡不足', deadlock: '箱子卡住了' };
@@ -58,7 +61,15 @@ export class Modal extends Screen {
       else caption('挑战完成！', 206, { size: 24, color: theme.yellow });
       const record = c.progress.state.records[c.game.level.id];
       caption(`本次 ${c.result.steps} 步  ·  最佳 ${record ? record.bestSteps : c.result.steps} 步`, 247);
-      if (!c.result.saved) caption('记录保存失败，请检查存储空间', 485, { size: 12 });
+      panel(ctx, 57, top + 272, 300, 180, { fill: theme.white, lineWidth: 0 });
+      const bridge = c.platform.friendBoard;
+      if (bridge && bridge.available && bridge.canvas && !bridge.demo) {
+        ctx.drawImage(bridge.canvas, 57, top + 272, 300, 180);
+      } else {
+        caption('本关好友步数榜', 320, { color: theme.ink });
+        caption('请在微信小游戏中查看', 359, { size: 13, color: theme.ink });
+      }
+      if (!c.result.saved) caption('记录保存失败，请检查存储空间', 675, { size: 10 });
     } else if (c.modal === 'tutorial') {
       caption('点击方向键，每次移动一格', 173);
       caption('箱子只能推，不能拉', 208);

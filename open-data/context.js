@@ -1,5 +1,6 @@
 import { PAGE_SIZE, PROGRESS_KEY, ProgressSync, rankFriends } from './model.js';
 import { apiError, explainError, needsPrivacyDeclaration } from './errors.js';
+import { createLevelBoard } from './level-board.js';
 
 export function createOpenDataBoard(api, timers = {
   setTimeout: (callback, delay) => setTimeout(callback, delay),
@@ -33,6 +34,8 @@ export function createOpenDataBoard(api, timers = {
     });
   }
   const progress = new ProgressSync(request);
+  const levelBoard = createLevelBoard(request, canvas);
+  let levelMode = false;
   function label(value, x, y, size = 15, color = '#263A4A', align = 'left') {
     ctx.font = `bold ${size}px sans-serif`;
     ctx.fillStyle = color;
@@ -157,12 +160,26 @@ export function createOpenDataBoard(api, timers = {
   }
   async function onMessage(message) {
     if (!message || message.channel !== 'sokoban.friends.v1') return;
+    if (message.type === 'level-sync') {
+      try { await levelBoard.sync(message.levelId, message.steps); } catch { /* Retried when the result is shown. */ }
+      return;
+    }
+    if (message.type === 'level-show') {
+      visible = false; generation++; levelMode = true;
+      await levelBoard.show(message); return;
+    }
+    if (levelMode && message.type === 'level-refresh') { await levelBoard.refresh(); return; }
+    if (levelMode && message.type === 'level-previous') { levelBoard.turn(-1); return; }
+    if (levelMode && message.type === 'level-next') { levelBoard.turn(1); return; }
+    if (message.type === 'show' || message.type === 'hide' || message.type === 'pause') {
+      levelBoard.hide(); levelMode = false;
+    }
     if (message.type === 'resize') {
       width = Math.max(300, Math.min(414, Number(message.width) || 366));
       height = Math.max(430, Math.min(700, Number(message.height) || 520));
       ratio = Math.max(1, Math.min(3, Number(message.pixelRatio) || 1));
       // Physical dimensions are set by the main domain before this message arrives.
-      draw();
+      if (levelMode) levelBoard.draw(); else draw();
     } else if (message.type === 'sync') {
       paused = false;
       await sync(message.completed);

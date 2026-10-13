@@ -33,6 +33,7 @@ export function createApp(platform, actions = {}) {
   let elapsed = 0;
   let previousTime = 0;
   let visibleRoute = null;
+  let visibleBoard = null;
 
   function refreshLayout() {
     if (!viewport) return;
@@ -45,6 +46,17 @@ export function createApp(platform, actions = {}) {
       visibleRoute = controller.route;
     }
     if (controller.modal) modal.resize(viewport);
+    const board = controller.modal === 'win' ? `level:${controller.game.level.id}` : null;
+    if (platform.friendBoard) {
+      if (board) {
+        platform.friendBoard.send('resize', { width: 300, height: 180, pixelRatio: viewport.pixelRatio });
+        if (board !== visibleBoard) platform.friendBoard.send('level-show', {
+          levelId: controller.game.level.id,
+          steps: controller.progress.state.records[controller.game.level.id]?.bestSteps,
+        });
+      } else if (visibleBoard && controller.route !== 'friends') platform.friendBoard.send('hide');
+    }
+    visibleBoard = board;
   }
 
   function resize() {
@@ -92,6 +104,7 @@ export function createApp(platform, actions = {}) {
     frameId = null;
     Object.values(pages).forEach((page) => page.pause());
     modal.pause();
+    visibleBoard = null;
     if (platform.friendBoard) platform.friendBoard.send('pause');
   }
 

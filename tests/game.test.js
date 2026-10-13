@@ -130,8 +130,9 @@ test('小屏和全面屏上的方向键、棋盘、弹窗均在安全区域内',
     const modal = new Modal(c, () => {});
     for (const kind of ['menu', 'win', 'tutorial', 'signin', 'cards', 'deadlock']) {
       c.modal = kind; modal.resize(viewport);
-      assert.ok(modal.top + 520 < bottom);
-      modal.buttons.forEach((button) => assert.ok(button.y + button.height < modal.top + 520));
+      const height = kind === 'win' ? 680 : 520;
+      assert.ok(modal.top + height < bottom);
+      modal.buttons.forEach((button) => assert.ok(button.y + button.height < modal.top + height));
     }
   }
 });

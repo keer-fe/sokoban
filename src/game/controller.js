@@ -19,6 +19,12 @@ export class GameController {
   syncFriends() {
     if (this.platform.friendBoard) this.platform.friendBoard.send('sync', { completed: this.progress.completedLevels });
   }
+  syncLevelFriends() {
+    const record = this.progress.state.records[this.game.level.id];
+    if (record && this.platform.friendBoard) this.platform.friendBoard.send('level-sync', {
+      levelId: this.game.level.id, steps: record.bestSteps,
+    });
+  }
   openLevel(index) {
     if (!Number.isInteger(index) || index < 0 || index >= this.levels.length) return;
     if (!this.progress.isUnlocked(index)) { this.platform.notify('先完成前面的关卡吧'); return; }
@@ -74,7 +80,7 @@ export class GameController {
     if (this.game.complete) {
       const stars = this.game.level.minSteps ? score(this.game.state.steps, this.game.level.minSteps) : 0;
       const saved = this.progress.finish(this.game.level, this.game.state.steps, stars);
-      if (saved) this.syncFriends();
+      if (saved) { this.syncLevelFriends(); this.syncFriends(); }
       this.result = { stars, steps: this.game.state.steps, saved };
       this.modal = 'win';
     } else if (this.game.deadlock && !previousDeadlock) {
@@ -98,12 +104,16 @@ export class GameController {
     } else if (this.modal === 'cards') {
       if (action === 'signin') this.modal = 'signin';
     } else if (this.modal === 'win') {
+      if (['level-refresh', 'level-previous', 'level-next'].includes(action)) {
+        if (this.platform.friendBoard) this.platform.friendBoard.send(action);
+        return;
+      }
       if (action === 'retry') this.openLevel(this.levelIndex);
       if (action === 'home' || action === 'levels') this.navigate(action);
       if (action === 'next') {
         if (!this.result.saved) {
           this.result.saved = this.progress.finish(this.game.level, this.result.steps, this.result.stars);
-          if (this.result.saved) this.syncFriends();
+          if (this.result.saved) { this.syncLevelFriends(); this.syncFriends(); }
         }
         if (this.result.saved) this.openLevel(this.levelIndex + 1);
       }

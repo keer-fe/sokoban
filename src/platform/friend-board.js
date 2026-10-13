@@ -21,7 +21,7 @@ export function createFriendBoard(api) {
         if (type === 'resize') {
           const ratio = Math.max(1, Math.min(3, Number(data.pixelRatio) || 1));
           const width = Math.round(Math.max(300, Math.min(414, Number(data.width) || 366)) * ratio);
-          const height = Math.round(Math.max(430, Math.min(700, Number(data.height) || 520)) * ratio);
+          const height = Math.round(Math.max(180, Math.min(700, Number(data.height) || 520)) * ratio);
           if (value.canvas.width !== width) value.canvas.width = width;
           if (value.canvas.height !== height) value.canvas.height = height;
         }
