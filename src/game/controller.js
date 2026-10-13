@@ -14,6 +14,42 @@ export class GameController {
     this.game = null;
     this.result = null;
     this.zoom = false;
+    this.replay = null;
+  }
+  startReplay(moves) {
+    if (!Array.isArray(moves) || !moves.length) return;
+    const game = new GameSession(this.game.level);
+    for (const move of moves) {
+      if (!game.move(move)) { this.platform.notify('解法记录无法回放，请重新通关录制'); return; }
+    }
+    if (!game.complete) { this.platform.notify('解法记录不完整，请重新通关录制'); return; }
+    game.restart();
+    this.replay = { original: this.game, modal: this.modal, moves: [...moves], playing: false, elapsed: 0 };
+    this.game = game;
+    this.modal = null;
+  }
+  advanceReplay(delta) {
+    if (!this.replay?.playing) return;
+    this.replay.elapsed += Math.max(0, Math.min(delta, 1000));
+    if (this.replay.elapsed >= 400) {
+      this.replay.elapsed = 0;
+      this.game.move(this.replay.moves[this.game.state.steps]);
+      if (this.game.complete) this.replay.playing = false;
+    }
+  }
+  handleReplay(action) {
+    const replay = this.replay;
+    if (action === 'replay-exit') {
+      this.game = replay.original; this.modal = replay.modal; this.replay = null;
+    } else if (action === 'replay-play') {
+      if (this.game.complete) this.game.restart();
+      replay.playing = !replay.playing; replay.elapsed = 0;
+    } else if (action === 'replay-back' || action === 'replay-forward' || action === 'replay-reset') {
+      replay.playing = false; replay.elapsed = 0;
+      if (action === 'replay-back') this.game.undo();
+      if (action === 'replay-forward') this.game.move(replay.moves[this.game.state.steps]);
+      if (action === 'replay-reset') this.game.restart();
+    } else if (action === 'zoom') this.zoom = !this.zoom;
   }
   now() { return this.platform.wallNow ? this.platform.wallNow() : Date.now(); }
   syncFriends() {
@@ -43,6 +79,7 @@ export class GameController {
     }
   }
   handle(action) {
+    if (this.replay) { this.handleReplay(action); return; }
     if (this.modal) { this.handleModal(action); return; }
     if (action === 'home') { this.navigate('home'); return; }
     if (action === 'levels') { this.navigate('levels'); return; }
@@ -79,7 +116,7 @@ export class GameController {
     if (!this.game.move(action)) return;
     if (this.game.complete) {
       const stars = this.game.level.minSteps ? score(this.game.state.steps, this.game.level.minSteps) : 0;
-      const saved = this.progress.finish(this.game.level, this.game.state.steps, stars);
+      const saved = this.progress.finish(this.game.level, this.game.state.steps, stars, this.game.moves);
       if (saved) { this.syncLevelFriends(); this.syncFriends(); }
       this.result = { stars, steps: this.game.state.steps, saved };
       this.modal = 'win';
@@ -95,6 +132,7 @@ export class GameController {
       if (action === 'restart') { this.game.restart(); this.modal = null; }
       if (action === 'undo') { this.modal = null; this.handle('undo'); }
     } else if (this.modal === 'menu') {
+      if (action === 'replay-saved') this.startReplay(this.progress.state.solutions[this.game.level.id]?.moves);
       if (action === 'restart') { this.game.restart(); this.modal = null; }
       if (action === 'levels' || action === 'home') this.navigate(action);
       if (action === 'music' || action === 'sound') this.progress.toggle(action);
@@ -104,6 +142,7 @@ export class GameController {
     } else if (this.modal === 'cards') {
       if (action === 'signin') this.modal = 'signin';
     } else if (this.modal === 'win') {
+      if (action === 'replay-current') { this.startReplay(this.game.moves); return; }
       if (['level-refresh', 'level-previous', 'level-next'].includes(action)) {
         if (this.platform.friendBoard) this.platform.friendBoard.send(action);
         return;
@@ -112,7 +151,7 @@ export class GameController {
       if (action === 'home' || action === 'levels') this.navigate(action);
       if (action === 'next') {
         if (!this.result.saved) {
-          this.result.saved = this.progress.finish(this.game.level, this.result.steps, this.result.stars);
+          this.result.saved = this.progress.finish(this.game.level, this.result.steps, this.result.stars, this.game.moves);
           if (this.result.saved) { this.syncLevelFriends(); this.syncFriends(); }
         }
         if (this.result.saved) this.openLevel(this.levelIndex + 1);

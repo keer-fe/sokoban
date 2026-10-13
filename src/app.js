@@ -80,6 +80,7 @@ export function createApp(platform, actions = {}) {
   function tick() {
     if (!running) return;
     const now = platform.now();
+    controller.advanceReplay(now - previousTime);
     elapsed += Math.min((now - previousTime) / 1000, 0.1);
     previousTime = now;
     render();
@@ -99,6 +100,7 @@ export function createApp(platform, actions = {}) {
   }
 
   function pause() {
+    if (controller.replay) { controller.replay.playing = false; controller.replay.elapsed = 0; }
     running = false;
     if (frameId !== null) platform.cancelFrame(frameId);
     frameId = null;

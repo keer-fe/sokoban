@@ -27,7 +27,16 @@ export class ProgressStore {
       catalog.filter(level => level.sourceNumber && level.sourceNumber <= firstUnfinished)
         .forEach(level => unlockedIds.push(level.id));
     }
-    this.state = { records, unlockedIds, cards: integer(saved.cards),
+    const solutions = {};
+    for (const level of catalog) {
+      const solution = saved.solutions?.[level.id];
+      if (solution && solution.map === level.rows.join('\n') && Array.isArray(solution.moves)
+        && solution.moves.length > 0 && solution.moves.length <= 100000
+        && solution.moves.every(move => ['up', 'down', 'left', 'right'].includes(move))) {
+        solutions[level.id] = { map: solution.map, moves: [...solution.moves] };
+      }
+    }
+    this.state = { records, unlockedIds, solutions, cards: integer(saved.cards),
       lastSignIn: typeof saved.lastSignIn === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(saved.lastSignIn) ? saved.lastSignIn : '',
       music: saved.music === true, sound: saved.sound === true, tutorialDone: saved.tutorialDone === true };
   }
@@ -51,11 +60,18 @@ export class ProgressStore {
     const level = this.catalog[index];
     return !!level && (index <= this.unlocked || !!this.state.records[level.id] || this.state.unlockedIds.includes(level.id));
   }
-  finish(level, steps, stars) {
+  finish(level, steps, stars, moves) {
     const previous = this.state.records[level.id];
     const nextLevel = this.catalog[this.catalog.findIndex(item => item.id === level.id) + 1];
     const unlockedIds = [...new Set([...this.state.unlockedIds, level.id, ...(nextLevel ? [nextLevel.id] : [])])];
-    return this.commit({ ...this.state, unlockedIds, records: { ...this.state.records, [level.id]: {
+    const solutions = { ...this.state.solutions };
+    const existing = solutions[level.id];
+    if (Array.isArray(moves) && moves.length === steps && moves.length <= 100000
+      && moves.every(move => ['up', 'down', 'left', 'right'].includes(move))
+      && (!existing || moves.length < existing.moves.length)) {
+      solutions[level.id] = { map: level.rows.join('\n'), moves: [...moves] };
+    }
+    return this.commit({ ...this.state, unlockedIds, solutions, records: { ...this.state.records, [level.id]: {
       bestSteps: Math.min(previous ? previous.bestSteps : Infinity, steps),
       stars: Math.max(previous ? previous.stars : 0, stars),
     } } });

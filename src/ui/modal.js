@@ -20,9 +20,15 @@ export class Modal extends Screen {
       button('restart', '重新开始', 1), button('levels', '返回选关', 2),
       { ...button('music', `音乐 ${c.progress.state.music ? '开' : '关'}`, 3), width: 142 },
       { ...button('sound', `音效 ${c.progress.state.sound ? '开' : '关'}`, 3), x: 213, width: 142 }];
+    if (c.modal === 'menu' && c.progress.state.solutions[c.game.level.id]) {
+      this.buttons[1].width = 142;
+      this.buttons.push(button('replay-saved', '已存解法', 1, { x: 213, width: 142, fontSize: 16 }));
+    }
     if (c.modal === 'win') this.buttons = [button(c.levelIndex === c.levels.length - 1 ? 'home' : 'next',
       c.levelIndex === c.levels.length - 1 ? '返回首页' : '下一关', 0, { y: y + 494, primary: true }),
-    button('retry', '再玩一次', 0, { y: y + 554 }), button('levels', '返回选关', 0, { y: y + 614 }),
+    button('retry', '再玩一次', 0, { y: y + 554, width: 142 }),
+    button('replay-current', '回放本次', 0, { y: y + 554, x: 213, width: 142 }),
+    button('levels', '返回选关', 0, { y: y + 614 }),
     ...[['level-previous', '上一页'], ['level-refresh', '刷新'], ['level-next', '下一页']].map(([id, label], i) =>
       ({ id, label, x: 59 + i * 102, y: y + 458, width: 92, height: 28, fontSize: 12 }))];
     if (c.modal === 'tutorial') this.buttons = [button('understood', '开始尝试', 1, { primary: true }), button('skip', '跳过引导', 2)];

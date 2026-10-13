@@ -58,6 +58,7 @@ export class GameSession {
   restart() {
     this.state = { player: this.board.player, boxes: [...this.board.boxes], steps: 0, facing: 'down' };
     this.history = [];
+    this.moves = [];
     this.deadlock = detectDeadlock(this.board, this.state, this.deadSquares);
   }
   get complete() { return isComplete(this.board, this.state); }
@@ -66,6 +67,7 @@ export class GameSession {
     const next = transition(this.board, this.state, direction);
     if (!next) return false;
     this.history.push(this.state);
+    this.moves.push(direction);
     const pushed = next.boxes.some((pos, index) => pos !== this.state.boxes[index]);
     this.state = next;
     if (pushed) this.deadlock = detectDeadlock(this.board, this.state, this.deadSquares);
@@ -74,6 +76,7 @@ export class GameSession {
   undo() {
     if (!this.history.length) return false;
     this.state = this.history.pop();
+    this.moves.pop();
     this.deadlock = detectDeadlock(this.board, this.state, this.deadSquares);
     return true;
   }
