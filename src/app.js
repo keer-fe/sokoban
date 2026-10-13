@@ -6,17 +6,26 @@ import { LevelsPage } from './pages/levels/index.js';
 import { GamePage } from './pages/game/index.js';
 import { Modal } from './ui/modal.js';
 import { loadArt } from './ui/art.js';
-import { loadHomeIcons } from './ui/home-icons.js';
+import { homeIconFileIDs, loadHomeIcons } from './ui/home-icons.js';
 import { loadHomeFont } from './ui/home-font.js';
 import { FriendsPage } from './pages/friends/index.js';
+import { drawLoading } from './ui/loading.js';
 
 const BG_MUSIC_URL = 'https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/music/bg.mp3?sign=389193686ab75c45471eed1d38bd3e4f&t=1791866058';
 
 export function createApp(platform, actions = {}) {
   const ctx = platform.canvas.getContext('2d');
   loadArt(ctx, platform);
-  loadHomeIcons(ctx, platform);
-  loadHomeFont(platform);
+  const cloudTotal = platform.resolveCloudFiles
+    ? (platform.createImage ? Object.keys(homeIconFileIDs).length : 0) + (platform.loadFont ? 1 : 0) : 0;
+  let cloudLoaded = 0;
+  let loading = cloudTotal > 0;
+  const cloudSettled = () => {
+    cloudLoaded = Math.min(cloudTotal, cloudLoaded + 1);
+    loading = cloudLoaded < cloudTotal;
+  };
+  loadHomeIcons(ctx, platform, cloudSettled);
+  loadHomeFont(platform, cloudSettled);
   const controller = new GameController(platform);
   const bgMusic = platform.createAudio
     ? platform.createAudio(BG_MUSIC_URL, { loop: true, volume: 0.5 })
@@ -85,6 +94,10 @@ export function createApp(platform, actions = {}) {
     ctx.fillRect(0, 0, platform.canvas.width, platform.canvas.height);
     const ratio = viewport.pixelRatio;
     ctx.setTransform(viewport.scale * ratio, 0, 0, viewport.scale * ratio, viewport.offsetX * ratio, 0);
+    if (loading) {
+      drawLoading(ctx, viewport, elapsed, cloudTotal ? cloudLoaded / cloudTotal : 1);
+      return;
+    }
     pages[controller.route].render(ctx, elapsed);
     if (controller.modal) modal.render(ctx, elapsed);
   }
@@ -130,13 +143,13 @@ export function createApp(platform, actions = {}) {
       started = true;
       unsubscribe = platform.subscribe({
         pointer(type, point) {
-          if (running) {
+          if (running && !loading) {
             (controller.modal ? modal : pages[controller.route]).handlePointer(type, toLogicalPoint(viewport, point));
             render();
           }
         },
         key(action) {
-          if (running && controller.route === 'game' && !controller.modal) { dispatch(action); render(); }
+          if (running && !loading && controller.route === 'game' && !controller.modal) { dispatch(action); render(); }
         },
         show: resume,
         hide: pause,

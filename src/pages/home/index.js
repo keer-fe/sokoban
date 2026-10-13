@@ -4,7 +4,7 @@ import { theme } from '../../ui/theme.js';
 import { text } from '../../ui/draw.js';
 import { illustration } from '../../ui/illustrations.js';
 import { ButtonInput, drawButton } from '../../ui/button.js';
-import { drawHomeBackground, drawHomeIcon } from '../../ui/home-icons.js';
+import { drawHomeBackground, drawHomeIcon, getHomeGroundBaseline } from '../../ui/home-icons.js';
 import { getHomeFont } from '../../ui/home-font.js';
 import { drawPushAnimation } from './push-animation.js';
 
@@ -22,13 +22,13 @@ export class HomePage {
   }
 
   render(ctx, elapsed) {
-    const { width, height, safeBottom } = this.viewport;
-    const { buttons, cards, groundHeight, title } = this.layout;
+    const { width, height } = this.viewport;
+    const { buttons, cards, title } = this.layout;
     if (!drawHomeBackground(ctx, 0, 0, width, height)) {
       ctx.fillStyle = theme.sky;
       ctx.fillRect(0, 0, width, height);
     }
-    drawPushAnimation(ctx, width, height - safeBottom - groundHeight + 2, elapsed);
+    drawPushAnimation(ctx, width, getHomeGroundBaseline(ctx, width, height) - 2, elapsed);
 
     const beat = Math.pow(Math.max(0, Math.sin(elapsed * Math.PI * 2 / (60 / 104))), 6);
     ctx.save();
@@ -43,7 +43,19 @@ export class HomePage {
       const pressed = this.input.activeId === button.id;
       if (button.art) {
         const shift = pressed ? 4 : 0;
-        if (drawHomeIcon(ctx, button.art, button.x + shift, button.y + shift, button.width, button.height)) return;
+        if (button.primary) {
+          const pulse = pressed ? 0.98 : 1 + Math.sin(elapsed * Math.PI * 2 / 2.4) * 0.012;
+          ctx.save();
+          ctx.translate(button.x + button.width / 2 + shift, button.y + button.height / 2 + shift);
+          ctx.scale(pulse, pulse);
+          ctx.shadowColor = 'rgba(255, 219, 72, 0.58)';
+          ctx.shadowBlur = pressed ? 5 : 13;
+          const drawn = drawHomeIcon(ctx, button.art, -button.width / 2, -button.height / 2,
+            button.width, button.height);
+          ctx.restore();
+          if (drawn) return;
+        } else if (drawHomeIcon(ctx, button.art, button.x + shift, button.y + shift,
+          button.width, button.height)) return;
         drawButton(ctx, button, pressed);
         return;
       }

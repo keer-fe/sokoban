@@ -5,7 +5,7 @@ import { getHomeLayout } from '../src/pages/home/layout.js';
 import { ButtonInput } from '../src/ui/button.js';
 import { createApp } from '../src/app.js';
 import { createWechatPlatform, normalizeWechatWindowInfo } from '../src/platform/wechat.js';
-import { drawHomeBackground, drawHomeIcon, homeIconFileIDs, homeIconSources, loadHomeIcons } from '../src/ui/home-icons.js';
+import { drawHomeBackground, drawHomeIcon, drawHomeSpriteFrame, homeIconFileIDs, homeIconSources, loadHomeIcons } from '../src/ui/home-icons.js';
 import { HOME_FONT_FILE_ID, loadHomeFont } from '../src/ui/home-font.js';
 
 test('微信模拟器胶囊返回空对象时使用安全区域回退，所有绘制坐标保持有效', () => {
@@ -58,7 +58,9 @@ test('首页在短屏、全面屏及横屏中不遮挡按钮，坐标转换不�
         assert.ok(button.y > groundTop);
         assert.ok(button.y + button.height < bottom);
       });
-      assert.equal(mainButtons[1].y + mainButtons[1].height, bottom - 44);
+      assert.equal(mainButtons[1].y + mainButtons[1].height, bottom - 46);
+      assert.ok(mainButtons[0].width > mainButtons[1].width);
+      assert.ok(mainButtons[0].height > mainButtons[1].height);
       layout.buttons.forEach((button) => {
         const center = { id: 1, x: button.x + button.width / 2, y: button.y + button.height / 2 };
         const point = toLogicalPoint(viewport, { id: 1,
@@ -73,6 +75,7 @@ test('首页在短屏、全面屏及横屏中不遮挡按钮，坐标转换不�
 
 test('首页功能图标独立加载，未完成前回退、完成后分别绘制', () => {
   const calls = [];
+  const loaded = [];
   const ctx = { drawImage: (...args) => calls.push(args) };
   const images = [];
   const platform = { createImage: () => {
@@ -80,12 +83,13 @@ test('首页功能图标独立加载，未完成前回退、完成后分别绘�
     images.push(image);
     return image;
   } };
-  loadHomeIcons(ctx, platform);
+  loadHomeIcons(ctx, platform, (name) => loaded.push(name));
   loadHomeIcons(ctx, platform);
   assert.equal(images.length, 11);
   assert.deepEqual(images.map(image => image.src), Object.values(homeIconSources));
   assert.equal(drawHomeIcon(ctx, 'signin', 1, 2, 48), false);
   images.forEach(image => image.onload());
+  assert.deepEqual(loaded.sort(), Object.keys(homeIconFileIDs).sort());
   assert.equal(drawHomeIcon(ctx, 'signin', 1, 2, 48), true);
   assert.deepEqual(calls.at(-1), [images[1], 1, 2, 48, 48]);
   assert.equal(drawHomeIcon(ctx, 'title', 3, 4, 120, 43), true);
@@ -98,6 +102,10 @@ test('首页功能图标独立加载，未完成前回退、完成后分别绘�
   assert.equal(drawHomeIcon(ctx, 'undoCard', 337, 300, 64), true);
   assert.deepEqual(calls.at(-1), [images[7], 337, 300, 64, 64]);
   assert.equal(drawHomeIcon(ctx, 'missing', 0, 0, 10), false);
+  images[8].width = 1088;
+  images[8].height = 362;
+  assert.equal(drawHomeSpriteFrame(ctx, 'pushCharacterCycle', 2, 8, 10, 20, 84), true);
+  assert.deepEqual(calls.at(-1), [images[8], 272, 0, 136, 362, 10, 20, 84, 84]);
 });
 
 test('微信平台通过 fileID 获取首页云端图片的签名地址', async () => {
@@ -126,13 +134,54 @@ test('微信平台通过 fileID 获取首页云端图片的签名地址', async 
 
 test('首页艺术字体通过 fileID 获取临时地址，平台不支持时安全回退', async () => {
   let requested;
+  let settled = 0;
   loadHomeFont({
     loadFont(url) { requested = url; return 'loaded-font'; },
     resolveCloudFiles: ({ homeFont }) => Promise.resolve({ homeFont: `signed:${homeFont}` }),
-  });
-  await Promise.resolve();
+  }, () => { settled += 1; });
+  await new Promise((resolve) => setTimeout(resolve, 0));
   assert.equal(requested, `signed:${HOME_FONT_FILE_ID}`);
+  assert.equal(settled, 1);
   assert.ok(loadHomeFont({}));
+});
+
+test('微信平台先下载远程字体，再通过临时文件路径加载', async () => {
+  let downloaded;
+  let loaded;
+  const api = {
+    createCanvas: () => ({}),
+    getOpenDataContext: () => null,
+    downloadFile({ url, success }) {
+      downloaded = url;
+      success({ statusCode: 200, tempFilePath: 'wxfile://tmp/font.ttf' });
+    },
+    loadFont(path) { loaded = path; return 'wechat-font'; },
+  };
+  const platform = createWechatPlatform(api);
+  assert.equal(await platform.loadFont('https://example.com/font.ttf'), 'wechat-font');
+  assert.equal(downloaded, 'https://example.com/font.ttf');
+  assert.equal(loaded, 'wxfile://tmp/font.ttf');
+});
+
+test('微信平台通过云文件 ID 下载字体，不依赖 downloadFile 域名白名单', async () => {
+  let downloaded;
+  let loaded;
+  const api = {
+    createCanvas: () => ({}),
+    getOpenDataContext: () => null,
+    cloud: {
+      init() {},
+      downloadFile({ fileID, success }) {
+        downloaded = fileID;
+        success({ tempFilePath: 'wxfile://cloud/font.ttf' });
+      },
+    },
+    loadFont(path) { loaded = path; return 'cloud-font'; },
+  };
+  const platform = createWechatPlatform(api);
+  assert.equal(await platform.loadCloudFont(HOME_FONT_FILE_ID), 'cloud-font');
+  assert.equal(downloaded, HOME_FONT_FILE_ID);
+  assert.equal(loaded, 'wxfile://cloud/font.ttf');
 });
 
 test('按钮点击只触发一次，拖出、取消和其他手指不会误触', () => {

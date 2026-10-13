@@ -63,7 +63,58 @@ export function createWechatPlatform(api) {
       return resolveCloudFileURLs(api.cloud, entries.map(([, fileID]) => fileID))
         .then((urls) => Object.fromEntries(entries.map(([name], index) => [name, urls[index]])));
     },
-    loadFont: (url) => typeof api.loadFont === 'function' ? api.loadFont(url) : null,
+    loadFont(url) {
+      if (typeof api.loadFont !== 'function') return null;
+      if (!/^https?:\/\//.test(url) || typeof api.downloadFile !== 'function') {
+        return api.loadFont(url);
+      }
+      return new Promise((resolve, reject) => {
+        api.downloadFile({
+          url,
+          success: ({ statusCode, tempFilePath }) => {
+            if (statusCode && statusCode >= 400) {
+              reject(new Error(`Font download failed with HTTP ${statusCode}`));
+              return;
+            }
+            if (!tempFilePath) {
+              reject(new Error('Font download returned no temporary file path'));
+              return;
+            }
+            const family = api.loadFont(tempFilePath);
+            if (!family) {
+              reject(new Error('wx.loadFont failed to load the downloaded font'));
+              return;
+            }
+            resolve(family);
+          },
+          fail: reject,
+        });
+      });
+    },
+    loadCloudFont(fileID) {
+      if (typeof api.loadFont !== 'function') return null;
+      if (!api.cloud || typeof api.cloud.downloadFile !== 'function') {
+        return Promise.reject(new Error('wx.cloud.downloadFile is unavailable'));
+      }
+      return new Promise((resolve, reject) => {
+        api.cloud.downloadFile({
+          fileID,
+          success: ({ tempFilePath }) => {
+            if (!tempFilePath) {
+              reject(new Error('Cloud font download returned no temporary file path'));
+              return;
+            }
+            const family = api.loadFont(tempFilePath);
+            if (!family) {
+              reject(new Error('wx.loadFont failed to load the downloaded cloud font'));
+              return;
+            }
+            resolve(family);
+          },
+          fail: reject,
+        });
+      });
+    },
     createAudio(src, { loop = false, volume = 1 } = {}) {
       const audio = api.createInnerAudioContext ? api.createInnerAudioContext() : null;
       if (!audio) return { play() {}, pause() {}, stop() {}, destroy() {}, setVolume() {} };
