@@ -35,7 +35,10 @@ test('已标定的最少步数可求解并逐步通关', () => {
     const path = bfsSolve(level, { maxStates: 2_000_000, maxMs: 20_000 });
     assert.equal(path.length, level.minSteps);
     const game = new GameSession(level);
-    path.forEach(direction => assert.equal(game.move(direction), true));
+    path.forEach(direction => {
+      assert.equal(game.move(direction), true);
+      assert.equal(game.deadlock, null, `${level.id}: solution must not trigger deadlock`);
+    });
     assert.equal(game.complete, true);
   });
 });

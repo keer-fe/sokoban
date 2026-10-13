@@ -12,6 +12,9 @@ export class Modal extends Screen {
     const button = (id, label, row, options = {}) => ({ id, label, x: 59, y: y + 226 + row * 64,
       width: 296, height: 50, icon: false, ...options });
     this.buttons = [];
+    if (c.modal === 'deadlock') this.buttons = [
+      button('undo', '撤销一步（1 张卡）', 1, { primary: true }),
+      button('restart', '重新开始', 2), button('close', '返回棋盘', 3)];
     if (c.modal === 'menu') this.buttons = [button('close', '继续游戏', 0, { primary: true }),
       button('restart', '重新开始', 1), button('levels', '返回选关', 2),
       { ...button('music', `音乐 ${c.progress.state.music ? '开' : '关'}`, 3), width: 142 },
@@ -36,12 +39,16 @@ export class Modal extends Screen {
     panel(ctx, 37, top, 340, 520, { fill: theme.sky, radius: 10, lineWidth: 5, shadow: theme.ink, offset: 7 });
     for (let i = 0; i < 8; i += 1) panel(ctx, 41 + i * 41.5, top + 3, 41.5, 13,
       { fill: theme.brick, lineWidth: 2, radius: 0 });
-    const titles = { menu: '休息一下', win: '太棒了！', tutorial: '推箱子小课堂', signin: '每日签到', cards: '撤销卡不足' };
+    const titles = { menu: '休息一下', win: '太棒了！', tutorial: '推箱子小课堂', signin: '每日签到', cards: '撤销卡不足', deadlock: '箱子卡住了' };
     illustration(ctx, c.modal === 'win' ? 'done' : c.modal === 'signin' ? 'question' : 'crate', 181, top + 35, 52);
     text(ctx, titles[c.modal], 207, top + 118, { size: 28, color: theme.yellow, outline: 2 });
     const caption = (value, offset, options = {}) => text(ctx, value, 207, top + offset,
       { size: 15, color: theme.white, ...options });
-    if (c.modal === 'menu') {
+    if (c.modal === 'deadlock') {
+      caption('有箱子已无法推到目标格', 173);
+      caption('可以撤销刚才的一步，或重新开始', 211, { size: 13 });
+      caption(`当前拥有 ${c.progress.state.cards} 张撤销卡`, 249, { size: 13 });
+    } else if (c.modal === 'menu') {
       caption(`第 ${c.levelIndex + 1} 关 · ${c.game.state.steps} 步`, 165);
       caption('好好想一想，答案就在下一步', 195, { size: 13 });
       caption('音乐与音效资源即将上线', 490, { size: 12 });

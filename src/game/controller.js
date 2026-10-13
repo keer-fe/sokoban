@@ -68,18 +68,26 @@ export class GameController {
       else if (this.progress.spendCard()) this.game.undo();
       return;
     }
-    if (directions[action] && this.game.move(action) && this.game.complete) {
+    if (!directions[action]) return;
+    const previousDeadlock = this.game.deadlock;
+    if (!this.game.move(action)) return;
+    if (this.game.complete) {
       const stars = this.game.level.minSteps ? score(this.game.state.steps, this.game.level.minSteps) : 0;
       const saved = this.progress.finish(this.game.level, this.game.state.steps, stars);
       if (saved) this.syncFriends();
       this.result = { stars, steps: this.game.state.steps, saved };
       this.modal = 'win';
+    } else if (this.game.deadlock && !previousDeadlock) {
+      this.modal = 'deadlock';
     }
   }
   handleModal(action) {
     if (action === 'close' && this.modal !== 'win') { this.modal = null; return; }
     if (this.modal === 'tutorial' && (action === 'understood' || action === 'skip')) {
       this.progress.finishTutorial(); this.modal = null;
+    } else if (this.modal === 'deadlock') {
+      if (action === 'restart') { this.game.restart(); this.modal = null; }
+      if (action === 'undo') { this.modal = null; this.handle('undo'); }
     } else if (this.modal === 'menu') {
       if (action === 'restart') { this.game.restart(); this.modal = null; }
       if (action === 'levels' || action === 'home') this.navigate(action);

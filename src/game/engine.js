@@ -1,3 +1,5 @@
+import { detectDeadlock, findDeadSquares } from './deadlock.js';
+
 export const directions = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 
 export function parseLevel(level) {
@@ -50,11 +52,13 @@ export class GameSession {
   constructor(level) {
     this.level = level;
     this.board = parseLevel(level);
+    this.deadSquares = findDeadSquares(this.board);
     this.restart();
   }
   restart() {
     this.state = { player: this.board.player, boxes: [...this.board.boxes], steps: 0, facing: 'down' };
     this.history = [];
+    this.deadlock = detectDeadlock(this.board, this.state, this.deadSquares);
   }
   get complete() { return isComplete(this.board, this.state); }
   move(direction) {
@@ -62,12 +66,15 @@ export class GameSession {
     const next = transition(this.board, this.state, direction);
     if (!next) return false;
     this.history.push(this.state);
+    const pushed = next.boxes.some((pos, index) => pos !== this.state.boxes[index]);
     this.state = next;
+    if (pushed) this.deadlock = detectDeadlock(this.board, this.state, this.deadSquares);
     return true;
   }
   undo() {
     if (!this.history.length) return false;
     this.state = this.history.pop();
+    this.deadlock = detectDeadlock(this.board, this.state, this.deadSquares);
     return true;
   }
 }

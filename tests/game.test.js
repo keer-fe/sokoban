@@ -128,7 +128,7 @@ test('小屏和全面屏上的方向键、棋盘、弹窗均在安全区域内',
     });
     assert.ok(page.boardBounds.y + page.boardBounds.height < page.buttons.find((b) => b.id === 'undo').y);
     const modal = new Modal(c, () => {});
-    for (const kind of ['menu', 'win', 'tutorial', 'signin', 'cards']) {
+    for (const kind of ['menu', 'win', 'tutorial', 'signin', 'cards', 'deadlock']) {
       c.modal = kind; modal.resize(viewport);
       assert.ok(modal.top + 520 < bottom);
       modal.buttons.forEach((button) => assert.ok(button.y + button.height < modal.top + 520));
