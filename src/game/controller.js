@@ -96,6 +96,7 @@ export class GameController {
       return;
     }
     if (action === 'signin') { this.modal = 'signin'; return; }
+    if (action === 'settings') { this.modal = 'settings'; return; }
     if (action.startsWith('level:')) { this.openLevel(Number(action.split(':')[1])); return; }
     if (action === 'previous' || action === 'following') {
       const count = this.levels.length;
@@ -131,7 +132,7 @@ export class GameController {
     } else if (this.modal === 'deadlock') {
       if (action === 'restart') { this.game.restart(); this.modal = null; }
       if (action === 'undo') { this.modal = null; this.handle('undo'); }
-    } else if (this.modal === 'menu') {
+    } else if (this.modal === 'menu' || this.modal === 'settings') {
       if (action === 'replay-saved') this.startReplay(this.progress.state.solutions[this.game.level.id]?.moves);
       if (action === 'restart') { this.game.restart(); this.modal = null; }
       if (action === 'levels' || action === 'home') this.navigate(action);

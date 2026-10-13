@@ -2,13 +2,20 @@ import { homeConfig } from './config.js';
 
 export function getHomeLayout(viewport) {
   const top = Math.max(48, viewport.safeTop + 16);
+  const bottom = viewport.height - viewport.safeBottom;
+  const shortcutWidth = 74;
+  const groundHeight = Math.max(260, Math.min(290, bottom * 0.32));
   return {
     top,
+    title: { x: 18, y: top + 2, width: 378, height: 136 },
+    groundHeight,
     buttons: [...homeConfig.buttons.map((button, index) => ({ ...button,
-      x: 24, y: top + 278 + index * 82, width: 366, height: index === 0 ? 70 : 62,
-    })), { id: 'signin', label: '签到', x: 24, y: top + 16, width: 80, height: 44, fontSize: 16 },
-    { id: 'friends', label: '好友榜', x: 298, y: top + 16, width: 92, height: 44, fontSize: 16 }],
-    stats: { x: 90, y: top + 444, width: 234, height: 72 },
-    questionsY: viewport.height - viewport.safeBottom - 180,
+      x: 32, y: index === 0 ? bottom - 246 : bottom - 140,
+      width: 350, height: index === 0 ? 102 : 96,
+    })), ...homeConfig.shortcuts.map((shortcut, index) => ({ ...shortcut,
+      x: index < 2 ? 8 : 332, y: top + (index === 1 ? 244 : 150),
+      width: shortcutWidth, height: 88, fontSize: 14,
+    }))],
+    cards: { x: 332, y: top + 244, width: shortcutWidth, height: 88 },
   };
 }

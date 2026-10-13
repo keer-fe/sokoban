@@ -20,6 +20,11 @@ export class Modal extends Screen {
       button('restart', '重新开始', 1), button('levels', '返回选关', 2),
       { ...button('music', `音乐 ${c.progress.state.music ? '开' : '关'}`, 3), width: 142 },
       { ...button('sound', `音效 ${c.progress.state.sound ? '开' : '关'}`, 3), x: 213, width: 142 }];
+    if (c.modal === 'settings') this.buttons = [
+      { ...button('music', `音乐 ${c.progress.state.music ? '开' : '关'}`, 1), width: 142 },
+      { ...button('sound', `音效 ${c.progress.state.sound ? '开' : '关'}`, 1), x: 213, width: 142 },
+      button('close', '返回首页', 3, { primary: true }),
+    ];
     if (c.modal === 'menu' && c.progress.state.solutions[c.game.level.id]) {
       this.buttons[1].width = 142;
       this.buttons.push(button('replay-saved', '已存解法', 1, { x: 213, width: 142, fontSize: 16 }));
@@ -48,7 +53,7 @@ export class Modal extends Screen {
     panel(ctx, 37, top, 340, c.modal === 'win' ? 680 : 520, { fill: theme.sky, radius: 10, lineWidth: 5, shadow: theme.ink, offset: 7 });
     for (let i = 0; i < 8; i += 1) panel(ctx, 41 + i * 41.5, top + 3, 41.5, 13,
       { fill: theme.brick, lineWidth: 2, radius: 0 });
-    const titles = { menu: '休息一下', win: '太棒了！', tutorial: '推箱子小课堂', signin: '每日签到', cards: '撤销卡不足', deadlock: '箱子卡住了' };
+    const titles = { menu: '休息一下', settings: '游戏设置', win: '太棒了！', tutorial: '推箱子小课堂', signin: '每日签到', cards: '撤销卡不足', deadlock: '箱子卡住了' };
     illustration(ctx, c.modal === 'win' ? 'done' : c.modal === 'signin' ? 'question' : 'crate', 181, top + 35, 52);
     text(ctx, titles[c.modal], 207, top + 118, { size: 28, color: theme.yellow, outline: 2 });
     const caption = (value, offset, options = {}) => text(ctx, value, 207, top + offset,
@@ -61,6 +66,9 @@ export class Modal extends Screen {
       caption(`第 ${c.levelIndex + 1} 关 · ${c.game.state.steps} 步`, 165);
       caption('好好想一想，答案就在下一步', 195, { size: 13 });
       caption('音乐与音效资源即将上线', 490, { size: 12 });
+    } else if (c.modal === 'settings') {
+      caption('按你的习惯调整游戏声音', 176, { size: 13 });
+      caption('设置会自动保存在本机', 223, { size: 13 });
     } else if (c.modal === 'win') {
       caption(`第 ${c.levelIndex + 1} 关完成`, 157);
       if (c.result.stars) stars(ctx, c.result.stars, 140, top + 182, 38, 10);

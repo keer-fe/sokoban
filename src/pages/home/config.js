@@ -1,14 +1,14 @@
-// Shared home copy. Runtime statistics are supplied by the progress controller.
+// Shared home copy. Runtime card count is supplied by the progress controller.
 export const homeConfig = Object.freeze({
   title: '箱不到八',
-  subtitle: 'SOKOBAN',
-  buttons: [
-    { id: 'start', label: '开始游戏', primary: true },
-    { id: 'levels', label: '选择关卡', primary: false },
+  subtitle: '欢乐推箱子',
+  shortcuts: [
+    { id: 'signin', label: '签到', icon: 'signin' },
+    { id: 'friends', label: '排行榜', icon: 'friends' },
+    { id: 'settings', label: '设置', icon: 'settings' },
   ],
-  stats: [
-    { value: '—', label: '关卡' },
-    { value: '0', label: '已通关' },
-    { value: '0', label: '撤销卡' },
+  buttons: [
+    { id: 'start', label: '开始游戏', primary: true, art: 'startButton' },
+    { id: 'levels', label: '选择关卡', primary: false, art: 'levelsButton' },
   ],
 });

@@ -77,11 +77,16 @@ export function logo(ctx, x, y, size = 100) {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(size / 100, size / 100);
-  panel(ctx, 0, 0, 100, 100, { fill: theme.yellow, lineWidth: 4, radius: 8, shadow: theme.ink });
-  panel(ctx, 10, 10, 80, 80, { fill: theme.yellow, lineWidth: 4, radius: 8 });
-  [16, 42, 68].forEach((left, index) => panel(ctx, left, 16, index === 2 ? 16 : 20, 20,
-    { fill: theme.brick, lineWidth: 2, radius: 3 }));
-  if (drawArt(ctx, 'player', 25, 38, 50)) { ctx.restore(); return; }
+  // Wooden crate rim surrounds the portrait, leaving the face unobstructed.
+  panel(ctx, 0, 0, 100, 100, { fill: '#D9944E', lineWidth: 4, radius: 6, shadow: theme.ink });
+  panel(ctx, 13, 13, 74, 74, { fill: '#AA733C', lineWidth: 3, radius: 2 });
+  panel(ctx, 18, 18, 64, 64, { fill: '#F0BD78', lineWidth: 0, radius: 2 });
+  [39, 61].forEach(top => line(ctx, [[18, top], [82, top]], '#CD985A', 2));
+  line(ctx, [[5, 15], [15, 15], [15, 5]], '#F8CB8D', 2);
+  line(ctx, [[85, 95], [85, 85], [95, 85]], '#AA733C', 2);
+  [[7, 7], [93, 7], [7, 93], [93, 93]].forEach(([left, top]) =>
+    circle(ctx, left, top, 2, theme.ink));
+  if (drawArt(ctx, 'player', 18, 18, 64)) { ctx.restore(); return; }
   panel(ctx, 38, 68, 24, 18, { fill: '#E74C3C', lineWidth: 2.5, radius: 6 });
   panel(ctx, 44, 74, 12, 7, { fill: '#2ECC71', lineWidth: 2, radius: 2 });
   circle(ctx, 50, 56, 11, '#FFE0B1', 2.5);
@@ -96,8 +101,8 @@ export function logo(ctx, x, y, size = 100) {
   ctx.restore();
 }
 
-export function ground(ctx, width, height, bottomInset = 0) {
-  const grassTop = height - bottomInset - 80;
+export function ground(ctx, width, height, bottomInset = 0, grassHeight = 80) {
+  const grassTop = height - bottomInset - grassHeight;
   const brickTop = grassTop - 36;
   const brickWidth = width / 8;
   for (let i = 0; i < 8; i += 1) {

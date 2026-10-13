@@ -10,6 +10,47 @@ const app = createApp({
   friendBoard: ['demo', 'empty', 'error', 'offline'].includes(params.get('friends'))
     ? createDemoFriends(params.get('friends')) : null,
   createImage: () => new Image(),
+  loadFont(url) {
+    const family = 'NishikiTeki';
+    if (typeof FontFace === 'function') {
+      const face = new FontFace(family, `url(${url})`);
+      face.load().then(font => document.fonts.add(font)).catch(() => {});
+    }
+    return family;
+  },
+  createAudio(src, { loop = false, volume = 1 } = {}) {
+    const audio = new Audio(src);
+    audio.loop = loop;
+    audio.volume = volume;
+    audio.preload = 'auto';
+    audio.crossOrigin = 'anonymous';
+    let unlockBound = false;
+    const tryPlay = () => {
+      const p = audio.play();
+      if (p && p.catch) p.catch(() => bindUnlock());
+    };
+    const bindUnlock = () => {
+      if (unlockBound) return;
+      unlockBound = true;
+      const unlock = () => {
+        unlockBound = false;
+        document.removeEventListener('pointerdown', unlock, true);
+        document.removeEventListener('keydown', unlock, true);
+        document.removeEventListener('touchstart', unlock, true);
+        tryPlay();
+      };
+      document.addEventListener('pointerdown', unlock, true);
+      document.addEventListener('keydown', unlock, true);
+      document.addEventListener('touchstart', unlock, true);
+    };
+    return {
+      play: tryPlay,
+      pause: () => audio.pause(),
+      stop: () => { audio.pause(); audio.currentTime = 0; },
+      destroy: () => { audio.pause(); audio.src = ''; },
+      setVolume: (v) => { audio.volume = v; },
+    };
+  },
   now: () => performance.now(),
   wallNow: () => Date.now(),
   readStorage: (key) => JSON.parse(localStorage.getItem(key) || 'null'),

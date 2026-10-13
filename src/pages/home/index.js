@@ -1,9 +1,12 @@
 import { homeConfig } from './config.js';
 import { getHomeLayout } from './layout.js';
 import { theme } from '../../ui/theme.js';
-import { panel, text } from '../../ui/draw.js';
-import { cloud, ground, illustration, logo } from '../../ui/illustrations.js';
+import { text } from '../../ui/draw.js';
+import { illustration } from '../../ui/illustrations.js';
 import { ButtonInput, drawButton } from '../../ui/button.js';
+import { drawHomeBackground, drawHomeIcon } from '../../ui/home-icons.js';
+import { getHomeFont } from '../../ui/home-font.js';
+import { drawPushAnimation } from './push-animation.js';
 
 export class HomePage {
   constructor({ onAction, controller }) {
@@ -20,53 +23,48 @@ export class HomePage {
 
   render(ctx, elapsed) {
     const { width, height, safeBottom } = this.viewport;
-    const { top, buttons, stats, questionsY } = this.layout;
-    const drift = (period) => 10 * (1 - Math.cos(elapsed / period * Math.PI * 2));
-    const bob = (phase = 0) => -4 * (1 - Math.cos(elapsed * Math.PI * 2 + phase));
+    const { buttons, cards, groundHeight, title } = this.layout;
+    if (!drawHomeBackground(ctx, 0, 0, width, height)) {
+      ctx.fillStyle = theme.sky;
+      ctx.fillRect(0, 0, width, height);
+    }
+    drawPushAnimation(ctx, width, height - safeBottom - groundHeight + 2, elapsed);
 
-    cloud(ctx, width - 122 + drift(16), height * 0.025, 96);
-    cloud(ctx, 16 + drift(20), height * 0.11, 74);
-    cloud(ctx, width - 112 + drift(24), height * 0.18, 62);
-    const decorations = [
-      ['question', 16, height * 0.14, 32],
-      ['star', 360, height * 0.22, 28],
-      ['question', 29, height * 0.40, 26],
-      ['crate', 361, height * 0.48, 30],
-      ['star', 108, height * 0.15, 26],
-      ['star', 20, height * 0.60, 22],
-    ];
-    decorations.forEach(([kind, x, y, size], i) => {
-      illustration(ctx, kind, x, y + bob(i), size,
-        { rotation: Math.sin(elapsed * 1.6 + i) * 0.12 });
-    });
-    ground(ctx, width, height, safeBottom);
-    [135, 187, 239].forEach((x) => illustration(ctx, 'question', x, questionsY, 40, { shadow: true }));
-
-    logo(ctx, 157, top);
-    text(ctx, homeConfig.title, 207, top + 146,
-      { size: 40, spacing: 4, color: theme.green, outline: 3 });
-    text(ctx, homeConfig.subtitle, 207, top + 190,
-      { size: 14, spacing: 6, color: theme.white, outline: 2 });
-    ['crate', 'done', 'target'].forEach((kind, i) =>
-      illustration(ctx, kind, 127 + i * 58, top + 218 + (i < 2 ? bob(i * 1.25) : 0), 44));
-    buttons.forEach((button) => drawButton(ctx, button, this.input.activeId === button.id));
-    panel(ctx, stats.x, stats.y, stats.width, stats.height,
-      { fill: theme.brick, lineWidth: 4, radius: 8, shadow: theme.ink });
-    const statsData = this.controller ? [
-      { value: this.controller.levels.length, label: '关卡' },
-      { value: this.controller.progress.completedLevels, label: '已通关' },
-      { value: this.controller.progress.state.cards, label: '撤销卡' },
-    ] : homeConfig.stats;
-    statsData.forEach((stat, i) => {
-      const cellWidth = stats.width / homeConfig.stats.length;
-      const center = stats.x + cellWidth * (i + 0.5);
-      if (i) {
-        ctx.fillStyle = theme.ink;
-        ctx.fillRect(stats.x + cellWidth * i - 2, stats.y, 4, stats.height);
+    const beat = Math.pow(Math.max(0, Math.sin(elapsed * Math.PI * 2 / (60 / 104))), 6);
+    ctx.save();
+    ctx.translate(title.x + title.width / 2, title.y + title.height / 2 - beat * 10);
+    ctx.scale(1 + beat * 0.10, 1 + beat * 0.14);
+    if (!drawHomeIcon(ctx, 'title', -title.width / 2, -title.height / 2, title.width, title.height)) {
+      text(ctx, homeConfig.title, 0, 0,
+        { size: 44, spacing: 4, color: theme.yellow, outline: 5 });
+    }
+    ctx.restore();
+    buttons.forEach((button) => {
+      const pressed = this.input.activeId === button.id;
+      if (button.art) {
+        const shift = pressed ? 4 : 0;
+        if (drawHomeIcon(ctx, button.art, button.x + shift, button.y + shift, button.width, button.height)) return;
+        drawButton(ctx, button, pressed);
+        return;
       }
-      text(ctx, stat.value, center, stats.y + 26, { size: 24, color: theme.yellow, outline: 1 });
-      text(ctx, stat.label, center, stats.y + 52, { size: 11, color: theme.white, spacing: 1 });
+      if (!button.icon) { drawButton(ctx, button, pressed); return; }
+      const shift = pressed ? 3 : 0;
+      ctx.save();
+      ctx.translate(shift, shift);
+      if (!drawHomeIcon(ctx, button.icon, button.x + 5, button.y, 64)) {
+        illustration(ctx, button.id === 'friends' ? 'star' : button.id === 'signin' ? 'done' : 'question',
+          button.x + 11, button.y + 4, 52);
+      }
+      text(ctx, button.label, button.x + button.width / 2, button.y + 73,
+        { size: button.fontSize, color: '#FFF4C7', outline: 3, font: getHomeFont() });
+      ctx.restore();
     });
+    const cardCount = this.controller ? this.controller.progress.state.cards : 0;
+    if (!drawHomeIcon(ctx, 'undoCard', cards.x + 5, cards.y, 64)) {
+      illustration(ctx, 'question', cards.x + 11, cards.y + 4, 52);
+    }
+    text(ctx, `撤销卡 ×${cardCount}`, cards.x + cards.width / 2, cards.y + 73,
+      { size: 14, color: '#FFF4C7', outline: 3, font: getHomeFont() });
   }
 
   handlePointer(type, point) { this.input.handle(type, point); }

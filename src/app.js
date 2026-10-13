@@ -6,12 +6,24 @@ import { LevelsPage } from './pages/levels/index.js';
 import { GamePage } from './pages/game/index.js';
 import { Modal } from './ui/modal.js';
 import { loadArt } from './ui/art.js';
+import { loadHomeIcons } from './ui/home-icons.js';
+import { loadHomeFont } from './ui/home-font.js';
 import { FriendsPage } from './pages/friends/index.js';
+
+const BG_MUSIC_URL = 'https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/music/bg.mp3?sign=389193686ab75c45471eed1d38bd3e4f&t=1791866058';
 
 export function createApp(platform, actions = {}) {
   const ctx = platform.canvas.getContext('2d');
   loadArt(ctx, platform);
+  loadHomeIcons(ctx, platform);
+  loadHomeFont(platform);
   const controller = new GameController(platform);
+  const bgMusic = platform.createAudio
+    ? platform.createAudio(BG_MUSIC_URL, { loop: true, volume: 0.5 })
+    : null;
+  // Try to autoplay immediately. If the browser blocks it (autoplay policy),
+  // we retry on the first user interaction.
+  const startBgMusic = () => { if (bgMusic) bgMusic.play(); };
   const dispatch = (id) => {
     if (actions[id]) actions[id](); else controller.handle(id);
     Object.values(pages).forEach((screen) => screen.pause());
@@ -96,6 +108,7 @@ export function createApp(platform, actions = {}) {
     if (controller.route === 'friends' && platform.friendBoard) {
       platform.friendBoard.send('show', { completed: controller.progress.completedLevels });
     }
+    startBgMusic();
     frameId = platform.requestFrame(tick);
   }
 
@@ -108,6 +121,7 @@ export function createApp(platform, actions = {}) {
     modal.pause();
     visibleBoard = null;
     if (platform.friendBoard) platform.friendBoard.send('pause');
+    if (bgMusic) bgMusic.pause();
   }
 
   return {
@@ -135,6 +149,7 @@ export function createApp(platform, actions = {}) {
       if (unsubscribe) unsubscribe();
       unsubscribe = null;
       started = false;
+      if (bgMusic) bgMusic.destroy();
     },
   };
 }

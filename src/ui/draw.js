@@ -32,9 +32,9 @@ export function panel(ctx, x, y, width, height, options = {}) {
 
 export function text(ctx, value, x, y, options = {}) {
   const { size = 16, color = theme.ink, weight = '900', outline = 0,
-    spacing = 0, align = 'center' } = options;
+    spacing = 0, align = 'center', font = theme.font } = options;
   ctx.save();
-  ctx.font = `${weight} ${size}px ${theme.font}`;
+  ctx.font = `${weight} ${size}px ${font}`;
   ctx.textBaseline = 'middle';
   ctx.textAlign = spacing ? 'left' : align;
   ctx.fillStyle = color;

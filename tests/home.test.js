@@ -4,7 +4,9 @@ import { createViewport, toLogicalPoint } from '../src/core/viewport.js';
 import { getHomeLayout } from '../src/pages/home/layout.js';
 import { ButtonInput } from '../src/ui/button.js';
 import { createApp } from '../src/app.js';
-import { normalizeWechatWindowInfo } from '../src/platform/wechat.js';
+import { createWechatPlatform, normalizeWechatWindowInfo } from '../src/platform/wechat.js';
+import { drawHomeBackground, drawHomeIcon, homeIconFileIDs, homeIconSources, loadHomeIcons } from '../src/ui/home-icons.js';
+import { HOME_FONT_FILE_ID, loadHomeFont } from '../src/ui/home-font.js';
 
 test('微信模拟器胶囊返回空对象时使用安全区域回退，所有绘制坐标保持有效', () => {
   // Captured from WeChat DevTools 2.02.2608080 / base library 3.17.4.
@@ -18,7 +20,7 @@ test('微信模拟器胶囊返回空对象时使用安全区域回退，所有�
     Object.values(viewport).forEach((value) => assert.ok(Number.isFinite(value)));
     const layout = getHomeLayout(viewport);
     assert.ok(layout.top * viewport.scale > 91);
-    assert.ok(layout.stats.y + layout.stats.height < layout.questionsY);
+    assert.ok(layout.cards.y + layout.cards.height < viewport.height - viewport.safeBottom);
   }
   assert.equal(normalizeWechatWindowInfo(info, { bottom: 83 }).safeTop, 83);
 });
@@ -39,15 +41,98 @@ test('首页在短屏、全面屏及横屏中不遮挡按钮，坐标转换不�
       const viewport = createViewport({ width, height, safeTop, safeBottom, pixelRatio });
       const layout = getHomeLayout(viewport);
       assert.ok(layout.top * viewport.scale >= safeTop);
-      assert.ok(layout.stats.y + layout.stats.height + 10 < layout.questionsY);
+      const bottom = viewport.height - viewport.safeBottom;
+      const groundTop = bottom - layout.groundHeight;
+      assert.ok(layout.title.y + layout.title.height < groundTop - 36);
+      const shortcuts = layout.buttons.filter(button => button.icon);
+      shortcuts.forEach(button => {
+        assert.ok(button.y > layout.title.y + layout.title.height);
+        assert.ok(button.y + button.height < groundTop - 36);
+      });
+      assert.equal(shortcuts[0].x, shortcuts[1].x);
+      assert.ok(shortcuts[2].x > 300);
+      assert.equal(layout.cards.x, shortcuts[2].x);
+      assert.ok(layout.cards.y + layout.cards.height < groundTop - 36);
+      const mainButtons = layout.buttons.filter(button => ['start', 'levels'].includes(button.id));
+      mainButtons.forEach(button => {
+        assert.ok(button.y > groundTop);
+        assert.ok(button.y + button.height < bottom);
+      });
+      assert.equal(mainButtons[1].y + mainButtons[1].height, bottom - 44);
       layout.buttons.forEach((button) => {
         const center = { id: 1, x: button.x + button.width / 2, y: button.y + button.height / 2 };
         const point = toLogicalPoint(viewport, { id: 1,
           x: center.x * viewport.scale + viewport.offsetX, y: center.y * viewport.scale });
         assert.ok(Math.abs(point.x - center.x) < 0.001 && Math.abs(point.y - center.y) < 0.001);
       });
+      assert.deepEqual(layout.buttons.filter(button => button.icon).map(button => button.id),
+        ['signin', 'friends', 'settings']);
     }
   }
+});
+
+test('首页功能图标独立加载，未完成前回退、完成后分别绘制', () => {
+  const calls = [];
+  const ctx = { drawImage: (...args) => calls.push(args) };
+  const images = [];
+  const platform = { createImage: () => {
+    const image = {};
+    images.push(image);
+    return image;
+  } };
+  loadHomeIcons(ctx, platform);
+  loadHomeIcons(ctx, platform);
+  assert.equal(images.length, 11);
+  assert.deepEqual(images.map(image => image.src), Object.values(homeIconSources));
+  assert.equal(drawHomeIcon(ctx, 'signin', 1, 2, 48), false);
+  images.forEach(image => image.onload());
+  assert.equal(drawHomeIcon(ctx, 'signin', 1, 2, 48), true);
+  assert.deepEqual(calls.at(-1), [images[1], 1, 2, 48, 48]);
+  assert.equal(drawHomeIcon(ctx, 'title', 3, 4, 120, 43), true);
+  assert.deepEqual(calls.at(-1), [images[3], 3, 4, 120, 43]);
+  assert.equal(drawHomeBackground(ctx, 0, 0, 414, 896), true);
+  assert.equal(calls.at(-1)[0], images[4]);
+  assert.deepEqual(calls.at(-1).slice(-4), [0, 0, 414, 896]);
+  assert.equal(drawHomeIcon(ctx, 'startButton', 32, 600, 350, 102), true);
+  assert.deepEqual(calls.at(-1), [images[5], 32, 600, 350, 102]);
+  assert.equal(drawHomeIcon(ctx, 'undoCard', 337, 300, 64), true);
+  assert.deepEqual(calls.at(-1), [images[7], 337, 300, 64, 64]);
+  assert.equal(drawHomeIcon(ctx, 'missing', 0, 0, 10), false);
+});
+
+test('微信平台通过 fileID 获取首页云端图片的签名地址', async () => {
+  let initOptions;
+  let requested;
+  const api = {
+    createCanvas: () => ({}),
+    createImage: () => ({}),
+    getOpenDataContext: () => null,
+    cloud: {
+      init: (options) => { initOptions = options; },
+      getTempFileURL({ fileList, success }) {
+        requested = fileList;
+        queueMicrotask(() => success({ fileList: fileList.map((fileID) => ({
+          tempFileURL: `https://signed.example/${fileID.split('/').at(-1)}?token=test`,
+        })) }));
+      },
+    },
+  };
+  const platform = createWechatPlatform(api);
+  assert.equal(initOptions.env, 'cloud1-d5gqpaioo2d8acf27');
+  const urls = await platform.resolveCloudFiles(homeIconFileIDs);
+  assert.deepEqual(requested, Object.values(homeIconFileIDs));
+  assert.equal(urls.background, 'https://signed.example/home-background-v2.png?token=test');
+});
+
+test('首页艺术字体通过 fileID 获取临时地址，平台不支持时安全回退', async () => {
+  let requested;
+  loadHomeFont({
+    loadFont(url) { requested = url; return 'loaded-font'; },
+    resolveCloudFiles: ({ homeFont }) => Promise.resolve({ homeFont: `signed:${homeFont}` }),
+  });
+  await Promise.resolve();
+  assert.equal(requested, `signed:${HOME_FONT_FILE_ID}`);
+  assert.ok(loadHomeFont({}));
 });
 
 test('按钮点击只触发一次，拖出、取消和其他手指不会误触', () => {

@@ -1,5 +1,29 @@
 import { createFriendBoard } from './friend-board.js';
 
+const CLOUD_ENV_ID = 'cloud1-d5gqpaioo2d8acf27';
+
+function resolveCloudFileURLs(cloud, fileIDs) {
+  return new Promise((resolve, reject) => {
+    cloud.getTempFileURL({
+      fileList: fileIDs,
+      success: ({ fileList = [] }) => {
+        const failed = fileIDs.flatMap((fileID, index) => {
+          const file = fileList[index];
+          if (file && file.tempFileURL) return [];
+          const detail = file && (file.errMsg || file.status);
+          return [`${fileID}: ${detail || 'no URL returned'}`];
+        });
+        if (failed.length) {
+          reject(new Error(`Cloud storage denied or could not resolve files:\n${failed.join('\n')}`));
+          return;
+        }
+        resolve(fileList.map((file) => file.tempFileURL));
+      },
+      fail: reject,
+    });
+  });
+}
+
 // The simulator can return {} for the menu capsule. Never pass undefined into layout math.
 export function normalizeWechatWindowInfo(info, capsule) {
   const validInset = (value, max) => Number.isFinite(value) && value >= 0 && value < max;
@@ -24,10 +48,37 @@ export function normalizeWechatWindowInfo(info, capsule) {
 // wx stays at the platform boundary. Pages never depend on a global wx object.
 export function createWechatPlatform(api) {
   const canvas = api.createCanvas();
+  if (api.cloud && typeof api.cloud.init === 'function') {
+    api.cloud.init({ env: CLOUD_ENV_ID });
+  }
   return {
     canvas,
     friendBoard: createFriendBoard(api),
     createImage: () => api.createImage(),
+    resolveCloudFiles(fileIDs) {
+      if (!api.cloud || typeof api.cloud.getTempFileURL !== 'function') {
+        return Promise.reject(new Error('wx.cloud.getTempFileURL is unavailable'));
+      }
+      const entries = Object.entries(fileIDs);
+      return resolveCloudFileURLs(api.cloud, entries.map(([, fileID]) => fileID))
+        .then((urls) => Object.fromEntries(entries.map(([name], index) => [name, urls[index]])));
+    },
+    loadFont: (url) => typeof api.loadFont === 'function' ? api.loadFont(url) : null,
+    createAudio(src, { loop = false, volume = 1 } = {}) {
+      const audio = api.createInnerAudioContext ? api.createInnerAudioContext() : null;
+      if (!audio) return { play() {}, pause() {}, stop() {}, destroy() {}, setVolume() {} };
+      audio.src = src;
+      audio.loop = loop;
+      audio.volume = volume;
+      audio.autoplay = false;
+      return {
+        play: () => audio.play(),
+        pause: () => audio.pause(),
+        stop: () => audio.stop(),
+        destroy: () => audio.destroy && audio.destroy(),
+        setVolume: (v) => { audio.volume = v; },
+      };
+    },
     now: () => Date.now(),
     wallNow: () => Date.now(),
     readStorage: (key) => api.getStorageSync(key),
