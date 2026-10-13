@@ -23,7 +23,7 @@ export class HomePage {
 
   render(ctx, elapsed) {
     const { width, height } = this.viewport;
-    const { buttons, cards, title } = this.layout;
+    const { buttons, title } = this.layout;
     if (!drawHomeBackground(ctx, 0, 0, width, height)) {
       ctx.fillStyle = theme.sky;
       ctx.fillRect(0, 0, width, height);
@@ -63,20 +63,28 @@ export class HomePage {
       const shift = pressed ? 3 : 0;
       ctx.save();
       ctx.translate(shift, shift);
+      ctx.save();
+      if (button.id === 'signin' && !pressed) {
+        const floatY = Math.sin(elapsed * Math.PI * 2 / 2.2) * 2;
+        const pop = Math.pow(Math.max(0, Math.sin(elapsed * Math.PI * 2 / 2.8)), 10);
+        const scale = 1 + pop * 0.07;
+        const centerX = button.x + 37;
+        const centerY = button.y + 32;
+        ctx.translate(centerX, centerY + floatY);
+        ctx.scale(scale, scale);
+        ctx.translate(-centerX, -centerY);
+        ctx.shadowColor = `rgba(255, 224, 76, ${0.32 + pop * 0.42})`;
+        ctx.shadowBlur = 5 + pop * 9;
+      }
       if (!drawHomeIcon(ctx, button.icon, button.x + 5, button.y, 64)) {
         illustration(ctx, button.id === 'friends' ? 'star' : button.id === 'signin' ? 'done' : 'question',
           button.x + 11, button.y + 4, 52);
       }
-      text(ctx, button.label, button.x + button.width / 2, button.y + 73,
+      ctx.restore();
+      text(ctx, button.label, button.x + button.width / 2, button.y + 61,
         { size: button.fontSize, color: '#FFF4C7', outline: 3, font: getHomeFont() });
       ctx.restore();
     });
-    const cardCount = this.controller ? this.controller.progress.state.cards : 0;
-    if (!drawHomeIcon(ctx, 'undoCard', cards.x + 5, cards.y, 64)) {
-      illustration(ctx, 'question', cards.x + 11, cards.y + 4, 52);
-    }
-    text(ctx, `撤销卡 ×${cardCount}`, cards.x + cards.width / 2, cards.y + 73,
-      { size: 14, color: '#FFF4C7', outline: 3, font: getHomeFont() });
   }
 
   handlePointer(type, point) { this.input.handle(type, point); }

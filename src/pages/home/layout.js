@@ -4,8 +4,7 @@ export function getHomeLayout(viewport) {
   const top = Math.max(48, viewport.safeTop + 16);
   const bottom = viewport.height - viewport.safeBottom;
   const shortcutWidth = 74;
-  // Lift the character strip into the previously empty middle of the screen.
-  // The floor remains deep enough for the CTA stack on every supported viewport.
+  // Keep secondary actions at the edges so the animated scene stays unobstructed.
   const groundHeight = Math.max(312, Math.min(350, bottom * 0.4));
   return {
     top,
@@ -17,9 +16,8 @@ export function getHomeLayout(viewport) {
       width: index === 0 ? 370 : 306,
       height: index === 0 ? 112 : 78,
     })), ...homeConfig.shortcuts.map((shortcut, index) => ({ ...shortcut,
-      x: index < 2 ? 8 : 332, y: top + (index === 1 ? 238 : 148),
+      x: [8, 8, 332][index], y: top + [148, 238, 148][index],
       width: shortcutWidth, height: 88, fontSize: 14,
     }))],
-    cards: { x: 332, y: top + 238, width: shortcutWidth, height: 88 },
   };
 }

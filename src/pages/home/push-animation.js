@@ -1,5 +1,6 @@
 import { circle, line, panel } from '../../ui/draw.js';
 import { drawHomeRegion } from '../../ui/home-icons.js';
+import { PUSH_MASKS } from './push-masks.js';
 
 // The sheet is not evenly spaced: anchor each pose by its palm and sole.
 const POSES = [[4, 150], [147, 282], [287, 413], [406, 545],
@@ -37,17 +38,13 @@ function drawPushGroup(ctx, x, baseline, elapsed, scale) {
   const frame = Math.floor(elapsed * 8) % 8;
   const characterHeight = 88;
   const unit = characterHeight / 180;
-  const [poseLeft, poseRight] = POSES[frame];
-  const left = poseLeft - 2;
-  const right = poseRight + 2;
+  const [, poseRight] = POSES[frame];
+  const mask = PUSH_MASKS[frame];
+  const left = Math.min(...mask.map(band => band[2]));
+  const right = Math.max(...mask.map(band => band[3]));
   const characterWidth = (right - left) * unit;
   const crateX = 70;
   const characterX = crateX - (poseRight - left) * unit + 1;
-  const characterRight = characterX + characterWidth;
-  const previousRight = frame > 0 ? POSES[frame - 1][1] : left;
-  const nextLeft = frame < POSES.length - 1 ? POSES[frame + 1][0] : right;
-  const handInset = Math.max(0, previousRight - left + (frame > 0 ? 1 : 0)) * unit;
-  const heelInset = Math.max(0, right - nextLeft + (frame < 7 ? 1 : 0)) * unit;
   ctx.fillStyle = 'rgba(65, 38, 12, 0.18)';
   for (const [cx, rx] of [[characterWidth / 2, 27], [crateX + 32, 32]]) {
     ctx.beginPath();
@@ -55,23 +52,16 @@ function drawPushGroup(ctx, x, baseline, elapsed, scale) {
     ctx.fill();
   }
   ctx.save();
-  // Only mask the neighboring hand at arm height. A fixed inset running all
-  // the way to the top cuts the hair off the narrower walking poses.
+  // Use the measured silhouette, not a rectangular crop or guessed insets:
+  // neighboring poses overlap in x at different heights throughout the sheet.
   ctx.beginPath();
-  ctx.moveTo(characterX, -characterHeight - 2 * unit);
-  ctx.lineTo(characterRight, -characterHeight - 2 * unit);
-  ctx.lineTo(characterRight, -26);
-  ctx.lineTo(characterRight - heelInset, -26);
-  ctx.lineTo(characterRight - heelInset, 2 * unit);
-  ctx.lineTo(characterX, 2 * unit);
-  ctx.lineTo(characterX, -26);
-  ctx.lineTo(characterX + handInset, -26);
-  ctx.lineTo(characterX + handInset, -56);
-  ctx.lineTo(characterX, -56);
-  ctx.closePath();
+  for (const [y, height, start, end] of mask) {
+    ctx.rect(characterX + (start - left) * unit, (y - 270) * unit,
+      (end - start) * unit, height * unit);
+  }
   ctx.clip();
-  const drawn = drawHomeRegion(ctx, 'pushCharacterCycle', [left, 88, right - left, 184],
-    characterX, -characterHeight - 2 * unit, characterWidth, 184 * unit);
+  const drawn = drawHomeRegion(ctx, 'pushCharacterCycle', [left, 87, right - left, 186],
+    characterX, -characterHeight - 3 * unit, characterWidth, 186 * unit);
   ctx.restore();
   if (!drawn) {
     drawFallbackCharacter(ctx, 0, -88, 88);

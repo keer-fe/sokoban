@@ -20,7 +20,6 @@ test('微信模拟器胶囊返回空对象时使用安全区域回退，所有�
     Object.values(viewport).forEach((value) => assert.ok(Number.isFinite(value)));
     const layout = getHomeLayout(viewport);
     assert.ok(layout.top * viewport.scale > 91);
-    assert.ok(layout.cards.y + layout.cards.height < viewport.height - viewport.safeBottom);
   }
   assert.equal(normalizeWechatWindowInfo(info, { bottom: 83 }).safeTop, 83);
 });
@@ -49,10 +48,9 @@ test('首页在短屏、全面屏及横屏中不遮挡按钮，坐标转换不�
         assert.ok(button.y > layout.title.y + layout.title.height);
         assert.ok(button.y + button.height < groundTop - 36);
       });
-      assert.equal(shortcuts[0].x, shortcuts[1].x);
-      assert.ok(shortcuts[2].x > 300);
-      assert.equal(layout.cards.x, shortcuts[2].x);
-      assert.ok(layout.cards.y + layout.cards.height < groundTop - 36);
+      assert.deepEqual(shortcuts.map(button => button.x), [8, 8, 332]);
+      assert.deepEqual(shortcuts.map(button => button.y),
+        [layout.top + 148, layout.top + 238, layout.top + 148]);
       const mainButtons = layout.buttons.filter(button => ['start', 'levels'].includes(button.id));
       mainButtons.forEach(button => {
         assert.ok(button.y > groundTop);
