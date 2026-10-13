@@ -98,7 +98,7 @@ test('连续通关时串行写入最高目标，新账号也可登记零关', as
   assert.deepEqual(writes, [0, 3]);
 });
 
-test('只有成功保存的连续进度进入好友同步，通关不被同步失败阻断', () => {
+test('成功保存后同步已通关数量，重排后的非连续成绩也计入数量', () => {
   const messages = [];
   const c = new GameController({ readStorage: () => null, writeStorage: () => {},
     friendBoard: { send: (type, data) => messages.push({ type, ...data }) } }, levels);
@@ -111,7 +111,7 @@ test('只有成功保存的连续进度进入好友同步，通关不被同步�
   c.handle('friends:next');
   assert.equal(messages.at(-1).type, 'next');
   c.progress.state.records[levels[4].id] = { stars: 3, bestSteps: 10 };
-  assert.equal(c.progress.completedLevels, 1);
+  assert.equal(c.progress.completedLevels, 2);
 });
 
 test('平台缺少开放数据域或消息失败时回退，好友页适配安全区', () => {

@@ -54,7 +54,7 @@ export class HomePage {
       { fill: theme.brick, lineWidth: 4, radius: 8, shadow: theme.ink });
     const statsData = this.controller ? [
       { value: this.controller.levels.length, label: '关卡' },
-      { value: Object.keys(this.controller.progress.state.records).length, label: '已通关' },
+      { value: this.controller.progress.completedLevels, label: '已通关' },
       { value: this.controller.progress.state.cards, label: '撤销卡' },
     ] : homeConfig.stats;
     statsData.forEach((stat, i) => {

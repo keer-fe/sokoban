@@ -1,19 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { levels, difficulties } from '../src/game/levels.js';
+import { levels } from '../src/game/levels.js';
 import { GameSession, parseLevel } from '../src/game/engine.js';
 import { GameController } from '../src/game/controller.js';
 import { solve as bfsSolve } from '../tools/solve-levels.js';
 import { LevelsPage } from '../src/pages/levels/index.js';
 import { createViewport } from '../src/core/viewport.js';
 
-test('100 关逐格匹配原始地图，保留空洞、目标上的人物与箱子', () => {
+test('开放地图保留原始内容和稳定 ID，教学关独立编号', () => {
   const source = JSON.parse(readFileSync(new URL('../docs/levels-original.json', import.meta.url))).levels;
   const tiles = ['_', '#', ' ', '.', '$', '*', '@', '+'];
-  assert.equal(levels.length, 100);
-  levels.forEach((level, index) => {
-    assert.equal(level.sourceNumber, index + 1);
+  assert.equal(levels.length, 106);
+  assert.deepEqual(levels.slice(6).map(level => level.sourceNumber), Array.from({ length: 100 }, (_, i) => i + 1));
+  assert.equal(new Set(levels.map(level => level.id)).size, levels.length);
+  levels.filter(level => level.sourceNumber).forEach(level => {
+    const index = level.sourceNumber - 1;
+    assert.equal(level.id, `selfboot-${level.sourceNumber}`);
     assert.deepEqual(level.rows, source[index].map(row => row.map(cell => tiles[cell]).join('')));
     const board = parseLevel(level);
     source[index].flat().forEach((cell, pos) => {
@@ -37,23 +40,42 @@ test('已标定的最少步数可求解并逐步通关', () => {
   });
 });
 
-test('选关分页覆盖全部 100 关，返回选关保留当前关所在页', () => {
+test('统一分页覆盖所有开放关卡，返回选关保留当前关所在页', () => {
   const c = new GameController({ readStorage: () => null });
   const page = new LevelsPage(c, () => {});
   const ids = [];
-  difficulties.forEach(group => {
-    c.handle(`filter:${group}`);
-    for (let i = 0; i < Math.ceil(c.levels.filter(level => level.difficulty === group).length / 12); i++) {
-      page.resize(createViewport({ width: 320, height: 568 }));
-      ids.push(...page.entries.map(entry => entry.index));
-      c.handle('following');
-    }
-  });
-  assert.deepEqual(ids, Array.from({ length: 100 }, (_, i) => i));
-  c.levelIndex = 99;
+  for (let i = 0; i < Math.ceil(c.levels.length / 12); i++) {
+    page.resize(createViewport({ width: 320, height: 568 }));
+    ids.push(...page.entries.map(entry => entry.index));
+    assert.ok(page.buttons.every(button => !button.id.startsWith('filter:')));
+    c.handle('following');
+  }
+  assert.deepEqual(ids, Array.from({ length: levels.length }, (_, i) => i));
+  assert.equal(c.listPage, 8);
+  c.levelIndex = levels.length - 1;
   c.navigate('levels');
-  assert.equal(c.filter, difficulties[2]);
-  assert.equal(c.listPage, 3);
+  assert.equal(c.listPage, 8);
+});
+
+test('前六个教学关逐步增加步数', () => {
+  assert.deepEqual(levels.slice(0, 6).map(level => level.minSteps), [1, 3, 3, 4, 5, 8]);
+  assert.ok(levels.slice(0, 6).every(level => level.difficulty === '简单'));
+});
+
+test('旧存档在重排和缩减目录后保留成绩、已开放地图及未发布地图记录', () => {
+  let saved = { records: Object.fromEntries(Array.from({ length: 21 }, (_, i) =>
+    [`selfboot-${i + 1}`, { bestSteps: 120, stars: 2 }])) };
+  const platform = { readStorage: () => saved, writeStorage: (_, value) => { saved = value; } };
+  const c = new GameController(platform);
+  levels.forEach((level, index) => {
+    if (level.sourceNumber <= 22) assert.equal(c.progress.isUnlocked(index), true);
+  });
+  assert.equal(c.progress.completedLevels, levels.filter(level => level.sourceNumber <= 21).length);
+  c.progress.finish(levels[0], 1, 3);
+  const restored = new GameController(platform);
+  assert.deepEqual(restored.progress.state.records['selfboot-6'], { bestSteps: 120, stars: 2 });
+  assert.equal(restored.progress.isUnlocked(0), true);
+  assert.equal(restored.progress.isUnlocked(1), true);
 });
 
 test('未标定星级的地图正常计步、保存和解锁', () => {

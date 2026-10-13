@@ -9,7 +9,6 @@ export class GameController {
     this.progress = new ProgressStore(platform, catalog);
     this.route = 'home';
     this.modal = null;
-    this.filter = catalog[0].difficulty;
     this.listPage = 0;
     this.levelIndex = 0;
     this.game = null;
@@ -22,7 +21,7 @@ export class GameController {
   }
   openLevel(index) {
     if (!Number.isInteger(index) || index < 0 || index >= this.levels.length) return;
-    if (index > this.progress.unlocked) { this.platform.notify('先完成前面的关卡吧'); return; }
+    if (!this.progress.isUnlocked(index)) { this.platform.notify('先完成前面的关卡吧'); return; }
     this.levelIndex = index;
     this.game = new GameSession(this.levels[index]);
     this.route = 'game';
@@ -34,10 +33,7 @@ export class GameController {
     this.route = route;
     this.modal = null;
     if (route === 'levels') {
-      this.filter = this.levels[this.levelIndex].difficulty;
-      const indexInGroup = this.levels.filter((level) => level.difficulty === this.filter)
-        .findIndex((level) => level.id === this.levels[this.levelIndex].id);
-      this.listPage = Math.floor(Math.max(0, indexInGroup) / 12);
+      this.listPage = Math.floor(this.levelIndex / 12);
     }
   }
   handle(action) {
@@ -58,9 +54,8 @@ export class GameController {
     }
     if (action === 'signin') { this.modal = 'signin'; return; }
     if (action.startsWith('level:')) { this.openLevel(Number(action.split(':')[1])); return; }
-    if (action.startsWith('filter:')) { this.filter = action.slice(7); this.listPage = 0; return; }
     if (action === 'previous' || action === 'following') {
-      const count = this.levels.filter((level) => level.difficulty === this.filter).length;
+      const count = this.levels.length;
       this.listPage = Math.max(0, Math.min(Math.ceil(count / 12) - 1, this.listPage + (action === 'following' ? 1 : -1)));
       return;
     }
