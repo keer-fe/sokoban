@@ -64,7 +64,7 @@ const app = createApp({
     toast.textContent = message;
     toastTimer = setTimeout(() => { toast.textContent = ''; }, 1800);
   },
-  subscribe({ pointer, show, hide, resize, key }) {
+  subscribe({ pointer, wheel, show, hide, resize, key }) {
     const events = { pointerdown: 'start', pointermove: 'move', pointerup: 'end', pointercancel: 'cancel' };
     const handlers = Object.entries(events).map(([event, type]) => {
       const handler = (e) => {
@@ -75,6 +75,11 @@ const app = createApp({
       return [event, handler];
     });
     const visibility = () => document.hidden ? hide() : show();
+    const onWheel = (event) => {
+      event.preventDefault();
+      wheel(event.deltaY, { x: event.clientX, y: event.clientY });
+    };
+    canvas.addEventListener('wheel', onWheel, { passive: false });
     const keyboard = (event) => {
       const action = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', u: 'undo', Escape: 'menu' }[event.key];
       if (action) { event.preventDefault(); if (!event.repeat) key(action); }
@@ -84,6 +89,7 @@ const app = createApp({
     window.addEventListener('resize', resize);
     return () => {
       handlers.forEach(([event, handler]) => canvas.removeEventListener(event, handler));
+      canvas.removeEventListener('wheel', onWheel);
       document.removeEventListener('visibilitychange', visibility);
       window.removeEventListener('resize', resize);
       window.removeEventListener('keydown', keyboard);

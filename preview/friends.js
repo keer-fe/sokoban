@@ -16,6 +16,8 @@ export function createDemoFriends(mode) {
   const board = createOpenDataBoard({
     getSharedCanvas: () => canvas,
     createImage: () => new Image(),
+    getUserInfo: options => reply(options, { data: [{ openId: 'demo-00',
+      nickName: names[0], avatarUrl: '' }] }),
     getUserCloudStorage: options => reply(options, { KVDataList: own }, mode === 'offline'),
     setUserCloudStorage: options => { own = options.KVDataList; reply(options, {}); },
     getFriendCloudStorage: options => reply(options, { data: mode === 'empty' ? [] : rows }, ['error', 'offline'].includes(mode)),

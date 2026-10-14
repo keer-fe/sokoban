@@ -6,22 +6,16 @@ import { PUSH_MASKS } from './push-masks.js';
 const POSES = [[4, 150], [147, 282], [287, 413], [406, 545],
   [539, 676], [679, 812], [816, 945], [940, 1081]];
 
-// The new character and crate travel as one group across the wooden floor.
+// Keep the character centered while the floor moves beneath its feet.
 export function drawPushAnimation(ctx, width, baseline, elapsed) {
   const groupWidth = 136;
-  const speed = 32;
-  const start = -groupWidth - 24;
-  const distance = width + groupWidth + 48;
-  const duration = distance / speed;
-  const time = elapsed % (duration + 0.7);
-  if (time > duration) return;
-
-  const x = start + time * speed;
+  // Leave room for the shortcut icons on both sides of the central scene.
+  const scale = Math.max(1, Math.min(1.7, (width - 180) / groupWidth));
   ctx.save();
   ctx.beginPath();
-  ctx.rect(0, baseline - 96, width, 108);
+  ctx.rect(0, baseline - 96 * scale, width, 176 * scale);
   ctx.clip();
-  drawPushGroup(ctx, x, baseline, time, 1);
+  drawPushGroup(ctx, (width - groupWidth * scale) / 2, baseline, elapsed, scale);
   ctx.restore();
 }
 

@@ -37,15 +37,16 @@ export function createApp(platform, actions = {}) {
     if (actions[id]) actions[id](); else controller.handle(id);
     Object.values(pages).forEach((screen) => screen.pause());
     modal.pause();
+    friendsDialog.pause();
     refreshLayout();
   };
   const pages = {
     home: new HomePage({ onAction: dispatch, controller }),
     levels: new LevelsPage(controller, dispatch),
     game: new GamePage(controller, dispatch),
-    friends: new FriendsPage(controller, dispatch),
   };
   const modal = new Modal(controller, dispatch);
+  const friendsDialog = new FriendsPage(controller, dispatch);
   let viewport;
   let running = false;
   let started = false;
@@ -53,20 +54,38 @@ export function createApp(platform, actions = {}) {
   let unsubscribe = null;
   let elapsed = 0;
   let previousTime = 0;
-  let visibleRoute = null;
+  let friendsVisible = false;
   let visibleBoard = null;
+
+  function syncGameClubButton() {
+    if (!platform.gameClubButton || !viewport) return;
+    const visible = running && !loading && controller.route === 'home' && !controller.modal;
+    if (!visible) {
+      platform.gameClubButton.hide();
+      return;
+    }
+    const bounds = pages.home.getGameClubButtonBounds();
+    if (!bounds) return;
+    platform.gameClubButton.update({
+      left: viewport.offsetX + bounds.x * viewport.scale,
+      top: bounds.y * viewport.scale,
+      width: bounds.width * viewport.scale,
+      height: bounds.height * viewport.scale,
+    });
+    platform.gameClubButton.show();
+  }
 
   function refreshLayout() {
     if (!viewport) return;
     pages[controller.route].resize(viewport);
-    if (visibleRoute !== controller.route) {
-      if (platform.friendBoard) {
-        if (visibleRoute === 'friends') platform.friendBoard.send('hide');
-        if (controller.route === 'friends') platform.friendBoard.send('show', { completed: controller.progress.completedLevels });
-      }
-      visibleRoute = controller.route;
+    if (controller.modal === 'friends') friendsDialog.resize(viewport);
+    else if (controller.modal) modal.resize(viewport);
+    const showFriends = controller.modal === 'friends';
+    if (platform.friendBoard && showFriends !== friendsVisible) {
+      platform.friendBoard.send(showFriends ? 'show' : 'hide', showFriends
+        ? { completed: controller.progress.completedLevels } : {});
     }
-    if (controller.modal) modal.resize(viewport);
+    friendsVisible = showFriends;
     const board = controller.modal === 'win' ? `level:${controller.game.level.id}` : null;
     if (platform.friendBoard) {
       if (board) {
@@ -75,9 +94,10 @@ export function createApp(platform, actions = {}) {
           levelId: controller.game.level.id,
           steps: controller.progress.state.records[controller.game.level.id]?.bestSteps,
         });
-      } else if (visibleBoard && controller.route !== 'friends') platform.friendBoard.send('hide');
+      } else if (visibleBoard && !showFriends) platform.friendBoard.send('hide');
     }
     visibleBoard = board;
+    syncGameClubButton();
   }
 
   function resize() {
@@ -89,6 +109,7 @@ export function createApp(platform, actions = {}) {
   }
 
   function render() {
+    syncGameClubButton();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = theme.sky;
     ctx.fillRect(0, 0, platform.canvas.width, platform.canvas.height);
@@ -99,7 +120,8 @@ export function createApp(platform, actions = {}) {
       return;
     }
     pages[controller.route].render(ctx, elapsed);
-    if (controller.modal) modal.render(ctx, elapsed);
+    if (controller.modal === 'friends') friendsDialog.render(ctx, elapsed);
+    else if (controller.modal) modal.render(ctx, elapsed);
   }
 
   function tick() {
@@ -118,9 +140,6 @@ export function createApp(platform, actions = {}) {
     previousTime = platform.now();
     resize();
     controller.syncFriends();
-    if (controller.route === 'friends' && platform.friendBoard) {
-      platform.friendBoard.send('show', { completed: controller.progress.completedLevels });
-    }
     startBgMusic();
     frameId = platform.requestFrame(tick);
   }
@@ -132,8 +151,11 @@ export function createApp(platform, actions = {}) {
     frameId = null;
     Object.values(pages).forEach((page) => page.pause());
     modal.pause();
+    friendsDialog.pause();
+    friendsVisible = false;
     visibleBoard = null;
     if (platform.friendBoard) platform.friendBoard.send('pause');
+    if (platform.gameClubButton) platform.gameClubButton.hide();
     if (bgMusic) bgMusic.pause();
   }
 
@@ -144,7 +166,14 @@ export function createApp(platform, actions = {}) {
       unsubscribe = platform.subscribe({
         pointer(type, point) {
           if (running && !loading) {
-            (controller.modal ? modal : pages[controller.route]).handlePointer(type, toLogicalPoint(viewport, point));
+            (controller.modal === 'friends' ? friendsDialog : controller.modal
+              ? modal : pages[controller.route]).handlePointer(type, toLogicalPoint(viewport, point));
+            render();
+          }
+        },
+        wheel(deltaY, point) {
+          if (running && !loading && controller.modal === 'friends') {
+            friendsDialog.handleWheel(deltaY, toLogicalPoint(viewport, point));
             render();
           }
         },
@@ -162,6 +191,7 @@ export function createApp(platform, actions = {}) {
       if (unsubscribe) unsubscribe();
       unsubscribe = null;
       started = false;
+      if (platform.gameClubButton) platform.gameClubButton.destroy();
       if (bgMusic) bgMusic.destroy();
     },
   };

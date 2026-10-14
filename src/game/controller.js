@@ -9,6 +9,7 @@ export class GameController {
     this.progress = new ProgressStore(platform, catalog);
     this.route = 'home';
     this.modal = null;
+    this.friendsTab = 'friends';
     this.listPage = 0;
     this.levelIndex = 0;
     this.game = null;
@@ -83,11 +84,8 @@ export class GameController {
     if (this.modal) { this.handleModal(action); return; }
     if (action === 'home') { this.navigate('home'); return; }
     if (action === 'levels') { this.navigate('levels'); return; }
-    if (action === 'friends') { this.navigate('friends'); return; }
+    if (action === 'friends') { this.friendsTab = 'friends'; this.modal = 'friends'; return; }
     if (action.startsWith('friends:')) {
-      if (this.route === 'friends' && this.platform.friendBoard) {
-        this.platform.friendBoard.send(action.slice(8), { completed: this.progress.completedLevels });
-      }
       return;
     }
     if (action === 'start') {
@@ -127,7 +125,13 @@ export class GameController {
   }
   handleModal(action) {
     if (action === 'close' && this.modal !== 'win') { this.modal = null; return; }
-    if (this.modal === 'tutorial' && (action === 'understood' || action === 'skip')) {
+    if (this.modal === 'friends' && (action === 'friends:tab-friends' || action === 'friends:tab-world')) {
+      this.friendsTab = action === 'friends:tab-world' ? 'world' : 'friends';
+    } else if (this.modal === 'friends' && action === 'friends:refresh' && this.friendsTab === 'friends') {
+      if (this.platform.friendBoard) this.platform.friendBoard.send(action.slice(8), {
+        completed: this.progress.completedLevels,
+      });
+    } else if (this.modal === 'tutorial' && (action === 'understood' || action === 'skip')) {
       this.progress.finishTutorial(); this.modal = null;
     } else if (this.modal === 'deadlock') {
       if (action === 'restart') { this.game.restart(); this.modal = null; }

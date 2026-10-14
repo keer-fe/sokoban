@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PROGRESS_KEY, readProgress, rankFriends, ProgressSync } from '../open-data/model.js';
-import { createOpenDataBoard } from '../open-data/context.js';
+import { createOpenDataBoard, FRIENDS_LOADING_VIDEO_FILE_ID } from '../open-data/context.js';
 import { GameController } from '../src/game/controller.js';
-import { FriendsPage } from '../src/pages/friends/index.js';
+import { FriendsPage, friendsAssetFileIDs, friendsAssetSources, refreshIconSource } from '../src/pages/friends/index.js';
 import { createViewport } from '../src/core/viewport.js';
 import { createFriendBoard } from '../src/platform/friend-board.js';
 import { levels } from './fixtures/levels.js';
@@ -107,9 +107,17 @@ test('成功保存后同步已通关数量，重排后的非连续成绩也计�
   assert.equal(c.modal, 'win');
   assert.deepEqual(messages.at(-1), { type: 'sync', completed: 1 });
   c.handle('home'); c.handle('friends');
-  assert.equal(c.route, 'friends');
-  c.handle('friends:next');
-  assert.equal(messages.at(-1).type, 'next');
+  assert.equal(c.route, 'home');
+  assert.equal(c.modal, 'friends');
+  c.handle('friends:tab-world');
+  assert.equal(c.friendsTab, 'world');
+  c.handle('friends:tab-friends');
+  assert.equal(c.friendsTab, 'friends');
+  c.handle('friends:refresh');
+  assert.equal(messages.at(-1).type, 'refresh');
+  c.handle('close');
+  assert.equal(c.modal, null);
+  assert.equal(c.route, 'home');
   c.progress.state.records[levels[4].id] = { stars: 3, bestSteps: 10 };
   assert.equal(c.progress.completedLevels, 2);
 });
@@ -126,12 +134,221 @@ test('平台缺少开放数据域或消息失败时回退，好友页适配安�
     page.resize(viewport);
     page.buttons.forEach(button => assert.ok(button.y + button.height < viewport.height - viewport.safeBottom));
     assert.ok(page.bounds.height >= 430);
+    assert.deepEqual(page.buttons.map(button => button.id),
+      ['close', 'friends:tab-friends', 'friends:tab-world', 'friends:refresh']);
+    assert.ok(page.bounds.y > page.frame.y);
+    assert.ok(page.bounds.y + page.bounds.height < page.frame.y + page.frame.height);
+    page.buttons.forEach(button => {
+      assert.ok(button.x >= page.frame.x && button.x + button.width <= page.frame.x + page.frame.width);
+      assert.ok(button.y >= page.frame.y && button.y + button.height <= page.frame.y + page.frame.height);
+    });
   }
 });
 
-test('开放数据域绘制加载、空榜、错误、分页和并列；隐藏后不再绘制', async () => {
+test('好友榜拖动和滚轮按像素连续滚动，不再发送翻页动作', () => {
+  const messages = [];
+  const controller = new GameController({ readStorage: () => null,
+    friendBoard: { send: (type, data) => messages.push({ type, ...data }) } }, levels);
+  const page = new FriendsPage(controller, () => {});
+  page.resize(createViewport({ width: 390, height: 844, safeTop: 91, safeBottom: 34 }));
+  const center = { id: 1, x: page.bounds.x + page.bounds.width / 2,
+    y: page.bounds.y + page.bounds.height / 2 };
+  page.handlePointer('start', center);
+  page.handlePointer('move', { ...center, y: center.y - 18 });
+  page.handlePointer('move', { ...center, y: center.y - 32 });
+  page.handlePointer('end', { ...center, y: center.y - 32 });
+  assert.deepEqual(messages.slice(1), [{ type: 'scroll', delta: 18 }, { type: 'scroll', delta: 14 }]);
+  page.handleWheel(80, center);
+  assert.deepEqual(messages.at(-1), { type: 'scroll', delta: 80 });
+  page.handleWheel(-80, { x: 0, y: 0 });
+  assert.deepEqual(messages.at(-1), { type: 'scroll', delta: 80 });
+  controller.friendsTab = 'world';
+  page.handleWheel(80, center);
+  assert.deepEqual(messages.at(-1), { type: 'scroll', delta: 80 });
+});
+
+test('世界榜显示开发中，并将关闭按钮放在弹窗右上角', () => {
   const labels = [];
-  const ctx = new Proxy({ fillText: value => labels.push(value), measureText: value => ({ width: value.length * 8 }) },
+  const titleLetters = [];
+  const ctx = new Proxy({ fillText(value, x, y) {
+    labels.push(value);
+    if (['排', '行', '榜'].includes(value)) titleLetters.push({ value, y });
+  },
+    measureText: value => ({ width: String(value).length * 8 }) },
+    { get: (target, key) => key in target ? target[key] : () => {} });
+  const controller = new GameController({ readStorage: () => null }, levels);
+  controller.friendsTab = 'world';
+  const page = new FriendsPage(controller, () => {});
+  page.resize(createViewport({ width: 390, height: 844, safeTop: 91, safeBottom: 34 }));
+  page.render(ctx);
+  assert.ok(labels.includes('正在开发中'));
+  assert.deepEqual(titleLetters.map(({ y }) => y), [page.frame.y + 65, page.frame.y + 65, page.frame.y + 65]);
+  assert.equal(page.buttons.some(button => button.id === 'friends:refresh'), false);
+  const close = page.buttons.find(button => button.id === 'close');
+  assert.ok(close.x > page.frame.x + page.frame.width / 2);
+  assert.ok(close.y < page.bounds.y);
+});
+
+test('好友榜与世界榜使用独立按钮，不再绘制连接区', () => {
+  const fills = [];
+  const ctx = new Proxy({ fillRect: (...args) => fills.push(args),
+    measureText: value => ({ width: String(value).length * 8 }) },
+    { get: (target, key) => key in target ? target[key] : () => {} });
+  const controller = new GameController({ readStorage: () => null }, levels);
+  const page = new FriendsPage(controller, () => {});
+  const viewport = createViewport({ width: 390, height: 844, safeTop: 91, safeBottom: 34 });
+  const seam = button => [button.x + 3, button.y + button.height - 4, button.width - 6, 10];
+  const hasSeam = button => fills.some(fill => JSON.stringify(fill) === JSON.stringify(seam(button)));
+  page.resize(viewport);
+  page.render(ctx);
+  const friend = page.buttons.find(button => button.id === 'friends:tab-friends');
+  const world = page.buttons.find(button => button.id === 'friends:tab-world');
+  assert.equal(hasSeam(friend), false);
+  assert.equal(hasSeam(world), false);
+  controller.friendsTab = 'world';
+  page.resize(viewport);
+  fills.length = 0;
+  page.render(ctx);
+  assert.equal(hasSeam(world), false);
+  assert.equal(hasSeam(friend), false);
+});
+
+test('好友榜刷新按钮使用本地图标，加载失败时保留文字回退', () => {
+  const images = [];
+  const drawn = [];
+  const ctx = new Proxy({ drawImage: (...args) => drawn.push(args),
+    measureText: value => ({ width: String(value).length * 8 }) },
+    { get: (target, key) => key in target ? target[key] : () => {} });
+  const controller = new GameController({ readStorage: () => null,
+    createImage: () => { const image = {}; images.push(image); return image; } }, levels);
+  const page = new FriendsPage(controller, () => {});
+  assert.deepEqual(images.map(image => image.src), Object.values(friendsAssetSources));
+  assert.equal(refreshIconSource, 'assets/ui/friends-refresh-v2.png');
+  const refreshImage = images[1];
+  page.resize(createViewport({ width: 390, height: 844, safeTop: 91, safeBottom: 34 }));
+  page.render(ctx);
+  assert.equal(page.buttons.find(button => button.id === 'friends:refresh').label, '刷新');
+  refreshImage.onload();
+  page.render(ctx);
+  assert.equal(page.buttons.find(button => button.id === 'friends:refresh').label, '');
+  assert.ok(drawn.some(([source]) => source === refreshImage));
+  refreshImage.onerror();
+  page.render(ctx);
+  assert.equal(page.buttons.find(button => button.id === 'friends:refresh').label, '刷新');
+});
+
+test('排行榜 UI 在微信中通过云文件 ID 获取签名地址', async () => {
+  const images = [];
+  let requested;
+  const controller = new GameController({
+    readStorage: () => null,
+    createImage() { const image = {}; images.push(image); return image; },
+    resolveCloudFiles(fileIDs) {
+      requested = fileIDs;
+      return Promise.resolve(Object.fromEntries(Object.keys(fileIDs)
+        .map(name => [name, `https://signed.example/${name}.png`])));
+    },
+  }, levels);
+  new FriendsPage(controller, () => {});
+  await Promise.resolve();
+  assert.deepEqual(requested, friendsAssetFileIDs);
+  assert.deepEqual(images.map(image => image.src), [
+    'https://signed.example/panel.png',
+    'https://signed.example/refresh.png',
+    'https://signed.example/close.png',
+  ]);
+  assert.equal(friendsAssetFileIDs.close,
+    'cloud://cloud1-d5gqpaioo2d8acf27.636c-cloud1-d5gqpaioo2d8acf27-1443887035/images/ui/friends-close-v2.png');
+});
+
+test('开放数据域加载并绘制冠亚季军本地图标', async () => {
+  const images = [];
+  const drawn = [];
+  const ctx = new Proxy({ drawImage: image => drawn.push(image),
+    measureText: value => ({ width: String(value).length * 8 }) },
+    { get: (target, key) => key in target ? target[key] : () => {} });
+  const board = createOpenDataBoard({
+    getSharedCanvas: () => ({ getContext: () => ctx }),
+    createImage() { const image = {}; images.push(image); return image; },
+    getUserCloudStorage: options => options.success({ KVDataList: record(0) }),
+    getFriendCloudStorage: options => options.success({ data: [friend('gold', 3),
+      friend('silver', 2), friend('bronze', 1)] }),
+  });
+  assert.deepEqual(images.map(image => image.src), [
+    'open-data/assets/medal-gold.png',
+    'open-data/assets/medal-silver.png',
+    'open-data/assets/medal-bronze.png',
+  ]);
+  await board.onMessage({ channel: 'sokoban.friends.v1', type: 'show', completed: 0 });
+  images.forEach(image => image.onload());
+  assert.deepEqual([...new Set(drawn)], images);
+});
+
+test('好友榜行顶格绘制名次色条，标记本人并让战绩文字底部对齐', async () => {
+  const fills = [];
+  const labels = [];
+  const target = { textBaseline: 'alphabetic', fillStyle: '#000',
+    fillRect(...args) { fills.push(args); },
+    fillText(value, x, y) {
+      labels.push({ value: String(value), x, y,
+        baseline: target.textBaseline, color: target.fillStyle });
+    },
+    measureText: value => ({ width: String(value).length * 8 }),
+  };
+  const ctx = new Proxy(target, { get: (value, key) => key in value ? value[key] : () => {} });
+  const board = createOpenDataBoard({
+    getSharedCanvas: () => ({ getContext: () => ctx }),
+    getUserCloudStorage: options => options.success({ KVDataList: record(23) }),
+    getUserInfo: options => options.success({ data: [{ openId: 'self', nickName: '玩家', avatarUrl: '' }] }),
+    getFriendCloudStorage: options => options.success({ data: [
+      { ...friend('self', 23), nickname: '玩家', avatarUrl: '' },
+      friend('other', 12),
+    ] }),
+  });
+  await board.onMessage({ channel: 'sokoban.friends.v1', type: 'show', completed: 23 });
+  assert.ok(fills.some(args => JSON.stringify(args) === JSON.stringify([7, 51, 4, 63])));
+  assert.ok(labels.some(item => item.value === '（我）玩家'));
+  const completed = labels.findLast(item => item.value === '23');
+  const result = ['已通关', '23', '关'].map(value => labels.findLast(
+    item => item.value === value && item.y === completed.y));
+  assert.ok(result.every(Boolean));
+  assert.deepEqual(result.map(item => item.baseline), ['alphabetic', 'alphabetic', 'alphabetic']);
+  assert.equal(new Set(result.map(item => item.y)).size, 1);
+  assert.equal(result[0].color, result[2].color);
+  assert.notEqual(result[1].color, result[2].color);
+});
+
+test('好友榜加载时使用指定云端 MP4，完成后销毁视频', async () => {
+  let videoOptions;
+  let plays = 0;
+  let destroys = 0;
+  let finishFriends;
+  const ctx = new Proxy({ measureText: value => ({ width: String(value).length * 8 }) },
+    { get: (target, key) => key in target ? target[key] : () => {} });
+  const board = createOpenDataBoard({
+    getSharedCanvas: () => ({ getContext: () => ctx }),
+    createVideo(options) {
+      videoOptions = options;
+      return { play() { plays++; }, destroy() { destroys++; } };
+    },
+    getUserCloudStorage: options => options.success({ KVDataList: record(1) }),
+    getFriendCloudStorage: options => { finishFriends = options.success; },
+  });
+  const showing = board.onMessage({ channel: 'sokoban.friends.v1', type: 'show', completed: 1 });
+  for (let index = 0; index < 8 && !finishFriends; index += 1) await Promise.resolve();
+  assert.equal(videoOptions.src, FRIENDS_LOADING_VIDEO_FILE_ID);
+  assert.equal(videoOptions.loop, true);
+  assert.equal(videoOptions.muted, true);
+  assert.equal(plays, 1);
+  finishFriends({ data: [friend('self', 1)] });
+  await showing;
+  assert.equal(destroys, 1);
+});
+
+test('开放数据域绘制加载、空榜、错误及连续滚动；隐藏后不再绘制', async () => {
+  const frames = [];
+  const ctx = new Proxy({ clearRect: () => frames.push([]), fillText: value => frames.at(-1).push(value),
+    measureText: value => ({ width: value.length * 8 }) },
     { get: (target, key) => key in target ? target[key] : () => {} });
   const canvas = { getContext: () => ctx,
     get width() { return 1098; }, set width(_) { throw new Error('subdomain cannot resize'); },
@@ -147,17 +364,21 @@ test('开放数据域绘制加载、空榜、错误、分页和并列；隐藏�
   await send('resize', { width: 366, height: 520, pixelRatio: 3 });
   assert.equal(canvas.width, 1098);
   await send('show', { completed: 1 });
-  assert.ok(labels.includes('正在获取好友进度…'));
-  assert.ok(labels.includes('1 / 2 页 · 同进度并列'));
-  await send('next');
-  assert.ok(labels.includes('2 / 2 页 · 同进度并列'));
+  assert.ok(frames.some(frame => frame.includes('正在获取好友进度…')));
+  assert.ok(frames.at(-1).includes('friend-0'));
+  await send('scroll', { delta: 90 });
+  assert.ok(frames.at(-1).includes('friend-7'));
+  assert.equal(frames.at(-1).includes('friend-0'), false);
+  await send('scroll', { delta: -90 });
+  assert.ok(frames.at(-1).includes('friend-0'));
+  assert.equal(frames.at(-1).some(value => String(value).includes('页')), false);
   data = []; await send('refresh');
-  assert.ok(labels.includes('还没有好友进度'));
+  assert.ok(frames.at(-1).includes('还没有好友进度'));
   fail = true; await send('refresh');
-  assert.ok(labels.includes('好友榜暂时加载失败'));
-  await send('hide'); const count = labels.length;
+  assert.ok(frames.at(-1).includes('好友榜暂时加载失败'));
+  await send('hide'); const count = frames.length;
   await send('resize');
-  assert.equal(labels.length, count);
+  assert.equal(frames.length, count);
   await send('pause');
 });
 

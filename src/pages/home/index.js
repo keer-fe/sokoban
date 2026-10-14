@@ -12,7 +12,8 @@ export class HomePage {
   constructor({ onAction, controller }) {
     this.controller = controller;
     this.layout = null;
-    this.input = new ButtonInput(() => this.layout ? this.layout.buttons : [], onAction);
+    this.input = new ButtonInput(() => this.layout
+      ? this.layout.buttons.filter(({ native }) => !native) : [], onAction);
   }
 
   resize(viewport) {
@@ -24,7 +25,7 @@ export class HomePage {
   render(ctx, elapsed) {
     const { width, height } = this.viewport;
     const { buttons, title } = this.layout;
-    if (!drawHomeBackground(ctx, 0, 0, width, height)) {
+    if (!drawHomeBackground(ctx, 0, 0, width, height, elapsed)) {
       ctx.fillStyle = theme.sky;
       ctx.fillRect(0, 0, width, height);
     }
@@ -44,12 +45,12 @@ export class HomePage {
       if (button.art) {
         const shift = pressed ? 4 : 0;
         if (button.primary) {
-          const pulse = pressed ? 0.98 : 1 + Math.sin(elapsed * Math.PI * 2 / 2.4) * 0.012;
+          const pulse = pressed ? 0.98 : 1 + Math.sin(elapsed * Math.PI * 2 / 2.8) * 0.007;
           ctx.save();
           ctx.translate(button.x + button.width / 2 + shift, button.y + button.height / 2 + shift);
           ctx.scale(pulse, pulse);
-          ctx.shadowColor = 'rgba(255, 219, 72, 0.58)';
-          ctx.shadowBlur = pressed ? 5 : 13;
+          ctx.shadowColor = 'rgba(255, 219, 72, 0.42)';
+          ctx.shadowBlur = pressed ? 4 : 8;
           const drawn = drawHomeIcon(ctx, button.art, -button.width / 2, -button.height / 2,
             button.width, button.height);
           ctx.restore();
@@ -57,6 +58,11 @@ export class HomePage {
         } else if (drawHomeIcon(ctx, button.art, button.x + shift, button.y + shift,
           button.width, button.height)) return;
         drawButton(ctx, button, pressed);
+        return;
+      }
+      if (button.native) {
+        text(ctx, button.label, button.x + button.width / 2, button.y + button.labelOffset,
+          { size: button.fontSize, color: '#FFF4C7', outline: 3, font: getHomeFont() });
         return;
       }
       if (!button.icon) { drawButton(ctx, button, pressed); return; }
@@ -81,10 +87,18 @@ export class HomePage {
           button.x + 11, button.y + 4, 52);
       }
       ctx.restore();
-      text(ctx, button.label, button.x + button.width / 2, button.y + 61,
+      text(ctx, button.label, button.x + button.width / 2, button.y + button.labelOffset,
         { size: button.fontSize, color: '#FFF4C7', outline: 3, font: getHomeFont() });
       ctx.restore();
     });
+  }
+
+  getGameClubButtonBounds() {
+    const button = this.layout && this.layout.buttons.find(({ id }) => id === 'gameClub');
+    if (!button) return null;
+    const size = button.nativeIconSize;
+    return { x: button.x + (button.width - size) / 2, y: button.y,
+      width: size, height: size };
   }
 
   handlePointer(type, point) { this.input.handle(type, point); }

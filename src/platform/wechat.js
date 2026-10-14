@@ -48,12 +48,37 @@ export function normalizeWechatWindowInfo(info, capsule) {
 // wx stays at the platform boundary. Pages never depend on a global wx object.
 export function createWechatPlatform(api) {
   const canvas = api.createCanvas();
+  let gameClubButton = null;
+  let gameClubVisible = false;
   if (api.cloud && typeof api.cloud.init === 'function') {
     api.cloud.init({ env: CLOUD_ENV_ID });
   }
   return {
     canvas,
     friendBoard: createFriendBoard(api),
+    gameClubButton: typeof api.createGameClubButton === 'function' ? {
+      update(style) {
+        if (!gameClubButton) {
+          gameClubButton = api.createGameClubButton({ icon: 'green', style: { ...style } });
+        } else if (gameClubButton.style) {
+          Object.assign(gameClubButton.style, style);
+        }
+        if (gameClubVisible && gameClubButton && gameClubButton.show) gameClubButton.show();
+      },
+      show() {
+        gameClubVisible = true;
+        if (gameClubButton && gameClubButton.show) gameClubButton.show();
+      },
+      hide() {
+        gameClubVisible = false;
+        if (gameClubButton && gameClubButton.hide) gameClubButton.hide();
+      },
+      destroy() {
+        gameClubVisible = false;
+        if (gameClubButton && gameClubButton.destroy) gameClubButton.destroy();
+        gameClubButton = null;
+      },
+    } : null,
     createImage: () => api.createImage(),
     resolveCloudFiles(fileIDs) {
       if (!api.cloud || typeof api.cloud.getTempFileURL !== 'function') {
