@@ -195,10 +195,7 @@ export class GameController {
       if (action === 'replay-saved') this.startReplay(this.progress.state.solutions[this.game.level.id]?.moves);
       if (action === 'restart') { this.game.restart(); this.modal = null; }
       if (action === 'levels' || action === 'home') this.navigate(action);
-      if (action === 'music' || action === 'sound' || action === 'vibration') {
-        const changed = this.progress.toggle(action);
-        if (changed && action === 'vibration' && this.progress.state.vibration) this.platform.vibrate?.();
-      }
+      if (action === 'music') this.progress.toggle(action);
     } else if (this.modal === 'signin' && action === 'claim') {
       if (!this.progress.canSignIn(this.now())) this.platform.notify('今天已领取，明天再来吧');
       else if (this.progress.signIn(this.now())) this.platform.notify('已获得 5 张撤销卡');

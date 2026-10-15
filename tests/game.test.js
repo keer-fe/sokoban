@@ -135,21 +135,23 @@ test('导航、弹窗阻断、撤销卡、重开和完整通关流程', () => {
 });
 
 test('暂停菜单进入设置后返回菜单，首页设置完成后直接关闭', () => {
-  const p = platform(); let vibrations = 0; p.vibrate = () => { vibrations += 1; };
+  const p = platform();
   const c = new GameController(p, levels);
+  assert.equal(c.progress.state.music, true);
+  assert.equal(c.progress.state.sound, false);
+  assert.equal(c.progress.state.vibration, false);
   c.openLevel(0); c.modal = null;
   c.handle('menu'); c.handle('settings');
   assert.equal(c.modal, 'settings');
   assert.equal(c.settingsReturn, 'menu');
-  const musicBefore = c.progress.state.music;
-  c.handle('music'); assert.equal(c.progress.state.music, !musicBefore);
-  c.handle('vibration'); assert.equal(c.progress.state.vibration, true);
-  assert.equal(vibrations, 1);
+  c.handle('music'); assert.equal(c.progress.state.music, false);
+  c.handle('sound'); assert.equal(c.progress.state.sound, false);
+  c.handle('vibration'); assert.equal(c.progress.state.vibration, false);
   c.handle('close'); assert.equal(c.modal, 'menu');
   c.handle('close'); assert.equal(c.modal, null);
   c.navigate('home'); c.handle('settings'); c.handle('close');
   assert.equal(c.modal, null);
-  assert.equal(new GameController(p, levels).progress.state.vibration, true);
+  assert.equal(new GameController(p, levels).progress.state.music, false);
 });
 
 test('小屏和全面屏上的方向键、棋盘、弹窗均在安全区域内', () => {

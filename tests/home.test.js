@@ -336,23 +336,30 @@ test('生命周期重复启动不叠加动画，隐藏停止，销毁解绑', ()
   let frameId = 0;
   let subscriptions = 0;
   let callbacks;
+  const audioCalls = [];
   const app = createApp({
     canvas: { getContext: () => context }, now: () => 1000,
     getWindowInfo: () => ({ width: 390, height: 844, pixelRatio: 3, safeTop: 90, safeBottom: 34 }),
     requestFrame: (fn) => { frames.set(++frameId, fn); return frameId; },
     cancelFrame: (id) => frames.delete(id), notify: () => {},
+    createAudio: () => ({ play: () => audioCalls.push('play'), pause: () => audioCalls.push('pause'),
+      destroy: () => audioCalls.push('destroy') }),
     subscribe(value) { callbacks = value; subscriptions += 1; return () => { subscriptions -= 1; }; },
   });
   app.start(); app.start();
   assert.equal(subscriptions, 1);
   assert.equal(frames.size, 1);
+  assert.deepEqual(audioCalls, ['play']);
   callbacks.hide();
   assert.equal(frames.size, 0);
+  assert.deepEqual(audioCalls, ['play', 'pause']);
   callbacks.show(); callbacks.show();
   assert.equal(frames.size, 1);
+  assert.deepEqual(audioCalls, ['play', 'pause', 'play']);
   callbacks.resize();
   assert.equal(frames.size, 1);
   app.destroy();
   assert.equal(frames.size, 0);
   assert.equal(subscriptions, 0);
+  assert.deepEqual(audioCalls, ['play', 'pause', 'play', 'pause', 'destroy']);
 });

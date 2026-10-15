@@ -38,8 +38,8 @@ export class ProgressStore {
     }
     this.state = { records, unlockedIds, solutions, cards: integer(saved.cards),
       lastSignIn: typeof saved.lastSignIn === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(saved.lastSignIn) ? saved.lastSignIn : '',
-      music: saved.music === true, sound: saved.sound === true,
-      vibration: saved.vibration === true, tutorialDone: saved.tutorialDone === true };
+      music: saved.music !== false, sound: false,
+      vibration: false, tutorialDone: saved.tutorialDone === true };
   }
   commit(next) {
     try {
@@ -93,7 +93,7 @@ export class ProgressStore {
   }
   spendCard() { return this.state.cards > 0 && this.commit({ ...this.state, cards: this.state.cards - 1 }); }
   toggle(key) {
-    if (key !== 'music' && key !== 'sound' && key !== 'vibration') return false;
+    if (key !== 'music') return false;
     return this.commit({ ...this.state, [key]: !this.state[key] });
   }
   finishTutorial() { return this.commit({ ...this.state, tutorialDone: true }); }

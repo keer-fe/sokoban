@@ -68,8 +68,8 @@ export class Modal extends Screen {
     ];
     if (c.modal === 'settings') this.buttons = [
       button('music', '', 0, { x: 74, y: y + 118, width: 266, height: 58 }),
-      button('sound', '', 1, { x: 74, y: y + 186, width: 266, height: 58 }),
-      button('vibration', '', 2, { x: 74, y: y + 254, width: 266, height: 58 }),
+      button('sound', '', 1, { x: 74, y: y + 186, width: 266, height: 58, disabled: true }),
+      button('vibration', '', 2, { x: 74, y: y + 254, width: 266, height: 58, disabled: true }),
     ];
     if (c.modal === 'menu' && c.progress.state.solutions[c.game.level.id]) {
       this.buttons[3].y = y + 360;
@@ -251,17 +251,20 @@ export class Modal extends Screen {
   drawSettings(ctx, top) {
     for (const button of this.buttons.filter(item => ['music', 'sound', 'vibration'].includes(item.id))) {
       const active = cState(this.controller, button.id);
-      const pressed = this.input.activeId === button.id;
+      const disabled = button.disabled;
+      const pressed = !disabled && this.input.activeId === button.id;
       const shift = pressed ? 3 : 0;
       panel(ctx, button.x + shift, button.y + shift, button.width, button.height, {
-        fill: '#FFF9E5', stroke: DARK_WOOD, lineWidth: 3, radius: 14,
+        fill: disabled ? '#E7DDC7' : '#FFF9E5', stroke: disabled ? '#A9967F' : DARK_WOOD, lineWidth: 3, radius: 14,
         shadow: pressed ? null : '#D2A75B', offset: 3,
       });
       this.drawSettingIcon(ctx, button.id, button.x + 30 + shift, button.y + 29 + shift, active);
       const labels = { music: '背景音乐', sound: '游戏音效', vibration: '震动反馈' };
       text(ctx, labels[button.id], button.x + 58 + shift,
-        button.y + 29 + shift, { size: 18, color: DARK_WOOD, align: 'left', font: getHomeFont() });
-      this.drawToggle(ctx, button.x + 191 + shift, button.y + 12 + shift, active);
+        button.y + 29 + shift, { size: 18, color: disabled ? '#8C7C6D' : DARK_WOOD, align: 'left', font: getHomeFont() });
+      if (disabled) text(ctx, '暂未开放', button.x + 220, button.y + 29,
+        { size: 12, color: '#8C7C6D', font: getHomeFont() });
+      else this.drawToggle(ctx, button.x + 191 + shift, button.y + 12 + shift, active);
     }
   }
 

@@ -30,11 +30,17 @@ export function createApp(platform, actions = {}) {
   const bgMusic = platform.createAudio
     ? platform.createAudio(BG_MUSIC_URL, { loop: true, volume: 0.5 })
     : null;
-  // Try to autoplay immediately. If the browser blocks it (autoplay policy),
-  // we retry on the first user interaction.
-  const startBgMusic = () => { if (bgMusic) bgMusic.play(); };
+  let musicPlaying = false;
+  const syncBgMusic = () => {
+    const shouldPlay = running && controller.progress.state.music;
+    if (shouldPlay === musicPlaying || !bgMusic) return;
+    if (shouldPlay) bgMusic.play();
+    else bgMusic.pause();
+    musicPlaying = shouldPlay;
+  };
   const dispatch = (id) => {
     if (actions[id]) actions[id](); else controller.handle(id);
+    syncBgMusic();
     Object.values(pages).forEach((screen) => screen.pause());
     modal.pause();
     friendsDialog.pause();
@@ -140,7 +146,7 @@ export function createApp(platform, actions = {}) {
     previousTime = platform.now();
     resize();
     controller.syncFriends();
-    startBgMusic();
+    syncBgMusic();
     frameId = platform.requestFrame(tick);
   }
 
@@ -156,7 +162,8 @@ export function createApp(platform, actions = {}) {
     visibleBoard = null;
     if (platform.friendBoard) platform.friendBoard.send('pause');
     if (platform.gameClubButton) platform.gameClubButton.hide();
-    if (bgMusic) bgMusic.pause();
+    if (bgMusic && musicPlaying) bgMusic.pause();
+    musicPlaying = false;
   }
 
   return {
