@@ -18,11 +18,13 @@ const LEVEL_ASSET_SOURCES = Object.freeze({
   background: publicUISource('levels-texture-v2.png'),
   starSelected: publicUISource('star-selected-v2.png'),
   starUnselected: publicUISource('star-unselected-v2.png'),
+  currentLevel: publicUISource('current-level-v5.png'),
 });
 const LEVEL_ASSET_FILE_IDS = Object.freeze({
   background: cloudUIFileID('levels-texture-v2.png'),
   starSelected: cloudUIFileID('star-selected-v2.png'),
   starUnselected: cloudUIFileID('star-unselected-v2.png'),
+  currentLevel: cloudUIFileID('current-level-v5.png'),
 });
 
 function drawCoverImage(ctx, image, x, y, width, height, frosted) {
@@ -58,8 +60,9 @@ function drawLevelStars(ctx, count, x, y, size, gap, assets) {
 
 const campaignMeta = {
   classic: { short: '经典', title: '经典模式', note: '原味推箱子', accent: '#68C84D', icon: 'campaignClassic' },
-  adventure: { short: '冒险', title: '冒险模式', note: '机关与特殊地形', accent: '#F0A43D', icon: 'campaignAdventure' },
+  adventure: { short: '冒险', title: '机关冒险', note: '机关与特殊地形', accent: '#F0A43D', icon: 'campaignAdventure' },
   coop: { short: '双人', title: '双人合作', note: '和伙伴一起解谜', accent: '#4CA8E8', icon: 'campaignCoop' },
+  pk: { short: '对战', title: '双人PK', note: '和伙伴一较高下', accent: '#EF7050', icon: 'campaignPk' },
 };
 
 function drawBack(ctx, button, pressed) {
@@ -110,8 +113,8 @@ function drawLevelCard(ctx, button, data, pressed) {
     ctx.fillStyle = muted ? 'rgba(111,119,123,0.32)' : 'rgba(226,190,124,0.32)';
     ctx.fillRect(x + 0.7, y + 0.7, tile - 1.4, tile - 1.4);
   }
-  ctx.shadowColor = recommended && !locked ? '#FFE89A' : 'rgba(0,0,0,0.65)';
-  ctx.shadowBlur = recommended && !locked ? 16 : 7;
+  ctx.shadowColor = 'rgba(0,0,0,0.65)';
+  ctx.shadowBlur = 7;
   ctx.shadowOffsetY = 4;
   for (const pos of board.walls) {
     const x = left + (pos % board.width) * tile;
@@ -152,17 +155,7 @@ function drawLevelCard(ctx, button, data, pressed) {
     const y = top + board.height * tile / 2 - 10;
     ctx.shadowColor = 'rgba(0,0,0,0.8)';
     ctx.shadowBlur = 6;
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(x, y, 9, Math.PI, 0);
-    ctx.lineTo(x + 9, y + 10);
-    ctx.stroke();
-    panel(ctx, x - 14, y + 7, 28, 25, {
-      fill: 'rgba(44,51,56,0.75)', stroke: '#FFFFFF', lineWidth: 3, radius: 8,
-    });
-    circle(ctx, x, y + 17, 3, '#FFFFFF');
-    line(ctx, [[x, y + 19], [x, y + 25]], '#FFFFFF', 2);
+    lock(ctx, x - 22, y - 10, 44);
     ctx.shadowBlur = 0;
   }
   const label = String(number).padStart(2, '0');
@@ -171,10 +164,26 @@ function drawLevelCard(ctx, button, data, pressed) {
   ctx.textBaseline = 'middle';
   ctx.lineJoin = 'round';
   ctx.lineWidth = 6;
-  ctx.strokeStyle = muted ? '#D2D5D3' : '#FFF9DF';
+  ctx.strokeStyle = muted ? '#D2D5D3' : '#FFFDF1';
   ctx.strokeText(label, left - 4, mapBottom - 7);
-  ctx.fillStyle = muted ? '#535E67' : '#254F75';
+  ctx.fillStyle = muted ? '#66727A' : '#4B91C1';
   ctx.fillText(label, left - 4, mapBottom - 7);
+  if (recommended && !locked) {
+    const badgeX = left + board.width * tile / 2 - 16;
+    const badgeY = top + board.height * tile / 2 - 16;
+    if (assets.currentLevel?.ready) {
+      ctx.drawImage(assets.currentLevel, badgeX, badgeY, 32, 32);
+    } else {
+      circle(ctx, badgeX + 16, badgeY + 16, 15, '#ED5425', 2, '#FFFFFF');
+      ctx.beginPath();
+      ctx.moveTo(badgeX + 12, badgeY + 8);
+      ctx.lineTo(badgeX + 24, badgeY + 16);
+      ctx.lineTo(badgeX + 12, badgeY + 24);
+      ctx.closePath();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+    }
+  }
   drawLevelStars(ctx, record?.stars || 0,
     button.x + button.width / 2 - 37, mapBottom + 7, 22, 4, assets);
   ctx.restore();
@@ -184,6 +193,7 @@ export class LevelsPage extends Screen {
   constructor(controller, onAction) {
     super(controller, onAction);
     this.scrollOffsets = { classic: 0, adventure: 0, coop: 0 };
+    this.campaignScroll = 0;
     this.previews = new Map();
     this.levelAssets = {};
     if (controller.platform.createImage) {
@@ -213,7 +223,7 @@ export class LevelsPage extends Screen {
     }
     // Keep navigation local to this screen; gameplay actions retain their existing route.
     this.input = new ButtonInput(() => this.buttons.map(button => {
-      if (!button.id.startsWith('level:')) return button;
+      if (!button.id.startsWith('level:') && !button.id.startsWith('campaign:')) return button;
       const y = Math.max(button.y, this.listBounds.y);
       return { ...button, y, height: Math.max(0, Math.min(button.y + button.height,
         this.listBounds.y + this.listBounds.height) - y) };
@@ -223,29 +233,33 @@ export class LevelsPage extends Screen {
 
   layout() {
     const c = this.controller;
-    const top = Math.max(12, this.viewport.safeTop - 12);
-    if (c.levelView === 'campaigns') {
-      this.header = { top, bottom: top + 72 };
-      this.listBounds = { x: 0, y: this.header.bottom, width: 414,
-        height: this.viewport.height - this.viewport.safeBottom - this.header.bottom };
-      this.entries = [];
-      this.contentHeight = this.listBounds.height;
-      this.maxScroll = 0;
-      this.buttons = [
-        { id: 'home', label: '', x: 16, y: Math.max(12, this.viewport.safeTop - 55), width: 48, height: 48 },
-        ...Object.keys(campaignMeta).map((campaign, i) => ({
-          id: `campaign:${campaign}`, campaign, label: campaignMeta[campaign].title,
-          x: 22, y: top + 83 + i * 154, width: 370, height: 136,
-        })),
-      ];
-      return;
-    }
-    const backY = Math.max(12, this.viewport.safeTop - 55);
+    const backY = this.viewport.navigationCenterY - 24;
     this.header = { top: backY, bottom: backY + 62 };
     this.listBounds = {
       x: 0, y: this.header.bottom, width: 414,
       height: Math.max(1, this.viewport.height - this.viewport.safeBottom - this.header.bottom - 8),
     };
+    if (c.levelView === 'campaigns') {
+      const cardWidth = 178;
+      const cardHeight = cardWidth * 2 / 3;
+      const rowHeight = cardHeight + 16;
+      const rowCount = Math.ceil(Object.keys(campaignMeta).length / GRID_COLUMNS);
+      this.entries = [];
+      this.contentHeight = Math.max(this.listBounds.height,
+        rowCount * rowHeight + 20);
+      this.maxScroll = Math.max(0, this.contentHeight - this.listBounds.height);
+      this.campaignScroll = Math.max(0, Math.min(this.maxScroll, this.campaignScroll));
+      this.buttons = [
+        { id: 'home', label: '', x: 16, y: backY, width: 48, height: 48 },
+        ...Object.keys(campaignMeta).map((campaign, i) => ({
+          id: `campaign:${campaign}`, campaign, label: campaignMeta[campaign].title,
+          x: 22 + (i % GRID_COLUMNS) * 190,
+          y: this.listBounds.y + 10 + Math.floor(i / GRID_COLUMNS) * rowHeight - this.campaignScroll,
+          width: cardWidth, height: cardHeight,
+        })),
+      ];
+      return;
+    }
     this.entries = c.campaignEntries();
     const rowCount = Math.ceil(this.entries.length / GRID_COLUMNS);
     this.contentHeight = Math.max(this.listBounds.height, rowCount * ROW_HEIGHT + 92);
@@ -287,7 +301,14 @@ export class LevelsPage extends Screen {
     }
 
     if (c.levelView === 'campaigns') {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(this.listBounds.x, this.listBounds.y, this.listBounds.width, this.listBounds.height);
+      ctx.clip();
       this.drawCampaignChooser(ctx);
+      this.drawScrollbar(ctx, this.campaignScroll);
+      ctx.restore();
+      this.drawHeader(ctx, { title: '选择模式' });
       return;
     }
 
@@ -301,7 +322,7 @@ export class LevelsPage extends Screen {
   }
 
   drawHeader(ctx, meta) {
-    const back = this.buttons.find(button => button.id === 'level-campaigns');
+    const back = this.buttons.find(button => button.id === 'level-campaigns' || button.id === 'home');
     text(ctx, meta.title, back.x + back.width + 12, back.y + back.height / 2 + 4, {
       size: 25, color: '#FFF2B5', outline: 5, spacing: 2, align: 'left', font: FONT(),
     });
@@ -310,64 +331,50 @@ export class LevelsPage extends Screen {
 
   drawCampaignChooser(ctx) {
     const c = this.controller;
-    const { top } = this.header;
-    text(ctx, '选择模式', 207, top + 20, {
-      size: 31, color: '#FFF2B5', outline: 5, spacing: 2, font: FONT(),
-    });
-    const back = this.buttons.find(button => button.id === 'home');
-    drawBack(ctx, back, this.input.activeId === back.id);
-    text(ctx, '选择一个模式，开始你的推箱挑战', 207, top + 58, {
-      size: 13, color: '#FFFFFF', outline: 3, font: FONT(),
-    });
     for (const button of this.buttons.filter(item => item.id.startsWith('campaign:'))) {
       const meta = campaignMeta[button.campaign];
-      const entries = c.campaignEntries(button.campaign);
-      const completed = entries.filter(({ level }) => c.progress.state.records[level.id]).length;
       const available = c.campaignAvailable(button.campaign);
-      const developing = button.campaign === 'coop';
+      const developing = button.campaign === 'coop' || button.campaign === 'pk';
       const pressed = this.input.activeId === button.id;
       ctx.save();
-      if (pressed) ctx.translate(2, 3);
-      panel(ctx, button.x, button.y, button.width, button.height, {
-        fill: available && !developing ? '#FFF0C0' : '#DED5C1', stroke: '#5B301A',
-        lineWidth: 4, radius: 18, shadow: '#7A451F', offset: pressed ? 0 : 6,
-      });
-      panel(ctx, button.x + 8, button.y + 9, 7, button.height - 18, {
-        fill: available && !developing ? meta.accent : '#9A8F7B', lineWidth: 0, radius: 4,
-      });
-      panel(ctx, button.x + 22, button.y + 12, 42, 26, {
-        fill: available && !developing ? meta.accent : '#9A8F7B', lineWidth: 0, radius: 8,
-      });
-      text(ctx, meta.short, button.x + 43, button.y + 25, {
-        size: 11, color: '#FFFFFF', font: FONT(), outline: 1,
-      });
-      text(ctx, meta.title, button.x + 23, button.y + 59, {
-        size: 23, color: DARK_WOOD, align: 'left', font: FONT(),
-      });
-      text(ctx, meta.note, button.x + 23, button.y + 86, {
-        size: 12, color: '#8C674C', align: 'left', font: FONT(),
-      });
-      const status = developing ? '即将开放' : available
-        ? `${completed}/${entries.length} 已完成` : '完成经典模式前 6 关解锁';
-      text(ctx, status, button.x + 23, button.y + 116, {
-        size: 11, color: available ? GREEN_DARK : '#817563', align: 'left', font: FONT(),
-      });
-      const iconX = button.x + button.width - 130;
-      const iconY = button.y + 11;
-      if (!drawHomeIcon(ctx, meta.icon, iconX, iconY, 108, 108)) {
-        circle(ctx, iconX + 54, iconY + 54, 42, meta.accent);
+      if (pressed) ctx.translate(0, 3);
+      const centerX = button.x + button.width / 2;
+      const cardHeight = button.width * 2 / 3;
+      // Clip the JPEG's white outer margin, including the bottom corners.
+      ctx.save();
+      const left = button.x + button.width * 0.014;
+      const right = button.x + button.width * 0.986;
+      const top = button.y + cardHeight * 0.027;
+      const bottom = button.y + cardHeight * 0.973;
+      const radius = button.width * 0.13;
+      ctx.beginPath();
+      ctx.moveTo(left + radius, top);
+      ctx.lineTo(right - radius, top);
+      ctx.arcTo(right, top, right, top + radius, radius);
+      ctx.lineTo(right, bottom - radius);
+      ctx.arcTo(right, bottom, right - radius, bottom, radius);
+      ctx.lineTo(left + radius, bottom);
+      ctx.arcTo(left, bottom, left, bottom - radius, radius);
+      ctx.lineTo(left, top + radius);
+      ctx.arcTo(left, top, left + radius, top, radius);
+      ctx.closePath();
+      ctx.clip();
+      if (!drawHomeIcon(ctx, meta.icon, button.x, button.y, button.width, cardHeight)) {
+        panel(ctx, button.x, button.y, button.width, cardHeight, {
+          fill: '#E8D3A8', stroke: DARK_WOOD, lineWidth: 3, radius: 12,
+        });
+        text(ctx, meta.title, centerX, button.y + cardHeight / 2, {
+          size: 20, color: '#FFF2B5', outline: 4, font: FONT(),
+        });
       }
       if (!available || developing) {
         ctx.fillStyle = 'rgba(73, 61, 49, 0.36)';
-        ctx.fillRect(iconX + 6, iconY + 6, 96, 96);
-        circle(ctx, iconX + 78, iconY + 82, 19, '#8B806E', 3, '#5B5144');
-        lock(ctx, iconX + 69, iconY + 73, 18);
-      } else {
-        circle(ctx, button.x + button.width - 24, button.y + button.height / 2, 15,
-          meta.accent, 2, '#5B301A');
-        line(ctx, [[button.x + button.width - 29, button.y + button.height / 2 - 7],
-          [button.x + button.width - 21, button.y + button.height / 2],
-          [button.x + button.width - 29, button.y + button.height / 2 + 7]], '#FFFFFF', 3);
+        ctx.fillRect(button.x, button.y, button.width, cardHeight);
+      }
+      ctx.restore();
+      if (!available || developing) {
+        const lockSize = 36;
+        lock(ctx, button.x + button.width - lockSize + 7, button.y - 5, lockSize);
       }
       ctx.restore();
     }
@@ -407,7 +414,10 @@ export class LevelsPage extends Screen {
     text(ctx, '更多关卡正在开发中…', 207, endY, {
       size: 14, color: '#FFF4C7', outline: 2, font: FONT(),
     });
-    const scroll = this.scrollOffsets[c.levelCampaign];
+    this.drawScrollbar(ctx, this.scrollOffsets[c.levelCampaign]);
+  }
+
+  drawScrollbar(ctx, scroll) {
     if (this.maxScroll > 0) {
       const trackTop = this.listBounds.y + 12;
       const trackHeight = this.listBounds.height - 28;
@@ -419,6 +429,11 @@ export class LevelsPage extends Screen {
 
   scrollBy(delta) {
     if (!Number.isFinite(delta) || !delta) return;
+    if (this.controller.levelView === 'campaigns') {
+      this.campaignScroll = Math.max(0, Math.min(this.maxScroll, this.campaignScroll + delta));
+      this.layout();
+      return;
+    }
     const campaign = this.controller.levelCampaign;
     this.scrollOffsets[campaign] = Math.max(0, Math.min(this.maxScroll,
       this.scrollOffsets[campaign] + delta));

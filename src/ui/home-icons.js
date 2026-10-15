@@ -18,9 +18,10 @@ export const homeBackgroundSource = `${PUBLIC_ANIMATION_ROOT}/push-outdoor-backg
 export const levelsBackgroundSource = publicUISource('levels-texture-v2.png');
 
 const campaignIconSources = Object.freeze({
-  campaignClassic: publicUISource('exec-9a8071ff-1063-4573-a7b1-370e9e602c0f.png'),
-  campaignAdventure: publicUISource('exec-d235cd76-7b6d-486b-b158-7510a6cfd673.png'),
-  campaignCoop: publicUISource('exec-dd506f40-3233-46ce-a9c8-530eb5857727.png'),
+  campaignClassic: publicUISource('classic-card-v2.jpg'),
+  campaignAdventure: publicUISource('adventure-card-v2.jpg'),
+  campaignCoop: publicUISource('coop-card-v2.jpg'),
+  campaignPk: publicUISource('pk-card-v1.jpg'),
 });
 
 const cloudHomeIconSources = Object.freeze({
@@ -48,6 +49,7 @@ export const homeIconSources = Object.freeze({
   ...campaignIconSources,
   ...localPushAnimationSources,
   backButton: publicUISource('button-back-wood-v2.png'),
+  lock: publicUISource('lock-v1.png'),
 });
 
 export const homeIconFileIDs = Object.freeze({
@@ -62,10 +64,12 @@ export const homeIconFileIDs = Object.freeze({
   levelsBackground: cloudUIFileID('levels-texture-v2.png'),
   starSelected: cloudUIFileID('star-selected-v2.png'),
   starUnselected: cloudUIFileID('star-unselected-v2.png'),
-  campaignClassic: cloudUIFileID('exec-9a8071ff-1063-4573-a7b1-370e9e602c0f.png'),
-  campaignAdventure: cloudUIFileID('exec-d235cd76-7b6d-486b-b158-7510a6cfd673.png'),
-  campaignCoop: cloudUIFileID('exec-dd506f40-3233-46ce-a9c8-530eb5857727.png'),
   backButton: cloudUIFileID('button-back-wood-v2.png'),
+  lock: cloudUIFileID('lock-v1.png'),
+  campaignClassic: cloudUIFileID('classic-card-v2.jpg'),
+  campaignAdventure: cloudUIFileID('adventure-card-v2.jpg'),
+  campaignCoop: cloudUIFileID('coop-card-v2.jpg'),
+  campaignPk: cloudUIFileID('pk-card-v1.jpg'),
 });
 
 function assignSources(icons, sources) {
@@ -99,7 +103,7 @@ export function loadHomeIcons(ctx, platform, onCloudProgress = () => {}) {
     assignSources(icons, { ...cloudHomeIconSources, background: homeBackgroundSource,
       levelsBackground: levelsBackgroundSource, backButton: homeIconSources.backButton,
       starSelected: homeIconSources.starSelected, starUnselected: homeIconSources.starUnselected,
-      ...campaignIconSources });
+      lock: homeIconSources.lock, ...campaignIconSources });
     return;
   }
   platform.resolveCloudFiles(homeIconFileIDs)
@@ -116,7 +120,7 @@ export function loadHomeIcons(ctx, platform, onCloudProgress = () => {}) {
       assignSources(icons, { ...cloudHomeIconSources, background: homeBackgroundSource,
         levelsBackground: levelsBackgroundSource, backButton: homeIconSources.backButton,
         starSelected: homeIconSources.starSelected, starUnselected: homeIconSources.starUnselected,
-        ...campaignIconSources });
+        lock: homeIconSources.lock, ...campaignIconSources });
     });
 }
 

@@ -99,7 +99,7 @@ test('首页功能图标独立加载，未完成前回退、完成后分别绘�
   } };
   loadHomeIcons(ctx, platform, (name) => loaded.push(name));
   loadHomeIcons(ctx, platform);
-  assert.equal(images.length, 18);
+  assert.equal(images.length, Object.keys(homeIconSources).length);
   assert.deepEqual(images.map(image => image.src), Object.values(homeIconSources));
   assert.equal(drawHomeIcon(ctx, 'signin', 1, 2, 48), false);
   images.forEach(image => image.onload());

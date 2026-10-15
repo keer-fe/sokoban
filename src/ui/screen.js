@@ -36,6 +36,7 @@ export function stars(ctx, count, x, y, size = 22, gap = 4) {
 }
 
 export function lock(ctx, x, y, size = 20) {
+  if (drawHomeIcon(ctx, 'lock', x, y, size, size)) return;
   ctx.save(); ctx.translate(x, y); ctx.scale(size / 20, size / 20);
   ctx.beginPath(); ctx.arc(10, 7, 5, Math.PI, 0);
   ctx.lineWidth = 3; ctx.strokeStyle = '#46546D'; ctx.stroke();

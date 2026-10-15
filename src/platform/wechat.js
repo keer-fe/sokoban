@@ -36,11 +36,15 @@ export function normalizeWechatWindowInfo(info, capsule) {
   const top = validInset(capsuleBottom, height / 2) && capsuleBottom > 0
     ? Math.max(safeTop, capsuleBottom) : Math.max(safeTop, statusBarHeight) + 44;
   const bottom = info.safeArea && info.safeArea.bottom;
+  const navigationCenterY = validInset(capsule?.top, height / 2)
+    && validInset(capsuleBottom, height / 2) && capsuleBottom > capsule.top
+    ? (capsule.top + capsuleBottom) / 2 : top - 22;
   return {
     width: info.windowWidth,
     height,
     pixelRatio: info.pixelRatio,
     safeTop: top,
+    navigationCenterY,
     safeBottom: Number.isFinite(bottom) && bottom > height / 2 && bottom <= height ? height - bottom : 0,
   };
 }

@@ -118,6 +118,10 @@ export class GameController {
     if (action === 'levels') { this.navigate('levels'); return; }
     if (action.startsWith('campaign:')) {
       const campaign = action.slice('campaign:'.length);
+      if (campaign === 'pk') {
+        this.platform.notify('双人PK即将开放');
+        return;
+      }
       if (!campaigns.some(item => item.id === campaign)) return;
       this.levelCampaign = campaign;
       this.levelView = 'levels';

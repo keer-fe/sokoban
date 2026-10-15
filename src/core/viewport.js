@@ -15,6 +15,9 @@ export function createViewport(info) {
     scale,
     offsetX: (width - 414 * scale) / 2,
     safeTop: safeTop / scale,
+    navigationCenterY: Number.isFinite(info.navigationCenterY)
+      && info.navigationCenterY > 0 && info.navigationCenterY < height / 2
+      ? info.navigationCenterY / scale : Math.max(36, (safeTop - 22) / scale),
     safeBottom: safeBottom / scale,
     pixelRatio,
     physicalWidth: width,
