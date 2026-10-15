@@ -2,6 +2,7 @@ import { ButtonInput, drawButton } from './button.js';
 import { panel, text, circle, line } from './draw.js';
 import { illustration } from './illustrations.js';
 import { theme } from './theme.js';
+import { drawHomeIcon } from './home-icons.js';
 
 export class Screen {
   constructor(controller, onAction) {
@@ -24,10 +25,13 @@ export function header(ctx, top, title, subtitle) {
 
 export function stars(ctx, count, x, y, size = 22, gap = 4) {
   for (let i = 0; i < 3; i += 1) {
-    ctx.save();
-    ctx.globalAlpha = i < count ? 1 : 0.25;
-    illustration(ctx, 'star', x + i * (size + gap), y, size);
-    ctx.restore();
+    if (!drawHomeIcon(ctx, i < count ? 'starSelected' : 'starUnselected',
+      x + i * (size + gap), y, size, size)) {
+      ctx.save();
+      ctx.globalAlpha = i < count ? 1 : 0.25;
+      illustration(ctx, 'star', x + i * (size + gap), y, size);
+      ctx.restore();
+    }
   }
 }
 

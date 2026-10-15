@@ -231,7 +231,8 @@ test('好友榜刷新按钮使用本地图标，加载失败时保留文字回�
     createImage: () => { const image = {}; images.push(image); return image; } }, levels);
   const page = new FriendsPage(controller, () => {});
   assert.deepEqual(images.map(image => image.src), Object.values(friendsAssetSources));
-  assert.equal(refreshIconSource, 'assets/ui/friends-refresh-v2.png');
+  assert.equal(refreshIconSource,
+    'https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/ui/friends-refresh-v2.png');
   const refreshImage = images[1];
   page.resize(createViewport({ width: 390, height: 844, safeTop: 91, safeBottom: 34 }));
   page.render(ctx);

@@ -12,6 +12,7 @@ export class GameController {
     this.settingsReturn = null;
     this.friendsTab = 'friends';
     this.levelCampaign = 'classic';
+    this.levelView = 'campaigns';
     this.listPage = 0;
     this.levelIndex = 0;
     this.game = null;
@@ -105,6 +106,7 @@ export class GameController {
     this.route = route;
     this.modal = null;
     if (route === 'levels') {
+      this.levelView = 'campaigns';
       const position = this.campaignEntries().findIndex(entry => entry.index === this.levelIndex);
       this.listPage = Math.floor(Math.max(0, position) / 12);
     }
@@ -118,9 +120,11 @@ export class GameController {
       const campaign = action.slice('campaign:'.length);
       if (!campaigns.some(item => item.id === campaign)) return;
       this.levelCampaign = campaign;
+      this.levelView = 'levels';
       this.listPage = 0;
       return;
     }
+    if (action === 'level-campaigns') { this.levelView = 'campaigns'; return; }
     if (action === 'friends') { this.friendsTab = 'friends'; this.modal = 'friends'; return; }
     if (action.startsWith('friends:')) {
       return;

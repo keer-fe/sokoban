@@ -179,8 +179,9 @@ export function createApp(platform, actions = {}) {
           }
         },
         wheel(deltaY, point) {
-          if (running && !loading && controller.modal === 'friends') {
-            friendsDialog.handleWheel(deltaY, toLogicalPoint(viewport, point));
+          if (running && !loading && (controller.modal === 'friends' || (!controller.modal && controller.route === 'levels'))) {
+            const target = controller.modal === 'friends' ? friendsDialog : pages.levels;
+            target.handleWheel(deltaY, toLogicalPoint(viewport, point));
             render();
           }
         },

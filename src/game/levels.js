@@ -59,6 +59,47 @@ const adventure = [
   chapter: 'switches', chapterIndex: 0,
   boxCount: level.rows.join('').split('').filter(cell => '$*&'.includes(cell)).length }));
 
+// Chapter two: pressure plates and keyed doors.
+// Each layout is BFS-verified via tools/design-mechanism-levels.mjs.
+const weightsChapter = [
+  {
+    id: 'adventure-weights-1', name: '第二章 · 一推开门', tip: '按钮正好在推箱的路上，一步同时开门又送箱',
+    difficulty: '教学', minSteps: 5,
+    rows: ['#########', '#@ !D$ .#', '#########'],
+  },
+  {
+    id: 'adventure-weights-2', name: '第二章 · 过门取物', tip: '踩住按钮再穿门，门后的箱子才能被推走',
+    difficulty: '教学', minSteps: 6,
+    rows: ['##########', '#@   !D$.#', '##########'],
+  },
+  {
+    id: 'adventure-weights-3', name: '第二章 · 请君入室', tip: '先把一个箱子压在按钮上，再去推另一个',
+    difficulty: '普通', minSteps: 15,
+    rows: ['#########', '#@ $ .  #', '# ##D## #', '#  #!#  #', '# ##### #', '#   $  .#', '#########'],
+  },
+  {
+    id: 'adventure-weights-4', name: '第二章 · 绕门归位', tip: '箱子不进门，兜一圈走到终点',
+    difficulty: '普通', minSteps: 21,
+    rows: ['##########', '#@ $ ! . #', '##### ####', '#   D    #', '#   $   .#', '##########'],
+  },
+  {
+    id: 'adventure-weights-5', name: '第二章 · 双箱同守', tip: '两个箱子分别压住按钮才能保持通道',
+    difficulty: '挑战', minSteps: 22,
+    rows: ['##########', '#@ $ !D .#', '# ########', '# $     .#', '##########'],
+  },
+  {
+    id: 'adventure-weights-6', name: '第二章 · 让位之礼', tip: '让新来的箱子接管按钮，再把原来的箱子送到终点',
+    difficulty: '挑战', minSteps: 13,
+    rows: ['##########', '#@ $ D  .#', '##### ####', '#.  &    #', '##########'],
+  },
+].map((level, index) => ({ ...level, campaign: 'adventure',
+  chapter: 'weights', chapterIndex: 1,
+  boxCount: level.rows.join('').split('').filter(cell => '$*&'.includes(cell)).length }));
+
+// Append chapter two after chapter one and renumber campaignIndex globally.
+const adventureAll = [...adventure, ...weightsChapter]
+  .map((level, index) => ({ ...level, campaignIndex: index }));
+
 // Estimates, not playtest ratings: unknown solutions are never labelled easy.
 // Box count, board size and solution length contribute to the estimated label.
 function difficultyScore(level) {
@@ -84,4 +125,4 @@ const classic = [...onboarding, ...originals].map((level, index) => ({
   name: `经典模式 · 第 ${index + 1} 关`,
 }));
 
-export const levels = [...classic, ...adventure];
+export const levels = [...classic, ...adventureAll];

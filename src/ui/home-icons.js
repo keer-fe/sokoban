@@ -1,3 +1,5 @@
+import { cloudUIFileID, publicUISource } from './cloud-assets.js';
+
 const iconSets = new WeakMap();
 const CLOUD_BUCKET = '636c-cloud1-d5gqpaioo2d8acf27-1443887035';
 const CLOUD_HOME_ROOT = `cloud://cloud1-d5gqpaioo2d8acf27.${CLOUD_BUCKET}/images/home`;
@@ -13,6 +15,13 @@ export const localPushAnimationSources = Object.freeze({
   pushCrate: 'assets/animation/push-crate-new.png',
 });
 export const homeBackgroundSource = `${PUBLIC_ANIMATION_ROOT}/push-outdoor-background-v1.png`;
+export const levelsBackgroundSource = publicUISource('levels-texture-v2.png');
+
+const campaignIconSources = Object.freeze({
+  campaignClassic: publicUISource('exec-9a8071ff-1063-4573-a7b1-370e9e602c0f.png'),
+  campaignAdventure: publicUISource('exec-d235cd76-7b6d-486b-b158-7510a6cfd673.png'),
+  campaignCoop: publicUISource('exec-dd506f40-3233-46ce-a9c8-530eb5857727.png'),
+});
 
 const cloudHomeIconSources = Object.freeze({
   settings: `${PUBLIC_HOME_ROOT}/settings.png`,
@@ -33,7 +42,12 @@ export const homeIconSources = Object.freeze({
   startButton: cloudHomeIconSources.startButton,
   levelsButton: cloudHomeIconSources.levelsButton,
   undoCard: cloudHomeIconSources.undoCard,
+  levelsBackground: levelsBackgroundSource,
+  starSelected: publicUISource('star-selected-v2.png'),
+  starUnselected: publicUISource('star-unselected-v2.png'),
+  ...campaignIconSources,
   ...localPushAnimationSources,
+  backButton: publicUISource('button-back-wood-v2.png'),
 });
 
 export const homeIconFileIDs = Object.freeze({
@@ -45,6 +59,13 @@ export const homeIconFileIDs = Object.freeze({
   startButton: `${CLOUD_HOME_ROOT}/button-start-game.png`,
   levelsButton: `${CLOUD_HOME_ROOT}/button-select-levels.png`,
   undoCard: `${CLOUD_HOME_ROOT}/undo-card.png`,
+  levelsBackground: cloudUIFileID('levels-texture-v2.png'),
+  starSelected: cloudUIFileID('star-selected-v2.png'),
+  starUnselected: cloudUIFileID('star-unselected-v2.png'),
+  campaignClassic: cloudUIFileID('exec-9a8071ff-1063-4573-a7b1-370e9e602c0f.png'),
+  campaignAdventure: cloudUIFileID('exec-d235cd76-7b6d-486b-b158-7510a6cfd673.png'),
+  campaignCoop: cloudUIFileID('exec-dd506f40-3233-46ce-a9c8-530eb5857727.png'),
+  backButton: cloudUIFileID('button-back-wood-v2.png'),
 });
 
 function assignSources(icons, sources) {
@@ -75,7 +96,10 @@ export function loadHomeIcons(ctx, platform, onCloudProgress = () => {}) {
   iconSets.set(ctx, icons);
   assignSources(icons, localPushAnimationSources);
   if (!platform.resolveCloudFiles) {
-    assignSources(icons, { ...cloudHomeIconSources, background: homeBackgroundSource });
+    assignSources(icons, { ...cloudHomeIconSources, background: homeBackgroundSource,
+      levelsBackground: levelsBackgroundSource, backButton: homeIconSources.backButton,
+      starSelected: homeIconSources.starSelected, starUnselected: homeIconSources.starUnselected,
+      ...campaignIconSources });
     return;
   }
   platform.resolveCloudFiles(homeIconFileIDs)
@@ -89,6 +113,10 @@ export function loadHomeIcons(ctx, platform, onCloudProgress = () => {}) {
         }
       });
       console.warn('Cloud home images failed to resolve.', error);
+      assignSources(icons, { ...cloudHomeIconSources, background: homeBackgroundSource,
+        levelsBackground: levelsBackgroundSource, backButton: homeIconSources.backButton,
+        starSelected: homeIconSources.starSelected, starUnselected: homeIconSources.starUnselected,
+        ...campaignIconSources });
     });
 }
 
@@ -145,6 +173,42 @@ export function drawHomeBackground(ctx, x, y, width, height, elapsed = 0) {
       ctx.drawImage(entry.image,
         0, sourceY, entry.image.width, sourceHeight, 0, 0, tileWidth, height);
       ctx.restore();
+    }
+  }
+  ctx.restore();
+  return true;
+}
+
+export function drawLevelsBackground(ctx, x, y, width, height, frosted = false) {
+  const entry = iconSets.get(ctx)?.levelsBackground;
+  if (!entry?.ready || !entry.image.width || !entry.image.height) return false;
+  const sourceRatio = entry.image.width / entry.image.height;
+  const targetRatio = width / height;
+  let sourceX = 0;
+  let sourceY = 0;
+  let sourceWidth = entry.image.width;
+  let sourceHeight = entry.image.height;
+  if (sourceRatio > targetRatio) {
+    sourceWidth = entry.image.height * targetRatio;
+    sourceX = (entry.image.width - sourceWidth) / 2;
+  } else {
+    sourceHeight = entry.image.width / targetRatio;
+    sourceY = (entry.image.height - sourceHeight) / 2;
+  }
+  ctx.save();
+  if (frosted && typeof ctx.filter === 'string') {
+    ctx.filter = 'blur(9px)';
+    ctx.drawImage(entry.image, sourceX, sourceY, sourceWidth, sourceHeight,
+      x - 16, y - 16, width + 32, height + 32);
+  } else {
+    ctx.drawImage(entry.image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
+    // Older WeChat canvases lack filter; soften the image with translucent offset samples.
+    if (frosted) {
+      ctx.globalAlpha = 0.16;
+      for (const [dx, dy] of [[-5, 0], [5, 0], [0, -5], [0, 5], [-3, -3], [3, 3]]) {
+        ctx.drawImage(entry.image, sourceX, sourceY, sourceWidth, sourceHeight,
+          x - 8 + dx, y - 8 + dy, width + 16, height + 16);
+      }
     }
   }
   ctx.restore();

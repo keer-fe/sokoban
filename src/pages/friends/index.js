@@ -3,19 +3,19 @@ import { contains } from '../../ui/button.js';
 import { circle, panel, text } from '../../ui/draw.js';
 import { getHomeFont } from '../../ui/home-font.js';
 import { leaderboardCloseFileID, leaderboardCloseSource } from '../../ui/leaderboard-assets.js';
+import { cloudUIFileID, publicUISource } from '../../ui/cloud-assets.js';
 
 const WOOD = '#A85E2E';
 const DARK_WOOD = '#4A2716';
 const GOLD = '#FFD15E';
-const CLOUD_UI_ROOT = 'cloud://cloud1-d5gqpaioo2d8acf27.636c-cloud1-d5gqpaioo2d8acf27-1443887035/images/ui';
 export const friendsAssetSources = {
-  panel: 'assets/ui/friends-panel-v4.png',
-  refresh: 'assets/ui/friends-refresh-v2.png',
+  panel: publicUISource('friends-panel-v4.png'),
+  refresh: publicUISource('friends-refresh-v2.png'),
   close: leaderboardCloseSource,
 };
 export const friendsAssetFileIDs = Object.freeze({
-  panel: `${CLOUD_UI_ROOT}/friends-panel-v4.png`,
-  refresh: `${CLOUD_UI_ROOT}/friends-refresh-v2.png`,
+  panel: cloudUIFileID('friends-panel-v4.png'),
+  refresh: cloudUIFileID('friends-refresh-v2.png'),
   close: leaderboardCloseFileID,
 });
 export const refreshIconSource = friendsAssetSources.refresh;

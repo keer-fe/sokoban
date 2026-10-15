@@ -5,7 +5,9 @@ import { getHomeLayout } from '../src/pages/home/layout.js';
 import { ButtonInput } from '../src/ui/button.js';
 import { createApp } from '../src/app.js';
 import { createWechatPlatform, normalizeWechatWindowInfo } from '../src/platform/wechat.js';
-import { drawHomeBackground, drawHomeIcon, drawHomeSpriteFrame, homeBackgroundSource, homeIconFileIDs, homeIconSources, localPushAnimationSources, loadHomeIcons } from '../src/ui/home-icons.js';
+import { drawHomeBackground, drawHomeIcon, drawHomeSpriteFrame, drawLevelsBackground,
+  homeBackgroundSource, homeIconFileIDs, homeIconSources, localPushAnimationSources,
+  loadHomeIcons } from '../src/ui/home-icons.js';
 import { HOME_FONT_FILE_ID, loadHomeFont } from '../src/ui/home-font.js';
 import { drawPushAnimation } from '../src/pages/home/push-animation.js';
 
@@ -97,7 +99,7 @@ test('首页功能图标独立加载，未完成前回退、完成后分别绘�
   } };
   loadHomeIcons(ctx, platform, (name) => loaded.push(name));
   loadHomeIcons(ctx, platform);
-  assert.equal(images.length, 11);
+  assert.equal(images.length, 18);
   assert.deepEqual(images.map(image => image.src), Object.values(homeIconSources));
   assert.equal(drawHomeIcon(ctx, 'signin', 1, 2, 48), false);
   images.forEach(image => image.onload());
@@ -116,10 +118,16 @@ test('首页功能图标独立加载，未完成前回退、完成后分别绘�
   assert.equal(drawHomeIcon(ctx, 'undoCard', 337, 300, 64), true);
   assert.deepEqual(calls.at(-1), [images[7], 337, 300, 64, 64]);
   assert.equal(drawHomeIcon(ctx, 'missing', 0, 0, 10), false);
-  images[8].width = 1088;
-  images[8].height = 362;
+  const levelsBackground = images.find(image => image.src === homeIconSources.levelsBackground);
+  levelsBackground.width = 941;
+  levelsBackground.height = 1672;
+  assert.equal(drawLevelsBackground(ctx, 0, 0, 414, 896), true);
+  assert.deepEqual(calls.at(-1).slice(-4), [0, 0, 414, 896]);
+  const pushCharacter = images.find(image => image.src === localPushAnimationSources.pushCharacterCycle);
+  pushCharacter.width = 1088;
+  pushCharacter.height = 362;
   assert.equal(drawHomeSpriteFrame(ctx, 'pushCharacterCycle', 2, 8, 10, 20, 84), true);
-  assert.deepEqual(calls.at(-1), [images[8], 272, 0, 136, 362, 10, 20, 84, 84]);
+  assert.deepEqual(calls.at(-1), [pushCharacter, 272, 0, 136, 362, 10, 20, 84, 84]);
 });
 
 test('加载人物动画只使用包内素材，不等待或进入云资源清单', () => {
@@ -152,7 +160,7 @@ test('加载人物动画只使用包内素材，不等待或进入云资源清�
       return new Promise((resolve) => { resolveCloud = resolve; });
     },
   });
-  const animationImages = images.slice(-Object.keys(localPushAnimationSources).length);
+  const animationImages = images.filter(image => Object.values(localPushAnimationSources).includes(image.src));
   assert.deepEqual(animationImages.map((image) => image.src), Object.values(localPushAnimationSources));
   assert.equal(images[4].src, undefined);
   assert.equal(typeof resolveCloud, 'function');

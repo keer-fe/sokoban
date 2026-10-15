@@ -4,15 +4,15 @@ import { illustration } from './illustrations.js';
 import { theme } from './theme.js';
 import { getHomeFont } from './home-font.js';
 import { leaderboardCloseFileID, leaderboardCloseSource } from './leaderboard-assets.js';
+import { cloudUIFileID, publicUISource } from './cloud-assets.js';
 
 const WOOD = '#A85E2E';
 const DARK_WOOD = '#4A2716';
 const GOLD = '#FFD15E';
 const PAPER = '#FFF2C7';
 const GREEN = '#55B941';
-export const settingsPanelSource = 'assets/ui/settings-panel-v1.png';
-export const settingsPanelFileID =
-  'cloud://cloud1-d5gqpaioo2d8acf27.636c-cloud1-d5gqpaioo2d8acf27-1443887035/images/ui/settings-panel-v1.png';
+export const settingsPanelSource = publicUISource('settings-panel-v1.png');
+export const settingsPanelFileID = cloudUIFileID('settings-panel-v1.png');
 
 export class Modal extends Screen {
   constructor(controller, onAction) {

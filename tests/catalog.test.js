@@ -14,7 +14,7 @@ test('开放地图保留原始内容和稳定 ID，教学关独立编号', () =>
   const classic = levels.filter(level => level.campaign === 'classic');
   const adventure = levels.filter(level => level.campaign === 'adventure');
   assert.equal(classic.length, 106);
-  assert.equal(adventure.length, 6);
+  assert.equal(adventure.length, 12);
   assert.deepEqual(campaigns.map(campaign => campaign.id), ['classic', 'adventure', 'coop']);
   assert.ok(classic.every((level, index) => level.campaignIndex === index));
   assert.deepEqual(classic.slice(6).map(level => level.sourceNumber), Array.from({ length: 100 }, (_, i) => i + 1));
@@ -73,37 +73,70 @@ test('已标定的最少步数可求解并逐步通关', () => {
   });
 });
 
-test('统一分页覆盖所有开放关卡，返回选关保留当前关所在页', () => {
+test('棋盘画廊可滚动，模式切换保留独立滚动位置', () => {
   const c = new GameController({ readStorage: () => null });
-  const page = new LevelsPage(c, () => {});
-  const ids = [];
-  const classicEntries = c.campaignEntries('classic');
-  for (let i = 0; i < Math.ceil(classicEntries.length / 12); i++) {
-    page.resize(createViewport({ width: 320, height: 568 }));
-    ids.push(...page.entries.map(entry => entry.index));
-    assert.ok(page.buttons.every(button => !button.id.startsWith('filter:')));
-    c.handle('following');
-  }
-  assert.deepEqual(ids, classicEntries.map(entry => entry.index));
-  assert.equal(c.listPage, 8);
-  c.handle('campaign:adventure');
+  const actions = [];
+  const page = new LevelsPage(c, action => actions.push(action));
   page.resize(createViewport({ width: 320, height: 568 }));
-  assert.equal(c.levelCampaign, 'adventure');
-  assert.equal(c.listPage, 0);
-  assert.equal(page.entries.length, 6);
-  assert.deepEqual(page.entries.map(({ level }) => level.id),
-    Array.from({ length: 6 }, (_, index) => `adventure-switches-${index + 1}`));
   assert.ok(page.buttons.some(button => button.id === 'campaign:classic'));
   assert.ok(page.buttons.some(button => button.id === 'campaign:adventure'));
   assert.ok(page.buttons.some(button => button.id === 'campaign:coop'));
+  c.handle('campaign:classic');
+  page.resize(createViewport({ width: 320, height: 568 }));
+  const classicEntries = c.campaignEntries('classic');
+  assert.deepEqual(page.entries.map(entry => entry.index), classicEntries.map(entry => entry.index));
+  assert.ok(page.buttons.every(button => button.id !== 'previous' && button.id !== 'following'));
+  const firstVisible = page.buttons.filter(button => button.id.startsWith('level:')).map(button => button.id);
+  page.scrollBy(100000);
+  assert.equal(page.scrollOffsets.classic, page.maxScroll);
+  assert.notDeepEqual(page.buttons.filter(button => button.id.startsWith('level:')).map(button => button.id), firstVisible);
+  const dragStart = { x: 60, y: page.listBounds.y + 70, id: 1 };
+  page.handlePointer('start', dragStart);
+  page.handlePointer('move', { ...dragStart, y: dragStart.y - 40 });
+  page.handlePointer('end', { ...dragStart, y: dragStart.y - 40 });
+  assert.deepEqual(actions, []);
+  c.handle('campaign:adventure');
+  page.resize(createViewport({ width: 320, height: 568 }));
+  assert.equal(c.levelCampaign, 'adventure');
+  assert.equal(page.entries.length, 12);
+  assert.equal(page.scrollOffsets.adventure, 0);
+  assert.deepEqual(page.entries.map(({ level }) => level.id), [
+    ...Array.from({ length: 6 }, (_, index) => `adventure-switches-${index + 1}`),
+    ...Array.from({ length: 6 }, (_, index) => `adventure-weights-${index + 1}`),
+  ]);
   c.handle('campaign:coop');
   page.resize(createViewport({ width: 320, height: 568 }));
   assert.equal(c.levelCampaign, 'coop');
   assert.deepEqual(page.entries, []);
+  c.handle('campaign:classic'); page.resize(createViewport({ width: 320, height: 568 }));
+  assert.equal(page.scrollOffsets.classic, page.maxScroll);
+});
+
+test('画廊覆盖所有关卡并保持点击路由', () => {
+  const c = new GameController({ readStorage: () => null });
+  const actions = [];
+  const page = new LevelsPage(c, action => actions.push(action));
   c.handle('campaign:classic');
-  c.levelIndex = classicEntries.at(-1).index;
-  c.navigate('levels');
-  assert.equal(c.listPage, 8);
+  page.resize(createViewport({ width: 320, height: 568 }));
+  const seen = new Set();
+  for (let offset = 0; offset <= page.maxScroll + 220; offset += 220) {
+    page.scrollBy(220);
+    page.buttons.filter(button => button.id.startsWith('level:')).forEach(button => seen.add(button.id));
+  }
+  assert.ok(seen.has(`level:${page.entries.at(-1).index}`));
+  const click = id => {
+    const button = page.buttons.find(item => item.id === id);
+    assert.ok(button, id);
+    const point = { id: 1, x: button.x + button.width / 2, y: button.y + button.height / 2 };
+    page.handlePointer('start', point);
+    page.handlePointer('end', point);
+  };
+  page.scrollOffsets.classic = 0;
+  page.layout();
+  assert.equal(page.buttons.some(button => button.id === 'gallery:current'), false);
+  click('level:0');
+  assert.deepEqual(actions, ['level:0']);
+  assert.ok(!page.buttons.some(button => button.id.startsWith('chapter:')));
 });
 
 test('前六个教学关逐步增加步数', () => {
