@@ -2,6 +2,7 @@ import { Screen } from '../../ui/screen.js';
 import { contains } from '../../ui/button.js';
 import { circle, panel, text } from '../../ui/draw.js';
 import { getHomeFont } from '../../ui/home-font.js';
+import { leaderboardCloseFileID, leaderboardCloseSource } from '../../ui/leaderboard-assets.js';
 
 const WOOD = '#A85E2E';
 const DARK_WOOD = '#4A2716';
@@ -10,12 +11,12 @@ const CLOUD_UI_ROOT = 'cloud://cloud1-d5gqpaioo2d8acf27.636c-cloud1-d5gqpaioo2d8
 export const friendsAssetSources = {
   panel: 'assets/ui/friends-panel-v4.png',
   refresh: 'assets/ui/friends-refresh-v2.png',
-  close: 'assets/ui/friends-close-v2.png',
+  close: leaderboardCloseSource,
 };
 export const friendsAssetFileIDs = Object.freeze({
   panel: `${CLOUD_UI_ROOT}/friends-panel-v4.png`,
   refresh: `${CLOUD_UI_ROOT}/friends-refresh-v2.png`,
-  close: `${CLOUD_UI_ROOT}/friends-close-v2.png`,
+  close: leaderboardCloseFileID,
 });
 export const refreshIconSource = friendsAssetSources.refresh;
 
@@ -57,11 +58,11 @@ export class FriendsPage extends Screen {
     this.buttons = [
       { id: 'close', label: '×', x: 337, y: top + 18, width: 48, height: 48,
         fontSize: 29, fill: GOLD, color: DARK_WOOD },
-      { id: 'friends:tab-friends', label: '好友榜', x: 58, y: top + 132, width: 88, height: 38 },
-      { id: 'friends:tab-world', label: '世界榜', x: 152, y: top + 132, width: 88, height: 38 },
+      { id: 'friends:tab-friends', label: '好友榜', x: 58, y: top + 138, width: 88, height: 38 },
+      { id: 'friends:tab-world', label: '世界榜', x: 152, y: top + 138, width: 88, height: 38 },
     ];
     if (this.controller.friendsTab === 'friends') this.buttons.push(
-      { id: 'friends:refresh', label: '刷新', x: 303, y: top + 126, width: 52, height: 52,
+      { id: 'friends:refresh', label: '刷新', x: 303, y: top + 132, width: 52, height: 52,
         fontSize: 12, fill: '#FFE7A1', color: DARK_WOOD });
     const bridge = this.controller.platform.friendBoard;
     if (bridge) bridge.send('resize', { width: this.bounds.width, height: this.bounds.height,
@@ -124,7 +125,7 @@ export class FriendsPage extends Screen {
         refreshButton.y + refreshButton.height / 2,
         { size: 14, color: '#FFF5CE', outline: 2 });
     }
-    text(ctx, isWorld ? '更多玩法 · 敬请期待' : '上下滑动 · 查看完整榜单', 207, top + frameHeight - 27,
+    text(ctx, isWorld ? '更多玩法 · 敬请期待' : '上下滑动 · 查看完整榜单', 207, top + frameHeight - 69,
       { size: 12, color: '#FFECC0', outline: 2, spacing: 1 });
   }
 
@@ -172,5 +173,8 @@ export class FriendsPage extends Screen {
     super.handlePointer(type, point);
   }
 
-  pause() { this.swipe = null; super.pause(); }
+  pause() {
+    this.swipe = null;
+    super.pause();
+  }
 }

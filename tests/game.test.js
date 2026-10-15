@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { levels } from './fixtures/levels.js';
-import { GameSession, score } from '../src/game/engine.js';
+import { areDoorsOpen, GameSession, score } from '../src/game/engine.js';
 import { solve } from '../tools/solve-levels.js';
 import { GameController } from '../src/game/controller.js';
 import { beijingDate, ProgressStore } from '../src/game/progress.js';
@@ -62,6 +62,24 @@ test('撞墙和连箱无效；撤销恢复箱子和步数；重开清空历史',
   assert.equal(blocked.state.steps, 0);
 });
 
+test('按钮控制门，角色和箱子都能保持门开启，撤销恢复机关状态', () => {
+  const playerSwitch = new GameSession({ id: 'player-switch',
+    rows: ['########', '#@ !D$.#', '########'] });
+  assert.equal(playerSwitch.move('right'), true);
+  assert.equal(playerSwitch.move('right'), true);
+  assert.equal(areDoorsOpen(playerSwitch.board, playerSwitch.state), true);
+  assert.equal(playerSwitch.move('right'), true);
+  assert.equal(areDoorsOpen(playerSwitch.board, playerSwitch.state), false);
+  assert.equal(playerSwitch.undo(), true);
+  assert.equal(areDoorsOpen(playerSwitch.board, playerSwitch.state), true);
+
+  const boxSwitch = new GameSession({ id: 'box-switch',
+    rows: ['#########', '#@$!.#  #', '#    D$.#', '#    #  #', '#    #  #', '#########'] });
+  assert.equal(boxSwitch.move('right'), true);
+  assert.equal(areDoorsOpen(boxSwitch.board, boxSwitch.state), true);
+  assert.equal(boxSwitch.board.buttons.has(boxSwitch.state.boxes[0]), true);
+});
+
 test('评分边界、最高星级和最佳步数独立保存，损坏存档回退', () => {
   assert.deepEqual([score(30, 20), score(31, 20), score(40, 20), score(41, 20)], [3, 2, 2, 1]);
   const p = platform();
@@ -116,6 +134,24 @@ test('导航、弹窗阻断、撤销卡、重开和完整通关流程', () => {
   assert.equal(restored.progress.allComplete, true); assert.equal(restored.progress.state.cards, 4);
 });
 
+test('暂停菜单进入设置后返回菜单，首页设置完成后直接关闭', () => {
+  const p = platform(); let vibrations = 0; p.vibrate = () => { vibrations += 1; };
+  const c = new GameController(p, levels);
+  c.openLevel(0); c.modal = null;
+  c.handle('menu'); c.handle('settings');
+  assert.equal(c.modal, 'settings');
+  assert.equal(c.settingsReturn, 'menu');
+  const musicBefore = c.progress.state.music;
+  c.handle('music'); assert.equal(c.progress.state.music, !musicBefore);
+  c.handle('vibration'); assert.equal(c.progress.state.vibration, true);
+  assert.equal(vibrations, 1);
+  c.handle('close'); assert.equal(c.modal, 'menu');
+  c.handle('close'); assert.equal(c.modal, null);
+  c.navigate('home'); c.handle('settings'); c.handle('close');
+  assert.equal(c.modal, null);
+  assert.equal(new GameController(p, levels).progress.state.vibration, true);
+});
+
 test('小屏和全面屏上的方向键、棋盘、弹窗均在安全区域内', () => {
   const c = new GameController(platform(), levels); c.openLevel(0);
   for (const info of [{ width: 320, height: 568 }, { width: 390, height: 844, safeTop: 91, safeBottom: 34 }]) {
@@ -128,9 +164,9 @@ test('小屏和全面屏上的方向键、棋盘、弹窗均在安全区域内',
     });
     assert.ok(page.boardBounds.y + page.boardBounds.height < page.buttons.find((b) => b.id === 'undo').y);
     const modal = new Modal(c, () => {});
-    for (const kind of ['menu', 'win', 'tutorial', 'signin', 'cards', 'deadlock']) {
+    for (const kind of ['menu', 'settings', 'win', 'tutorial', 'signin', 'cards', 'deadlock']) {
       c.modal = kind; modal.resize(viewport);
-      const height = kind === 'win' ? 680 : 520;
+      const height = kind === 'win' ? 680 : kind === 'settings' ? 450 : 520;
       assert.ok(modal.top + height < bottom);
       modal.buttons.forEach((button) => assert.ok(button.y + button.height < modal.top + height));
     }

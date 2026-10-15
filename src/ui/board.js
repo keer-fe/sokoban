@@ -2,6 +2,7 @@ import { panel, circle, line } from './draw.js';
 import { illustration } from './illustrations.js';
 import { theme } from './theme.js';
 import { drawArt, playerSprites } from './art.js';
+import { areDoorsOpen } from '../game/engine.js';
 
 export function drawBoard(ctx, game, bounds, zoom = false, elapsed = 0) {
   const { board, state } = game;
@@ -30,17 +31,44 @@ export function drawBoard(ctx, game, bounds, zoom = false, elapsed = 0) {
       } else if (board.floors.has(pos)) {
         if (!drawArt(ctx, 'floor', px, py, cell)) panel(ctx, px, py, cell, cell, { fill: (row + col) % 2 ? '#F4D6A0' : '#EBC78F',
           stroke: '#D3AB70', lineWidth: 1, radius: 0 });
+        if (board.buttons.has(pos)) drawPressureButton(ctx, px, py, cell,
+          pos === state.player || state.boxes.includes(pos));
         if (board.goals.has(pos) && !state.boxes.includes(pos)) {
           // A slow 1.6-second pulse keeps the marker visible even at its dimmest.
           illustration(ctx, 'target', px + 2, py + 2, cell - 4,
             { frameAlpha: 0.65 + 0.35 * Math.cos(elapsed * Math.PI * 2 / 1.6) });
         }
+        if (board.doors.has(pos)) drawDoor(ctx, px, py, cell,
+          areDoorsOpen(board, state) || pos === state.player || state.boxes.includes(pos));
       }
       if (state.boxes.includes(pos)) illustration(ctx, board.goals.has(pos) ? 'done' : 'crate', px + 2, py + 2, cell - 4);
       if (pos === state.player) drawPlayer(ctx, px, py, cell, state.facing);
     }
   }
   ctx.restore();
+}
+
+function drawPressureButton(ctx, x, y, size, pressed) {
+  const inset = size * 0.2;
+  panel(ctx, x + inset, y + inset, size - inset * 2, size - inset * 2,
+    { fill: pressed ? '#42C96B' : '#FFD34E', stroke: '#6B4B1F', lineWidth: Math.max(1, size * 0.06), radius: size * 0.16 });
+  circle(ctx, x + size / 2, y + size / 2, size * 0.1, pressed ? '#167A38' : '#D34B32');
+}
+
+function drawDoor(ctx, x, y, size, open) {
+  if (open) {
+    panel(ctx, x + size * 0.05, y + size * 0.04, size * 0.13, size * 0.92,
+      { fill: '#63738B', lineWidth: 1, radius: 1 });
+    panel(ctx, x + size * 0.82, y + size * 0.04, size * 0.13, size * 0.92,
+      { fill: '#63738B', lineWidth: 1, radius: 1 });
+    return;
+  }
+  panel(ctx, x + size * 0.08, y + size * 0.04, size * 0.84, size * 0.92,
+    { fill: '#7D8DA5', stroke: '#34445C', lineWidth: Math.max(1, size * 0.05), radius: 2 });
+  for (let i = 1; i < 4; i += 1) {
+    line(ctx, [[x + size * i / 4, y + size * 0.1], [x + size * i / 4, y + size * 0.9]],
+      '#D9E2EE', Math.max(1, size * 0.05));
+  }
 }
 
 function drawPlayer(ctx, x, y, size, facing = 'down') {

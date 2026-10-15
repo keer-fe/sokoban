@@ -1,12 +1,56 @@
 import { Screen, stars } from './screen.js';
-import { panel, text } from './draw.js';
+import { circle, line, panel, text } from './draw.js';
 import { illustration } from './illustrations.js';
 import { theme } from './theme.js';
+import { getHomeFont } from './home-font.js';
+import { leaderboardCloseFileID, leaderboardCloseSource } from './leaderboard-assets.js';
+
+const WOOD = '#A85E2E';
+const DARK_WOOD = '#4A2716';
+const GOLD = '#FFD15E';
+const PAPER = '#FFF2C7';
+const GREEN = '#55B941';
+export const settingsPanelSource = 'assets/ui/settings-panel-v1.png';
+export const settingsPanelFileID =
+  'cloud://cloud1-d5gqpaioo2d8acf27.636c-cloud1-d5gqpaioo2d8acf27-1443887035/images/ui/settings-panel-v1.png';
 
 export class Modal extends Screen {
+  constructor(controller, onAction) {
+    super(controller, onAction);
+    this.settingsPanel = null;
+    this.closeButton = null;
+    if (controller.platform.createImage) {
+      const image = controller.platform.createImage();
+      this.settingsPanel = { image, ready: false };
+      image.onload = () => { this.settingsPanel.ready = true; };
+      image.onerror = () => {
+        this.settingsPanel.ready = false;
+        if (image.src !== settingsPanelSource) image.src = settingsPanelSource;
+      };
+      if (controller.platform.resolveCloudFiles) {
+        controller.platform.resolveCloudFiles({ panel: settingsPanelFileID })
+          .then(({ panel }) => { image.src = panel; })
+          .catch(() => { image.src = settingsPanelSource; });
+      } else image.src = settingsPanelSource;
+
+      const closeImage = controller.platform.createImage();
+      this.closeButton = { image: closeImage, ready: false };
+      closeImage.onload = () => { this.closeButton.ready = true; };
+      closeImage.onerror = () => {
+        this.closeButton.ready = false;
+        if (closeImage.src !== leaderboardCloseSource) closeImage.src = leaderboardCloseSource;
+      };
+      if (controller.platform.resolveCloudFiles) {
+        controller.platform.resolveCloudFiles({ close: leaderboardCloseFileID })
+          .then(({ close }) => { closeImage.src = close; })
+          .catch(() => { closeImage.src = leaderboardCloseSource; });
+      } else closeImage.src = leaderboardCloseSource;
+    }
+  }
+
   layout() {
     const c = this.controller;
-    const height = c.modal === 'win' ? 700 : 540;
+    const height = c.modal === 'win' ? 700 : c.modal === 'settings' ? 470 : 540;
     this.top = this.viewport.safeTop + Math.max(24,
       (this.viewport.height - this.viewport.safeTop - this.viewport.safeBottom - height) / 2);
     const y = this.top;
@@ -16,21 +60,23 @@ export class Modal extends Screen {
     if (c.modal === 'deadlock') this.buttons = [
       button('undo', '撤销一步（1 张卡）', 1, { primary: true }),
       button('restart', '重新开始', 2), button('close', '返回棋盘', 3)];
-    if (c.modal === 'menu') this.buttons = [button('close', '继续游戏', 0, { primary: true }),
-      button('restart', '重新开始', 1), button('levels', '返回选关', 2),
-      { ...button('music', `音乐 ${c.progress.state.music ? '开' : '关'}`, 3), width: 142 },
-      { ...button('sound', `音效 ${c.progress.state.sound ? '开' : '关'}`, 3), x: 213, width: 142 }];
+    if (c.modal === 'menu') this.buttons = [
+      button('close', '继续游戏', 0, { y: y + 168, primary: true }),
+      button('restart', '重新开始', 1, { y: y + 232, width: 142 }),
+      button('levels', '选择关卡', 1, { x: 213, y: y + 232, width: 142 }),
+      button('settings', '游戏设置', 2, { y: y + 296 }),
+    ];
     if (c.modal === 'settings') this.buttons = [
-      { ...button('music', `音乐 ${c.progress.state.music ? '开' : '关'}`, 1), width: 142 },
-      { ...button('sound', `音效 ${c.progress.state.sound ? '开' : '关'}`, 1), x: 213, width: 142 },
-      button('close', '返回首页', 3, { primary: true }),
+      button('music', '', 0, { x: 74, y: y + 118, width: 266, height: 58 }),
+      button('sound', '', 1, { x: 74, y: y + 186, width: 266, height: 58 }),
+      button('vibration', '', 2, { x: 74, y: y + 254, width: 266, height: 58 }),
     ];
     if (c.modal === 'menu' && c.progress.state.solutions[c.game.level.id]) {
-      this.buttons[1].width = 142;
-      this.buttons.push(button('replay-saved', '已存解法', 1, { x: 213, width: 142, fontSize: 16 }));
+      this.buttons[3].y = y + 360;
+      this.buttons.push(button('replay-saved', '回放最佳解法', 2, { y: y + 296 }));
     }
-    if (c.modal === 'win') this.buttons = [button(c.levelIndex === c.levels.length - 1 ? 'home' : 'next',
-      c.levelIndex === c.levels.length - 1 ? '返回首页' : '下一关', 0, { y: y + 494, primary: true }),
+    if (c.modal === 'win') this.buttons = [button(c.nextLevelIndex() === null ? 'levels' : 'next',
+      c.nextLevelIndex() === null ? '返回选关' : '下一关', 0, { y: y + 494, primary: true }),
     button('retry', '再玩一次', 0, { y: y + 554, width: 142 }),
     button('replay-current', '回放本次', 0, { y: y + 554, x: 213, width: 142 }),
     button('levels', '返回选关', 0, { y: y + 614 }),
@@ -46,10 +92,16 @@ export class Modal extends Screen {
     this.layout();
     const c = this.controller;
     const top = this.top;
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillStyle = c.modal === 'menu' || c.modal === 'settings'
+      ? 'rgba(18, 43, 43, 0.52)'
+      : 'rgba(0,0,0,0.7)';
     // Cover the full physical viewport, including any horizontal letterboxing.
     const extra = this.viewport.offsetX / this.viewport.scale;
     ctx.fillRect(-extra, 0, 414 + extra * 2, this.viewport.height);
+    if (c.modal === 'menu' || c.modal === 'settings') {
+      this.renderGameMenu(ctx);
+      return;
+    }
     panel(ctx, 37, top, 340, c.modal === 'win' ? 680 : 520, { fill: theme.sky, radius: 10, lineWidth: 5, shadow: theme.ink, offset: 7 });
     for (let i = 0; i < 8; i += 1) panel(ctx, 41 + i * 41.5, top + 3, 41.5, 13,
       { fill: theme.brick, lineWidth: 2, radius: 0 });
@@ -63,14 +115,11 @@ export class Modal extends Screen {
       caption('可以撤销刚才的一步，或重新开始', 211, { size: 13 });
       caption(`当前拥有 ${c.progress.state.cards} 张撤销卡`, 249, { size: 13 });
     } else if (c.modal === 'menu') {
-      caption(`第 ${c.levelIndex + 1} 关 · ${c.game.state.steps} 步`, 165);
+      caption(`第 ${c.campaignLevelNumber()} 关 · ${c.game.state.steps} 步`, 165);
       caption('好好想一想，答案就在下一步', 195, { size: 13 });
       caption('音乐与音效资源即将上线', 490, { size: 12 });
-    } else if (c.modal === 'settings') {
-      caption('按你的习惯调整游戏声音', 176, { size: 13 });
-      caption('设置会自动保存在本机', 223, { size: 13 });
     } else if (c.modal === 'win') {
-      caption(`第 ${c.levelIndex + 1} 关完成`, 157);
+      caption(`第 ${c.campaignLevelNumber()} 关完成`, 157);
       if (c.result.stars) stars(ctx, c.result.stars, 140, top + 182, 38, 10);
       else caption('挑战完成！', 206, { size: 24, color: theme.yellow });
       const record = c.progress.state.records[c.game.level.id];
@@ -100,4 +149,146 @@ export class Modal extends Screen {
     }
     this.drawButtons(ctx);
   }
+
+  renderGameMenu(ctx) {
+    const c = this.controller;
+    const top = this.top;
+    const illustratedSettings = c.modal === 'settings' && this.settingsPanel?.ready;
+    if (illustratedSettings) ctx.drawImage(this.settingsPanel.image, 27, top, 360, 450);
+    else {
+      const compact = c.modal === 'settings';
+      panel(ctx, compact ? 27 : 18, top, compact ? 360 : 378, compact ? 450 : 520,
+        { fill: WOOD, stroke: DARK_WOOD, lineWidth: 5, radius: 22, shadow: DARK_WOOD, offset: 7 });
+      panel(ctx, compact ? 98 : 89, top + (compact ? 8 : 17), compact ? 218 : 236, compact ? 62 : 70,
+        { fill: '#C97828', stroke: DARK_WOOD, lineWidth: 4, radius: 18 });
+    }
+    text(ctx, c.modal === 'menu' ? '暂停菜单' : '游戏设置', 207,
+      top + (c.modal === 'settings' ? 51 : 65),
+      { size: 34, color: '#FFF2B5', outline: 5, font: getHomeFont(), spacing: 2 });
+    if (!illustratedSettings) panel(ctx, c.modal === 'settings' ? 49 : 39,
+      top + (c.modal === 'settings' ? 82 : 108), c.modal === 'settings' ? 316 : 336,
+      c.modal === 'settings' ? 286 : 350,
+      { fill: PAPER, stroke: DARK_WOOD, lineWidth: 4, radius: 18, shadow: '#6D391E', offset: 4 });
+
+    this.drawCloseButton(ctx, top);
+    if (c.modal === 'menu') this.drawPauseMenu(ctx, top);
+    else this.drawSettings(ctx, top);
+    if (c.modal === 'menu') text(ctx,
+      `经典模式 · 第 ${c.campaignLevelNumber()} 关 · ${c.game.state.steps} 步`, 207, top + 486,
+      { size: 13, color: '#FFECC0', outline: 2, font: getHomeFont() });
+  }
+
+  drawCloseButton(ctx, top) {
+    const pressed = this.input.activeId === 'dismiss';
+    const settings = this.controller.modal === 'settings';
+    const baseX = settings ? 326 : 337;
+    const size = settings ? 44 : 48;
+    const x = baseX + (pressed ? 3 : 0);
+    const baseY = settings ? top + 14 : top + 18;
+    const y = baseY + (pressed ? 3 : 0);
+    if (this.closeButton?.ready) ctx.drawImage(this.closeButton.image, x, y, size, size);
+    else {
+      circle(ctx, x + size / 2, y + size / 2, size / 2 - 2, GOLD, 4, DARK_WOOD);
+      text(ctx, '×', x + size / 2, y + size / 2 - 1,
+        { size: settings ? 27 : 29, color: DARK_WOOD, font: getHomeFont() });
+    }
+    if (!this.buttons.some(button => button.id === 'dismiss')) {
+      this.buttons.push({ id: 'dismiss', label: '', x: baseX, y: baseY, width: size, height: size });
+    }
+  }
+
+  drawPauseMenu(ctx, top) {
+    text(ctx, '先喘口气，想好下一步再继续', 207, top + 137,
+      { size: 14, color: '#8C674C', font: getHomeFont() });
+    this.buttons.filter(button => button.x !== 337).forEach(button => this.drawMenuButton(ctx, button));
+  }
+
+  drawMenuButton(ctx, button) {
+    const pressed = this.input.activeId === button.id;
+    const shift = pressed ? 4 : 0;
+    const primary = button.id === 'close';
+    panel(ctx, button.x + shift, button.y + shift, button.width, button.height, {
+      fill: primary ? GREEN : '#FFE6A5', stroke: DARK_WOOD, lineWidth: 3, radius: 13,
+      shadow: pressed ? null : primary ? '#2F7E31' : '#C68B45', offset: 4,
+    });
+    const iconX = button.x + shift + (button.width > 200 ? 37 : 27);
+    const iconY = button.y + shift + button.height / 2;
+    const icon = button.id === 'close' && button.label === '返回菜单' ? 'back' : button.id;
+    this.drawMenuIcon(ctx, icon, iconX, iconY, primary ? '#FFF8D5' : DARK_WOOD);
+    text(ctx, button.label, button.x + shift + button.width / 2 + 10,
+      button.y + shift + button.height / 2,
+      { size: button.width < 180 ? 15 : 18, color: primary ? '#FFF8D5' : DARK_WOOD,
+        outline: primary ? 2 : 0, font: getHomeFont() });
+  }
+
+  drawMenuIcon(ctx, id, x, y, color) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (id === 'back') {
+      line(ctx, [[x + 8, y - 9], [x - 4, y], [x + 8, y + 9]], color, 4);
+    } else if (id === 'done') {
+      line(ctx, [[x - 8, y], [x - 2, y + 7], [x + 10, y - 8]], color, 4);
+    } else if (id === 'close') {
+      ctx.beginPath(); ctx.moveTo(x - 5, y - 9); ctx.lineTo(x + 8, y); ctx.lineTo(x - 5, y + 9); ctx.closePath(); ctx.fill();
+    } else if (id === 'restart' || id === 'replay-saved') {
+      ctx.beginPath(); ctx.arc(x, y, 9, -Math.PI * 0.75, Math.PI * 0.9); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x - 9, y - 8); ctx.lineTo(x - 10, y + 1); ctx.lineTo(x - 2, y - 3); ctx.fill();
+    } else if (id === 'levels') {
+      [[-7, -7], [3, -7], [-7, 3], [3, 3]].forEach(([dx, dy]) => ctx.fillRect(x + dx, y + dy, 7, 7));
+    } else {
+      line(ctx, [[x - 9, y - 7], [x + 9, y - 7]], color, 3);
+      line(ctx, [[x - 9, y], [x + 9, y]], color, 3);
+      line(ctx, [[x - 9, y + 7], [x + 9, y + 7]], color, 3);
+      circle(ctx, x - 2, y - 7, 4, color); circle(ctx, x + 5, y, 4, color); circle(ctx, x - 5, y + 7, 4, color);
+    }
+    ctx.restore();
+  }
+
+  drawSettings(ctx, top) {
+    for (const button of this.buttons.filter(item => ['music', 'sound', 'vibration'].includes(item.id))) {
+      const active = cState(this.controller, button.id);
+      const pressed = this.input.activeId === button.id;
+      const shift = pressed ? 3 : 0;
+      panel(ctx, button.x + shift, button.y + shift, button.width, button.height, {
+        fill: '#FFF9E5', stroke: DARK_WOOD, lineWidth: 3, radius: 14,
+        shadow: pressed ? null : '#D2A75B', offset: 3,
+      });
+      this.drawSettingIcon(ctx, button.id, button.x + 30 + shift, button.y + 29 + shift, active);
+      const labels = { music: '背景音乐', sound: '游戏音效', vibration: '震动反馈' };
+      text(ctx, labels[button.id], button.x + 58 + shift,
+        button.y + 29 + shift, { size: 18, color: DARK_WOOD, align: 'left', font: getHomeFont() });
+      this.drawToggle(ctx, button.x + 191 + shift, button.y + 12 + shift, active);
+    }
+  }
+
+  drawToggle(ctx, x, y, active) {
+    panel(ctx, x, y, 58, 34, { fill: active ? GREEN : '#B8A991', stroke: DARK_WOOD, lineWidth: 3, radius: 17 });
+    circle(ctx, x + (active ? 41 : 17), y + 17, 12, '#FFF9E5', 2, DARK_WOOD);
+  }
+
+  drawSettingIcon(ctx, id, x, y, active) {
+    const color = active ? '#3D9634' : '#9B8064';
+    ctx.save(); ctx.fillStyle = color; ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    if (id === 'music') {
+      line(ctx, [[x + 2, y - 13], [x + 2, y + 7]], color, 3);
+      line(ctx, [[x + 2, y - 13], [x + 13, y - 16], [x + 13, y + 4]], color, 3);
+      circle(ctx, x - 3, y + 10, 6, color); circle(ctx, x + 8, y + 7, 6, color);
+    } else if (id === 'sound') {
+      ctx.beginPath(); ctx.moveTo(x - 14, y - 6); ctx.lineTo(x - 7, y - 6); ctx.lineTo(x + 2, y - 14);
+      ctx.lineTo(x + 2, y + 14); ctx.lineTo(x - 7, y + 6); ctx.lineTo(x - 14, y + 6); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.arc(x + 3, y, 10, -0.8, 0.8); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x + 3, y, 16, -0.7, 0.7); ctx.stroke();
+    } else {
+      panel(ctx, x - 8, y - 14, 16, 28, { fill: color, stroke: color, lineWidth: 2, radius: 4 });
+      line(ctx, [[x - 13, y - 9], [x - 17, y - 5], [x - 17, y + 5], [x - 13, y + 9]], color, 2);
+      line(ctx, [[x + 13, y - 9], [x + 17, y - 5], [x + 17, y + 5], [x + 13, y + 9]], color, 2);
+    }
+    ctx.restore();
+  }
 }
+
+function cState(controller, id) { return Boolean(controller.progress.state[id]); }

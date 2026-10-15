@@ -1,6 +1,6 @@
 import { theme } from './theme.js';
 
-export const HOME_FONT_FILE_ID = 'cloud://cloud1-d5gqpaioo2d8acf27.636c-cloud1-d5gqpaioo2d8acf27-1443887035/fonts/nishiki-teki-2.ttf';
+export const HOME_FONT_FILE_ID = 'cloud://cloud1-d5gqpaioo2d8acf27.636c-cloud1-d5gqpaioo2d8acf27-1443887035/fonts/YuWoErYanNiZuiKeAi-2.ttf';
 
 let homeFont = theme.font;
 

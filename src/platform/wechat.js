@@ -80,6 +80,9 @@ export function createWechatPlatform(api) {
       },
     } : null,
     createImage: () => api.createImage(),
+    vibrate: () => {
+      if (typeof api.vibrateShort === 'function') api.vibrateShort({ type: 'light' });
+    },
     resolveCloudFiles(fileIDs) {
       if (!api.cloud || typeof api.cloud.getTempFileURL !== 'function') {
         return Promise.reject(new Error('wx.cloud.getTempFileURL is unavailable'));

@@ -43,7 +43,7 @@ export class GamePage extends Screen {
     this.layout();
     const c = this.controller;
     const game = c.game;
-    header(ctx, this.top, `第 ${c.levelIndex + 1} 关`, c.replay ? '解法回放 · 不影响成绩和撤销卡' : game.level.name);
+    header(ctx, this.top, `第 ${c.campaignLevelNumber()} 关`, c.replay ? '解法回放 · 不影响成绩和撤销卡' : game.level.tip || game.level.name);
     drawBoard(ctx, game, this.boardBounds, c.zoom, elapsed);
     text(ctx, c.replay ? `${game.state.steps} / ${c.replay.moves.length} 步` : `${game.state.steps} 步`, 387, this.statusY + 22,
       { size: 22, color: theme.yellow, outline: 1, align: 'right' });

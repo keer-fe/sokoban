@@ -1,8 +1,7 @@
 import { PROGRESS_KEY, ProgressSync, rankFriends } from './model.js';
 import { apiError, explainError, needsPrivacyDeclaration } from './errors.js';
 import { createLevelBoard } from './level-board.js';
-
-export const FRIENDS_LOADING_VIDEO_FILE_ID = 'cloud://cloud1-d5gqpaioo2d8acf27.636c-cloud1-d5gqpaioo2d8acf27-1443887035/images/animation/loading.mp4';
+import { createFriendsPushAnimation } from './push-animation.js';
 
 export function createOpenDataBoard(api, timers = {
   setTimeout: (callback, delay) => setTimeout(callback, delay),
@@ -15,7 +14,6 @@ export function createOpenDataBoard(api, timers = {
   let loadError = null;
   let generation = 0, retryTimer = null, retries = 0, paused = false;
   let loadingTimer = null, loadingTick = 0, fontFamily = 'sans-serif';
-  let loadingVideo = null;
   const avatars = new Map();
   const medalSources = [
     'open-data/assets/medal-gold.png',
@@ -30,6 +28,7 @@ export function createOpenDataBoard(api, timers = {
     entry.image.src = source;
     return entry;
   });
+  const loadingPush = createFriendsPushAnimation(api, draw);
   function request(name, options) {
     return new Promise((resolve, reject) => {
       let finished = false;
@@ -109,37 +108,6 @@ export function createOpenDataBoard(api, timers = {
   function stopLoadingAnimation() {
     if (loadingTimer !== null) timers.clearTimeout(loadingTimer);
     loadingTimer = null;
-    if (loadingVideo) {
-      if (typeof loadingVideo.stop === 'function') loadingVideo.stop();
-      else if (typeof loadingVideo.pause === 'function') loadingVideo.pause();
-      if (typeof loadingVideo.destroy === 'function') loadingVideo.destroy();
-      loadingVideo = null;
-    }
-  }
-  function startLoadingVideo() {
-    if (loadingVideo) return true;
-    if (typeof api.createVideo !== 'function') return false;
-    try {
-      const size = Math.min(180, width - 48);
-      loadingVideo = api.createVideo({
-        src: FRIENDS_LOADING_VIDEO_FILE_ID,
-        x: (width - size) / 2,
-        y: (height - size) / 2 - 38,
-        width: size,
-        height: size,
-        autoplay: true,
-        loop: true,
-        muted: true,
-        controls: false,
-        showCenterPlayBtn: false,
-      });
-      if (loadingVideo && typeof loadingVideo.play === 'function') loadingVideo.play();
-      return Boolean(loadingVideo);
-    } catch (error) {
-      loadingVideo = null;
-      console.warn('[好友榜] loading.mp4 unavailable, using canvas fallback', error);
-      return false;
-    }
   }
   function animateLoading() {
     if (!visible || loadState !== 'loading' || loadingTimer !== null) return;
@@ -152,31 +120,8 @@ export function createOpenDataBoard(api, timers = {
   function drawLoading() {
     const centerX = width / 2;
     const centerY = height / 2 - 26;
-    if (startLoadingVideo()) {
-      label('正在获取好友进度…', centerX, centerY + 88, 16, '#6D4327', 'center', fontFamily);
-      return;
-    }
-    ctx.save();
-    ctx.translate(centerX, centerY);
-    ctx.rotate(loadingTick * 0.12);
-    for (let i = 0; i < 4; i += 1) {
-      ctx.save();
-      ctx.rotate(i * Math.PI / 2);
-      ctx.translate(0, -30);
-      ctx.globalAlpha = 0.3 + ((i + loadingTick) % 4) * 0.2;
-      ctx.fillStyle = i % 2 ? '#55B941' : '#F4B93D';
-      roundedRect(-7, -7, 14, 14, 4);
-      ctx.fill();
-      ctx.restore();
-    }
-    ctx.restore();
-    label('正在获取好友进度…', centerX, centerY + 48, 16, '#6D4327', 'center', fontFamily);
-    for (let i = 0; i < 3; i += 1) {
-      ctx.globalAlpha = 0.25 + ((loadingTick + i) % 3) * 0.35;
-      ctx.beginPath(); ctx.arc(centerX - 10 + i * 10, centerY + 70, 3, 0, Math.PI * 2);
-      ctx.fillStyle = '#55B941'; ctx.fill();
-    }
-    ctx.globalAlpha = 1;
+    loadingPush.draw(ctx, centerX, centerY + 42, loadingTick);
+    label('正在获取好友进度…', centerX, centerY + 78, 16, '#6D4327', 'center', fontFamily);
     animateLoading();
   }
   function draw() {
@@ -217,11 +162,17 @@ export function createOpenDataBoard(api, timers = {
       ctx.strokeStyle = row.rank <= 3 ? ['#E9B640', '#AAB5A1', '#D69B67'][row.rank - 1] : '#E8D7B5';
       ctx.lineWidth = 1;
       roundedRect(7, y + 3, width - 15, rowHeight - 7, 15);
-      ctx.fill(); ctx.stroke();
+      ctx.fill();
       if (row.rank <= 3) {
+        ctx.save();
+        roundedRect(7, y + 3, width - 15, rowHeight - 7, 15);
+        ctx.clip();
         ctx.fillStyle = ['#F4B93D', '#8BB881', '#D59A5C'][row.rank - 1];
-        ctx.fillRect(7, y + 3, 4, rowHeight - 7);
+        ctx.fillRect(7, y + 3, 6, rowHeight - 7);
+        ctx.restore();
       }
+      roundedRect(7, y + 3, width - 15, rowHeight - 7, 15);
+      ctx.stroke();
       const medal = medals[row.rank - 1];
       if (medal?.ready) ctx.drawImage(medal.image, 14, centerY - 19, 38, 38);
       else label(row.rank <= 3 ? row.rank : `#${row.rank}`,

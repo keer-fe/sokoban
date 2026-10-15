@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PROGRESS_KEY, readProgress, rankFriends, ProgressSync } from '../open-data/model.js';
-import { createOpenDataBoard, FRIENDS_LOADING_VIDEO_FILE_ID } from '../open-data/context.js';
+import { createOpenDataBoard } from '../open-data/context.js';
+import { FRIENDS_PUSH_SOURCES } from '../open-data/push-animation.js';
 import { GameController } from '../src/game/controller.js';
 import { FriendsPage, friendsAssetFileIDs, friendsAssetSources, refreshIconSource } from '../src/pages/friends/index.js';
 import { createViewport } from '../src/core/viewport.js';
@@ -170,9 +171,11 @@ test('好友榜拖动和滚轮按像素连续滚动，不再发送翻页动作',
 test('世界榜显示开发中，并将关闭按钮放在弹窗右上角', () => {
   const labels = [];
   const titleLetters = [];
+  const footerLetters = [];
   const ctx = new Proxy({ fillText(value, x, y) {
     labels.push(value);
     if (['排', '行', '榜'].includes(value)) titleLetters.push({ value, y });
+    if (value === '更') footerLetters.push({ value, y });
   },
     measureText: value => ({ width: String(value).length * 8 }) },
     { get: (target, key) => key in target ? target[key] : () => {} });
@@ -183,6 +186,7 @@ test('世界榜显示开发中，并将关闭按钮放在弹窗右上角', () =>
   page.render(ctx);
   assert.ok(labels.includes('正在开发中'));
   assert.deepEqual(titleLetters.map(({ y }) => y), [page.frame.y + 65, page.frame.y + 65, page.frame.y + 65]);
+  assert.deepEqual(footerLetters.map(({ y }) => y), [page.frame.y + page.frame.height - 69]);
   assert.equal(page.buttons.some(button => button.id === 'friends:refresh'), false);
   const close = page.buttons.find(button => button.id === 'close');
   assert.ok(close.x > page.frame.x + page.frame.width / 2);
@@ -203,6 +207,10 @@ test('好友榜与世界榜使用独立按钮，不再绘制连接区', () => {
   page.render(ctx);
   const friend = page.buttons.find(button => button.id === 'friends:tab-friends');
   const world = page.buttons.find(button => button.id === 'friends:tab-world');
+  const refresh = page.buttons.find(button => button.id === 'friends:refresh');
+  assert.equal(friend.y, page.frame.y + 138);
+  assert.equal(world.y, page.frame.y + 138);
+  assert.equal(refresh.y, page.frame.y + 132);
   assert.equal(hasSeam(friend), false);
   assert.equal(hasSeam(world), false);
   controller.friendsTab = 'world';
@@ -278,17 +286,48 @@ test('开放数据域加载并绘制冠亚季军本地图标', async () => {
     'open-data/assets/medal-gold.png',
     'open-data/assets/medal-silver.png',
     'open-data/assets/medal-bronze.png',
+    FRIENDS_PUSH_SOURCES.character,
+    FRIENDS_PUSH_SOURCES.crate,
   ]);
   await board.onMessage({ channel: 'sokoban.friends.v1', type: 'show', completed: 0 });
-  images.forEach(image => image.onload());
-  assert.deepEqual([...new Set(drawn)], images);
+  images.slice(0, 3).forEach(image => image.onload());
+  assert.deepEqual([...new Set(drawn)], images.slice(0, 3));
 });
 
-test('好友榜行顶格绘制名次色条，标记本人并让战绩文字底部对齐', async () => {
+test('好友榜加载时复用首屏小人推箱子的逐帧动画', async () => {
+  const images = [];
+  const drawn = [];
+  let finishFriends;
+  const ctx = new Proxy({
+    ellipse: undefined,
+    drawImage: (...args) => drawn.push(args),
+    measureText: value => ({ width: String(value).length * 8 }),
+  }, { get: (target, key) => key in target ? target[key] : () => {} });
+  const board = createOpenDataBoard({
+    getSharedCanvas: () => ({ getContext: () => ctx }),
+    createImage() { const image = {}; images.push(image); return image; },
+    getUserCloudStorage: options => options.success({ KVDataList: record(1) }),
+    getFriendCloudStorage: options => { finishFriends = options.success; },
+  });
+  const showing = board.onMessage({ channel: 'sokoban.friends.v1', type: 'show', completed: 1 });
+  for (let index = 0; index < 8 && !finishFriends; index += 1) await Promise.resolve();
+  const character = images.find(image => image.src === FRIENDS_PUSH_SOURCES.character);
+  const crate = images.find(image => image.src === FRIENDS_PUSH_SOURCES.crate);
+  assert.ok(character && crate);
+  character.onload(); crate.onload();
+  assert.ok(drawn.some(args => args[0] === character));
+  assert.ok(drawn.some(args => args[0] === crate));
+  finishFriends({ data: [friend('self', 1)] });
+  await showing;
+});
+
+test('好友榜行绘制加粗且由圆角裁切的名次色条，标记本人并让战绩文字底部对齐', async () => {
   const fills = [];
   const labels = [];
+  let clips = 0;
   const target = { textBaseline: 'alphabetic', fillStyle: '#000',
     fillRect(...args) { fills.push(args); },
+    clip() { clips++; },
     fillText(value, x, y) {
       labels.push({ value: String(value), x, y,
         baseline: target.textBaseline, color: target.fillStyle });
@@ -306,7 +345,8 @@ test('好友榜行顶格绘制名次色条，标记本人并让战绩文字底�
     ] }),
   });
   await board.onMessage({ channel: 'sokoban.friends.v1', type: 'show', completed: 23 });
-  assert.ok(fills.some(args => JSON.stringify(args) === JSON.stringify([7, 51, 4, 63])));
+  assert.ok(fills.some(args => JSON.stringify(args) === JSON.stringify([7, 51, 6, 63])));
+  assert.ok(clips >= 2);
   assert.ok(labels.some(item => item.value === '（我）玩家'));
   const completed = labels.findLast(item => item.value === '23');
   const result = ['已通关', '23', '关'].map(value => labels.findLast(
@@ -316,33 +356,6 @@ test('好友榜行顶格绘制名次色条，标记本人并让战绩文字底�
   assert.equal(new Set(result.map(item => item.y)).size, 1);
   assert.equal(result[0].color, result[2].color);
   assert.notEqual(result[1].color, result[2].color);
-});
-
-test('好友榜加载时使用指定云端 MP4，完成后销毁视频', async () => {
-  let videoOptions;
-  let plays = 0;
-  let destroys = 0;
-  let finishFriends;
-  const ctx = new Proxy({ measureText: value => ({ width: String(value).length * 8 }) },
-    { get: (target, key) => key in target ? target[key] : () => {} });
-  const board = createOpenDataBoard({
-    getSharedCanvas: () => ({ getContext: () => ctx }),
-    createVideo(options) {
-      videoOptions = options;
-      return { play() { plays++; }, destroy() { destroys++; } };
-    },
-    getUserCloudStorage: options => options.success({ KVDataList: record(1) }),
-    getFriendCloudStorage: options => { finishFriends = options.success; },
-  });
-  const showing = board.onMessage({ channel: 'sokoban.friends.v1', type: 'show', completed: 1 });
-  for (let index = 0; index < 8 && !finishFriends; index += 1) await Promise.resolve();
-  assert.equal(videoOptions.src, FRIENDS_LOADING_VIDEO_FILE_ID);
-  assert.equal(videoOptions.loop, true);
-  assert.equal(videoOptions.muted, true);
-  assert.equal(plays, 1);
-  finishFriends({ data: [friend('self', 1)] });
-  await showing;
-  assert.equal(destroys, 1);
 });
 
 test('开放数据域绘制加载、空榜、错误及连续滚动；隐藏后不再绘制', async () => {

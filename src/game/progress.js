@@ -38,7 +38,8 @@ export class ProgressStore {
     }
     this.state = { records, unlockedIds, solutions, cards: integer(saved.cards),
       lastSignIn: typeof saved.lastSignIn === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(saved.lastSignIn) ? saved.lastSignIn : '',
-      music: saved.music === true, sound: saved.sound === true, tutorialDone: saved.tutorialDone === true };
+      music: saved.music === true, sound: saved.sound === true,
+      vibration: saved.vibration === true, tutorialDone: saved.tutorialDone === true };
   }
   commit(next) {
     try {
@@ -51,18 +52,28 @@ export class ProgressStore {
     }
   }
   get unlocked() {
-    const firstUnfinished = this.catalog.findIndex(({ id }) => !this.state.records[id]);
-    return firstUnfinished === -1 ? this.catalog.length - 1 : firstUnfinished;
+    const classic = this.catalog.map((level, index) => ({ level, index }))
+      .filter(({ level }) => (level.campaign || 'classic') === 'classic');
+    const firstUnfinished = classic.findIndex(({ level }) => !this.state.records[level.id]);
+    return firstUnfinished === -1 ? classic.at(-1)?.index ?? 0 : classic[firstUnfinished].index;
   }
   get allComplete() { return this.catalog.every(({ id }) => this.state.records[id]); }
   get completedLevels() { return this.catalog.filter(level => this.state.records[level.id]).length; }
   isUnlocked(index) {
     const level = this.catalog[index];
-    return !!level && (index <= this.unlocked || !!this.state.records[level.id] || this.state.unlockedIds.includes(level.id));
+    if (!level) return false;
+    const campaign = level.campaign || 'classic';
+    const campaignLevels = this.catalog.filter(item => (item.campaign || 'classic') === campaign);
+    const position = campaignLevels.findIndex(item => item.id === level.id);
+    const firstUnfinished = campaignLevels.findIndex(item => !this.state.records[item.id]);
+    const frontier = firstUnfinished === -1 ? campaignLevels.length - 1 : firstUnfinished;
+    return position <= frontier || !!this.state.records[level.id] || this.state.unlockedIds.includes(level.id);
   }
   finish(level, steps, stars, moves) {
     const previous = this.state.records[level.id];
-    const nextLevel = this.catalog[this.catalog.findIndex(item => item.id === level.id) + 1];
+    const campaign = level.campaign || 'classic';
+    const campaignLevels = this.catalog.filter(item => (item.campaign || 'classic') === campaign);
+    const nextLevel = campaignLevels[campaignLevels.findIndex(item => item.id === level.id) + 1];
     const unlockedIds = [...new Set([...this.state.unlockedIds, level.id, ...(nextLevel ? [nextLevel.id] : [])])];
     const solutions = { ...this.state.solutions };
     const existing = solutions[level.id];
@@ -82,7 +93,7 @@ export class ProgressStore {
   }
   spendCard() { return this.state.cards > 0 && this.commit({ ...this.state, cards: this.state.cards - 1 }); }
   toggle(key) {
-    if (key !== 'music' && key !== 'sound') return false;
+    if (key !== 'music' && key !== 'sound' && key !== 'vibration') return false;
     return this.commit({ ...this.state, [key]: !this.state[key] });
   }
   finishTutorial() { return this.commit({ ...this.state, tutorialDone: true }); }

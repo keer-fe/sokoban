@@ -7,6 +7,8 @@ export function parseLevel(level) {
   const walls = new Set();
   const floors = new Set();
   const goals = new Set();
+  const buttons = new Set();
+  const doors = new Set();
   const boxes = [];
   const players = [];
   level.rows.forEach((row, y) => {
@@ -14,18 +16,26 @@ export function parseLevel(level) {
     Array.from(row).forEach((cell, x) => {
       const pos = y * width + x;
       if (cell === '#') walls.add(pos);
-      else if (' .$@*+'.includes(cell)) floors.add(pos);
+      else if (' .$@*+!D&%'.includes(cell)) floors.add(pos);
       else if (cell !== '_') throw new Error(`Unknown tile: ${cell}`);
       if ('.*+'.includes(cell)) goals.add(pos);
-      if ('$*'.includes(cell)) boxes.push(pos);
-      if ('@+'.includes(cell)) players.push(pos);
+      if ('!&%'.includes(cell)) buttons.add(pos);
+      if (cell === 'D') doors.add(pos);
+      if ('$*&'.includes(cell)) boxes.push(pos);
+      if ('@+%'.includes(cell)) players.push(pos);
     });
   });
   if (players.length !== 1 || !boxes.length || boxes.length !== goals.size) throw new Error('Invalid level actors');
-  return { width, height: level.rows.length, walls, floors, goals, boxes, player: players[0] };
+  if ((buttons.size === 0) !== (doors.size === 0)) throw new Error('Buttons and doors must be used together');
+  return { width, height: level.rows.length, walls, floors, goals, buttons, doors, boxes, player: players[0] };
 }
 
 export function isComplete(board, state) { return state.boxes.every((pos) => board.goals.has(pos)); }
+
+export function areDoorsOpen(board, state) {
+  return board.buttons.size > 0
+    && [...board.buttons].every(pos => pos === state.player || state.boxes.includes(pos));
+}
 
 // Pure transition shared by the runtime and the shortest-path verifier.
 export function transition(board, state, direction) {
@@ -37,12 +47,15 @@ export function transition(board, state, direction) {
     return x < 0 || x >= board.width || y < 0 || y >= board.height ? -1 : y * board.width + x;
   };
   const next = neighbor(state.player);
-  if (!board.floors.has(next)) return null;
   const boxes = [...state.boxes];
+  const doorsOpen = areDoorsOpen(board, state);
+  const passable = (pos) => board.floors.has(pos)
+    && (!board.doors.has(pos) || doorsOpen || pos === state.player || boxes.includes(pos));
+  if (!passable(next)) return null;
   const boxIndex = boxes.indexOf(next);
   if (boxIndex !== -1) {
     const target = neighbor(next);
-    if (!board.floors.has(target) || boxes.includes(target)) return null;
+    if (!passable(target) || boxes.includes(target)) return null;
     boxes[boxIndex] = target;
   }
   return { player: next, boxes, steps: state.steps + 1, facing: direction };
