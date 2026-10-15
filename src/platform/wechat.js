@@ -3,6 +3,21 @@ import { createFriendBoard } from './friend-board.js';
 const CLOUD_ENV_ID = 'cloud1-d5gqpaioo2d8acf27';
 
 function resolveCloudFileURLs(cloud, fileIDs) {
+  if (typeof cloud.downloadFile === 'function') {
+    return Promise.all(fileIDs.map((fileID) => new Promise((resolve, reject) => {
+      cloud.downloadFile({
+        fileID,
+        success: ({ tempFilePath }) => {
+          if (!tempFilePath) {
+            reject(new Error(`Cloud download returned no temporary path: ${fileID}`));
+            return;
+          }
+          resolve(tempFilePath);
+        },
+        fail: reject,
+      });
+    })));
+  }
   return new Promise((resolve, reject) => {
     cloud.getTempFileURL({
       fileList: fileIDs,
@@ -88,8 +103,9 @@ export function createWechatPlatform(api) {
       if (typeof api.vibrateShort === 'function') api.vibrateShort({ type: 'light' });
     },
     resolveCloudFiles(fileIDs) {
-      if (!api.cloud || typeof api.cloud.getTempFileURL !== 'function') {
-        return Promise.reject(new Error('wx.cloud.getTempFileURL is unavailable'));
+      if (!api.cloud || (typeof api.cloud.downloadFile !== 'function'
+        && typeof api.cloud.getTempFileURL !== 'function')) {
+        return Promise.reject(new Error('Cloud file download APIs are unavailable'));
       }
       const entries = Object.entries(fileIDs);
       return resolveCloudFileURLs(api.cloud, entries.map(([, fileID]) => fileID))

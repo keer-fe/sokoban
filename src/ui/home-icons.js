@@ -6,6 +6,8 @@ const CLOUD_HOME_ROOT = `cloud://cloud1-d5gqpaioo2d8acf27.${CLOUD_BUCKET}/images
 const PUBLIC_HOME_ROOT = `https://${CLOUD_BUCKET}.tcb.qcloud.la/images/home`;
 const CLOUD_ANIMATION_ROOT = `cloud://cloud1-d5gqpaioo2d8acf27.${CLOUD_BUCKET}/images/animation`;
 const PUBLIC_ANIMATION_ROOT = `https://${CLOUD_BUCKET}.tcb.qcloud.la/images/animation`;
+const CLOUD_MODE_ROOT = `cloud://cloud1-d5gqpaioo2d8acf27.${CLOUD_BUCKET}/images/modes`;
+const PUBLIC_MODE_ROOT = `https://${CLOUD_BUCKET}.tcb.qcloud.la/images/modes`;
 
 // The loading character must be available before any cloud request completes.
 // Keep these files in the mini-game package instead of the cloud image manifest.
@@ -18,10 +20,10 @@ export const homeBackgroundSource = `${PUBLIC_ANIMATION_ROOT}/push-outdoor-backg
 export const levelsBackgroundSource = publicUISource('levels-texture-v2.png');
 
 const campaignIconSources = Object.freeze({
-  campaignClassic: publicUISource('classic-card-v2.jpg'),
-  campaignAdventure: publicUISource('adventure-card-v2.jpg'),
-  campaignCoop: publicUISource('coop-card-v2.jpg'),
-  campaignPk: publicUISource('pk-card-v1.jpg'),
+  campaignClassic: `${PUBLIC_MODE_ROOT}/classic-card-v2.jpg`,
+  campaignAdventure: `${PUBLIC_MODE_ROOT}/adventure-card-v2.jpg`,
+  campaignCoop: `${PUBLIC_MODE_ROOT}/coop-card-v2.jpg`,
+  campaignPk: `${PUBLIC_MODE_ROOT}/pk-card-v1.jpg`,
 });
 
 const cloudHomeIconSources = Object.freeze({
@@ -66,10 +68,10 @@ export const homeIconFileIDs = Object.freeze({
   starUnselected: cloudUIFileID('star-unselected-v2.png'),
   backButton: cloudUIFileID('button-back-wood-v2.png'),
   lock: cloudUIFileID('lock-v1.png'),
-  campaignClassic: cloudUIFileID('classic-card-v2.jpg'),
-  campaignAdventure: cloudUIFileID('adventure-card-v2.jpg'),
-  campaignCoop: cloudUIFileID('coop-card-v2.jpg'),
-  campaignPk: cloudUIFileID('pk-card-v1.jpg'),
+  campaignClassic: `${CLOUD_MODE_ROOT}/classic-card-v2.jpg`,
+  campaignAdventure: `${CLOUD_MODE_ROOT}/adventure-card-v2.jpg`,
+  campaignCoop: `${CLOUD_MODE_ROOT}/coop-card-v2.jpg`,
+  campaignPk: `${CLOUD_MODE_ROOT}/pk-card-v1.jpg`,
 });
 
 function assignSources(icons, sources) {

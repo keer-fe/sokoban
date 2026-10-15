@@ -166,6 +166,16 @@ test('加载人物动画只使用包内素材，不等待或进入云资源清�
   assert.equal(typeof resolveCloud, 'function');
 });
 
+test('模式卡片从独立的 images/mode 目录加载', () => {
+  const names = ['campaignClassic', 'campaignAdventure', 'campaignCoop', 'campaignPk'];
+  names.forEach((name) => {
+    assert.match(homeIconSources[name], /\.tcb\.qcloud\.la\/images\/mode\//);
+    assert.match(homeIconFileIDs[name], /\/images\/mode\//);
+    assert.equal(homeIconSources[name].includes('/images/ui/'), false);
+    assert.equal(homeIconFileIDs[name].includes('/images/ui/'), false);
+  });
+});
+
 test('首页人物固定在中间，背景随时间向左移动并镜像衔接', () => {
   const render = (elapsed) => {
     const translations = [];
@@ -212,20 +222,20 @@ test('首页人物固定在中间，背景随时间向左移动并镜像衔接',
   assert.ok(Math.abs(draws[0][5] + draws[0][7] * 2 - transforms[0][0]) < 0.01);
 });
 
-test('微信平台通过 fileID 获取首页云端图片的签名地址', async () => {
+test('微信平台通过 fileID 下载首页云端图片，不依赖体验版下载域名白名单', async () => {
   let initOptions;
-  let requested;
+  const requested = [];
   const api = {
     createCanvas: () => ({}),
     createImage: () => ({}),
     getOpenDataContext: () => null,
     cloud: {
       init: (options) => { initOptions = options; },
-      getTempFileURL({ fileList, success }) {
-        requested = fileList;
-        queueMicrotask(() => success({ fileList: fileList.map((fileID) => ({
-          tempFileURL: `https://signed.example/${fileID.split('/').at(-1)}?token=test`,
-        })) }));
+      downloadFile({ fileID, success }) {
+        requested.push(fileID);
+        queueMicrotask(() => success({
+          tempFilePath: `wxfile://cloud/${fileID.split('/').at(-1)}`,
+        }));
       },
     },
   };
@@ -233,8 +243,26 @@ test('微信平台通过 fileID 获取首页云端图片的签名地址', async 
   assert.equal(initOptions.env, 'cloud1-d5gqpaioo2d8acf27');
   const urls = await platform.resolveCloudFiles(homeIconFileIDs);
   assert.deepEqual(requested, Object.values(homeIconFileIDs));
+  assert.equal(urls.title, 'wxfile://cloud/title-xiangbudao8-text-v2.png');
+  assert.equal(urls.background, 'wxfile://cloud/push-outdoor-background-v1.png');
+});
+
+test('微信平台缺少云下载接口时兼容签名地址解析', async () => {
+  const api = {
+    createCanvas: () => ({}),
+    createImage: () => ({}),
+    getOpenDataContext: () => null,
+    cloud: {
+      init() {},
+      getTempFileURL({ fileList, success }) {
+        success({ fileList: fileList.map((fileID) => ({
+          tempFileURL: `https://signed.example/${fileID.split('/').at(-1)}?token=test`,
+        })) });
+      },
+    },
+  };
+  const urls = await createWechatPlatform(api).resolveCloudFiles(homeIconFileIDs);
   assert.equal(urls.title, 'https://signed.example/title-xiangbudao8-text-v2.png?token=test');
-  assert.equal(urls.background, 'https://signed.example/push-outdoor-background-v1.png?token=test');
 });
 
 test('首页艺术字体通过 fileID 获取临时地址，平台不支持时安全回退', async () => {
