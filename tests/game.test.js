@@ -1,13 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { levels } from './fixtures/levels.js';
 import { areDoorsOpen, GameSession, score } from '../src/game/engine.js';
 import { solve } from '../tools/solve-levels.js';
 import { GameController } from '../src/game/controller.js';
 import { beijingDate, ProgressStore } from '../src/game/progress.js';
 import { createViewport } from '../src/core/viewport.js';
-import { GamePage } from '../src/pages/game/index.js';
-import { Modal } from '../src/ui/modal.js';
+import { directionPadSource, drawDirectionPad, drawGameBackground, drawGameGround,
+  gameAssetFileIDs, gameBackgroundSource, GamePage, stepsCardSource,
+  undoCardSource } from '../src/pages/game/index.js';
+import { Modal, settingIconFileIDs, settingIconSources } from '../src/ui/modal.js';
 
 function platform() {
   const data = new Map();
@@ -16,6 +19,59 @@ function platform() {
     notify: (message) => messages.push(message), readStorage: (key) => data.get(key),
     writeStorage: (key, value) => data.set(key, JSON.parse(JSON.stringify(value))) };
 }
+
+test('游戏背景使用透明美术遮罩，底层方格与地图单格同尺寸并对齐', () => {
+  assert.match(gameBackgroundSource, /\/images\/generated\/game-layout-mask-v2\.png$/);
+  const config = JSON.parse(readFileSync(new URL('../project.config.json', import.meta.url)));
+  const included = config.packOptions.include.map(({ value }) => value);
+  assert.equal(included.includes(gameBackgroundSource), false);
+  assert.match(gameAssetFileIDs.background, /^cloud:\/\//);
+  const fills = [];
+  const curves = [];
+  const starts = [];
+  const ctx = new Proxy({
+    fill: () => fills.push(true),
+    quadraticCurveTo: (...args) => curves.push(args),
+    moveTo: (...args) => starts.push(args),
+  }, {
+    get: (target, key) => target[key] || (() => {}),
+    set: (target, key, value) => { target[key] = value; return true; },
+  });
+  drawGameGround(ctx, 414, 844, 52, 31, 117);
+  assert.ok(fills.length > 60);
+  assert.equal(curves.length, fills.length * 4);
+  assert.ok(Math.abs(starts[0][0] + 15.28) < 1e-9);
+  assert.equal(starts[0][1], -39);
+  assert.equal(starts[1][0] - starts[0][0], 52);
+  assert.equal(starts[1][1], -39);
+});
+
+test('游戏背景完整绘制原图，仅按屏幕高度纵向拉伸', () => {
+  const calls = [];
+  const image = { width: 941, height: 1672 };
+  assert.equal(drawGameBackground({ drawImage: (...args) => calls.push(args) },
+    { image, ready: true }, 414, 844), true);
+  assert.deepEqual(calls[0], [image, 0, 0, 941, 1672, 0, 0, 414, 844]);
+});
+
+test('操作盘按下方向时绘制内凹、描边和高光反馈', () => {
+  const calls = { arc: [], fill: 0, stroke: 0 };
+  const ctx = new Proxy({
+    drawImage: () => {},
+    arc: (...args) => calls.arc.push(args),
+    fill: () => { calls.fill++; },
+    stroke: () => { calls.stroke++; },
+  }, {
+    get: (target, key) => target[key] || (() => {}),
+    set: (target, key, value) => { target[key] = value; return true; },
+  });
+  assert.equal(drawDirectionPad(ctx, { ready: true, image: {} },
+    { x: 200, y: 600, width: 156, height: 156 },
+    { x: 254, y: 600, width: 48, height: 48 }), true);
+  assert.equal(calls.arc.length, 3);
+  assert.equal(calls.fill, 2);
+  assert.equal(calls.stroke, 1);
+});
 
 test('全部体验关卡可解，最少步数通过逐步 BFS 验证', () => {
   levels.forEach((level) => {
@@ -44,6 +100,28 @@ test('四向移动更新朝向，撤销恢复朝向，重开朝下，撞墙不�
   const before = game.state;
   assert.equal(game.move('up'), false);
   assert.equal(game.state, before);
+});
+
+test('地图人物每走一步只切换一帧，静止时保持当前帧', () => {
+  const c = new GameController(platform(), levels);
+  c.openLevel(0);
+  const page = new GamePage(c, () => {});
+  page.resize(createViewport({ width: 390, height: 844 }));
+  const ctx = new Proxy({}, {
+    get: (_, key) => key === 'measureText' ? () => ({ width: 0 }) : () => {},
+    set: () => true,
+  });
+
+  page.render(ctx, 0);
+  assert.deepEqual(page.playerPose, { kind: 'walk', frame: 1 });
+  c.game.move('up');
+  page.render(ctx, 0.01);
+  assert.deepEqual(page.playerPose, { kind: 'push', frame: 2 });
+  page.render(ctx, 10);
+  assert.deepEqual(page.playerPose, { kind: 'push', frame: 2 });
+  c.game.move('left');
+  page.render(ctx, 10.01);
+  assert.deepEqual(page.playerPose, { kind: 'walk', frame: 0 });
 });
 
 test('撞墙和连箱无效；撤销恢复箱子和步数；重开清空历史', () => {
@@ -174,12 +252,38 @@ test('小屏和全面屏上的方向键、棋盘、弹窗均在安全区域内',
     const viewport = createViewport(info);
     const page = new GamePage(c, () => {}); page.resize(viewport);
     const bottom = viewport.height - viewport.safeBottom;
+    assert.equal(page.boardBounds.x, 30);
+    assert.equal(414 - page.boardBounds.x - page.boardBounds.width, 30);
+    const undo = page.buttons.find((button) => button.id === 'undo');
+    const padCenterY = page.directionPadBounds.y + page.directionPadBounds.height / 2;
+    const leftControlsCenterY = (undo.y + page.stepsBounds.y + page.stepsBounds.height) / 2;
+    assert.equal(padCenterY, leftControlsCenterY + 2);
+    const frame = page.controlsFrameBounds;
+    const topGap = page.directionPadBounds.y - frame.y;
+    const bottomGap = frame.y + frame.height
+      - (page.directionPadBounds.y + page.directionPadBounds.height);
+    const rightGap = frame.x + frame.width
+      - (page.directionPadBounds.x + page.directionPadBounds.width);
+    assert.equal(topGap, rightGap + 2);
+    assert.equal(bottomGap, rightGap - 2);
+    assert.ok(page.stepsBounds.y < undo.y);
+    assert.equal(page.stepsBounds.width, 162);
+    assert.equal(page.stepsBounds.height, 52);
+    assert.equal(undo.width, 162);
+    assert.equal(undo.height, 52);
+    assert.ok(undo.x >= frame.x + 4);
+    assert.ok(page.stepsBounds.x >= frame.x + 4);
+    assert.ok(page.stepsBounds.x + page.stepsBounds.width < page.directionPadBounds.x);
+    if (!page.compact) {
+      assert.ok(Math.abs(page.boardBounds.y + page.boardBounds.height
+        - (page.controlsY - 12)) < 1e-9);
+    }
     page.buttons.forEach((button) => {
       if (button.id === 'menu') assert.equal(button.y + button.height / 2, viewport.navigationCenterY);
       else assert.ok(button.y >= viewport.safeTop);
       assert.ok(button.y + button.height < bottom);
     });
-    assert.ok(page.boardBounds.y + page.boardBounds.height < page.buttons.find((b) => b.id === 'undo').y);
+    assert.ok(page.boardBounds.y + page.boardBounds.height < undo.y);
     const modal = new Modal(c, () => {});
     for (const kind of ['menu', 'settings', 'win', 'tutorial', 'signin', 'cards', 'deadlock']) {
       c.modal = kind; modal.resize(viewport);
@@ -188,4 +292,43 @@ test('小屏和全面屏上的方向键、棋盘、弹窗均在安全区域内',
       modal.buttons.forEach((button) => assert.ok(button.y + button.height < modal.top + height));
     }
   }
+});
+
+test('游戏操作区加载生成素材，同时保留四个独立方向触控区', () => {
+  const images = [];
+  const c = new GameController({ ...platform(), createImage() {
+    const image = {};
+    images.push(image);
+    return image;
+  } }, levels);
+  c.openLevel(0);
+  const page = new GamePage(c, () => {});
+  page.resize(createViewport({ width: 390, height: 844, safeTop: 91, safeBottom: 34 }));
+
+  assert.ok(images.some(({ src }) => src === directionPadSource));
+  assert.ok(images.some(({ src }) => src === stepsCardSource));
+  assert.ok(images.some(({ src }) => src === undoCardSource));
+  Object.values(gameAssetFileIDs).forEach(fileID => assert.match(fileID, /^cloud:\/\//));
+  assert.deepEqual(page.buttons.filter(({ id }) => ['up', 'down', 'left', 'right'].includes(id))
+    .map(({ id }) => id), ['up', 'left', 'right', 'down']);
+  assert.equal(page.directionPadBounds.width, page.directionPadBounds.height);
+  page.buttons.filter(({ id }) => ['up', 'down', 'left', 'right'].includes(id))
+    .forEach((button) => {
+      assert.ok(button.hitArea.width * button.hitArea.height > button.width * button.height);
+    });
+});
+
+test('设置面板加载地图风格音乐、音效和震动图标', () => {
+  const images = [];
+  const c = new GameController({ ...platform(), createImage() {
+    const image = {};
+    images.push(image);
+    return image;
+  } }, levels);
+  c.modal = 'settings';
+  new Modal(c, () => {});
+  Object.values(settingIconSources).forEach((source) => {
+    assert.ok(images.some(({ src }) => src === source));
+  });
+  Object.values(settingIconFileIDs).forEach(fileID => assert.match(fileID, /^cloud:\/\//));
 });

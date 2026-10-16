@@ -145,8 +145,10 @@ export function createApp(platform, actions = {}) {
     running = true;
     previousTime = platform.now();
     resize();
-    controller.syncFriends();
-    controller.syncWorldLeaderboard();
+    if (controller.modal !== 'profile') {
+      controller.syncFriends();
+      controller.syncWorldLeaderboard();
+    }
     syncBgMusic();
     frameId = platform.requestFrame(tick);
   }

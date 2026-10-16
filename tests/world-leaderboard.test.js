@@ -12,21 +12,21 @@ test('世界榜云函数提交版本化成绩并清洗返回行', async () => {
     calls.push({ name: options.name, data: options.data });
     if (options.name === 'submitLeaderboard') options.success({ result: { ok: true } });
     else options.success({ result: { rows: [
-      { rank: 1, completed: 8, totalStars: 21, nickname: ' 玩家甲 ', isMe: true },
+      { rank: 1, completed: 8, totalStars: 21, nickname: ' 玩家甲 ', avatarUrl: ' https://a.test/1.png ', isMe: true },
       { completed: 5, totalStars: 12, nickname: '' },
       { completed: -1, totalStars: 0, nickname: '坏数据' },
     ] } });
   } });
   assert.equal(board.available, true);
-  await board.submit({ completed: 8, totalStars: 21 });
+  await board.submit({ completed: 8, totalStars: 21, nickname: '玩家甲', avatarUrl: 'https://a.test/1.png' });
   const rows = await board.load(50);
   assert.deepEqual(calls, [
-    { name: 'submitLeaderboard', data: { completed: 8, totalStars: 21, scoreVersion: 1 } },
+    { name: 'submitLeaderboard', data: { completed: 8, totalStars: 21, nickname: '玩家甲', avatarUrl: 'https://a.test/1.png', scoreVersion: 1 } },
     { name: 'getWorldLeaderboard', data: { limit: 50, scoreVersion: 1 } },
   ]);
   assert.deepEqual(rows, [
-    { rank: 1, completed: 8, totalStars: 21, nickname: '玩家甲', isMe: true },
-    { rank: 2, completed: 5, totalStars: 12, nickname: '玩家2', isMe: false },
+    { rank: 1, completed: 8, totalStars: 21, nickname: '玩家甲', avatarUrl: 'https://a.test/1.png', isMe: true },
+    { rank: 2, completed: 5, totalStars: 12, nickname: '玩家2', avatarUrl: '', isMe: false },
   ]);
   assert.deepEqual(normalizeWorldRows(null), []);
 });
@@ -37,6 +37,7 @@ test('控制器加载、刷新世界榜并在通关统计中提交总星数', as
   const platform = {
     readStorage: () => null,
     writeStorage: () => {},
+    readPlayerProfile: () => ({ nickname: '测试玩家', avatarUrl: 'https://a.test/me.png' }),
     worldLeaderboard: {
       available: true,
       submit: async score => { submissions.push(score); return { ok: true }; },
@@ -56,7 +57,44 @@ test('控制器加载、刷新世界榜并在通关统计中提交总星数', as
   await Promise.resolve();
   assert.equal(loads, 2);
   await controller.syncWorldLeaderboard();
-  assert.deepEqual(submissions.at(-1), { completed: 0, totalStars: 0 });
+  assert.deepEqual(submissions.at(-1), { completed: 0, totalStars: 0,
+    nickname: '测试玩家', avatarUrl: 'https://a.test/me.png' });
+});
+
+test('首次启动先统一获取玩家资料，世界榜入口不再重复授权', async () => {
+  let requests = 0;
+  let submissions = 0;
+  let profile = null;
+  const platform = {
+    readStorage: () => null,
+    writeStorage: () => {},
+    readPlayerProfile: () => profile,
+    canRequestPlayerProfile: true,
+    requestPlayerProfile: async () => {
+      requests++;
+      profile = { nickname: '启动玩家', avatarUrl: 'https://a.test/start.png' };
+      return profile;
+    },
+    friendBoard: { send() {} },
+    worldLeaderboard: {
+      available: true,
+      submit: async () => { submissions++; return { ok: true }; },
+      load: async () => [],
+    },
+  };
+  const controller = new GameController(platform, levels);
+  assert.equal(controller.modal, 'profile');
+  controller.handle('authorize-profile');
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(controller.modal, null);
+  assert.equal(requests, 1);
+  assert.equal(submissions, 1);
+
+  controller.modal = 'friends';
+  controller.handle('friends:tab-world');
+  await Promise.resolve();
+  assert.equal(requests, 1);
 });
 
 test('世界榜绘制真实排名、本人标记和成绩', () => {

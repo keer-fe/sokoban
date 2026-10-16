@@ -2,8 +2,9 @@ import { circle, panel, text } from './draw.js';
 import { theme } from './theme.js';
 
 export function contains(rect, point) {
-  return point.x >= rect.x && point.x <= rect.x + rect.width
-    && point.y >= rect.y && point.y <= rect.y + rect.height;
+  const area = rect.hitArea || rect;
+  return point.x >= area.x && point.x <= area.x + area.width
+    && point.y >= area.y && point.y <= area.y + area.height;
 }
 
 export function drawButton(ctx, button, pressed = false) {

@@ -30,10 +30,7 @@
       { "type": "folder", "value": "output" },
       { "type": "file", "value": "README.md" }
     ],
-    "include": [
-      { "type": "file", "value": "assets/generated/map-v2/character-walk-4dir-3frame.png" },
-      { "type": "file", "value": "assets/generated/map-v2/character-push-4dir-3frame.png" }
-    ]
+    "include": []
   },
   "isGameTourist": false,
   "appid": "wxb39f9d8d1f0f0359",

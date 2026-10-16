@@ -2,6 +2,7 @@ import { createFriendBoard } from './friend-board.js';
 import { createWorldLeaderboard } from './world-leaderboard.js';
 
 const CLOUD_ENV_ID = 'cloud1-d5gqpaioo2d8acf27';
+const WORLD_PROFILE_KEY = 'worldLeaderboardProfile';
 
 function resolveCloudFileURLs(cloud, fileIDs) {
   if (typeof cloud.downloadFile === 'function') {
@@ -77,6 +78,26 @@ export function createWechatPlatform(api) {
     canvas,
     friendBoard: createFriendBoard(api),
     worldLeaderboard: createWorldLeaderboard(api.cloud),
+    canRequestPlayerProfile: typeof api.getUserProfile === 'function',
+    readPlayerProfile() {
+      const profile = typeof api.getStorageSync === 'function' ? api.getStorageSync(WORLD_PROFILE_KEY) : null;
+      return profile && typeof profile === 'object' ? profile : null;
+    },
+    requestPlayerProfile() {
+      if (typeof api.getUserProfile !== 'function') return Promise.resolve(this.readPlayerProfile());
+      return new Promise((resolve) => api.getUserProfile({
+        desc: '用于在世界榜展示你的头像和昵称',
+        success: ({ userInfo = {} }) => {
+          const profile = {
+            nickname: typeof userInfo.nickName === 'string' ? userInfo.nickName.trim().slice(0, 16) : '',
+            avatarUrl: typeof userInfo.avatarUrl === 'string' ? userInfo.avatarUrl.trim().slice(0, 1024) : '',
+          };
+          if (typeof api.setStorageSync === 'function') api.setStorageSync(WORLD_PROFILE_KEY, profile);
+          resolve(profile);
+        },
+        fail: () => resolve(this.readPlayerProfile()),
+      }));
+    },
     gameClubButton: typeof api.createGameClubButton === 'function' ? {
       update(style) {
         if (!gameClubButton) {

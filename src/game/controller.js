@@ -8,7 +8,7 @@ export class GameController {
     this.levels = catalog;
     this.progress = new ProgressStore(platform, catalog);
     this.route = 'home';
-    this.modal = null;
+    this.modal = platform.canRequestPlayerProfile && !platform.readPlayerProfile?.() ? 'profile' : null;
     this.settingsReturn = null;
     this.friendsTab = 'friends';
     this.worldBoard = { state: 'idle', rows: [], error: null };
@@ -63,14 +63,29 @@ export class GameController {
   async syncWorldLeaderboard() {
     if (!this.platform.worldLeaderboard?.available) return null;
     try {
+      const profile = this.platform.readPlayerProfile?.() || {};
       return await this.platform.worldLeaderboard.submit({
         completed: this.progress.completedLevels,
         totalStars: this.progress.totalStars,
+        nickname: profile.nickname || '',
+        avatarUrl: profile.avatarUrl || '',
       });
     } catch (error) {
       console.warn('World leaderboard sync failed.', error);
       return null;
     }
+  }
+  async authorizePlayerProfile() {
+    if (!this.platform.requestPlayerProfile) return false;
+    const profile = await this.platform.requestPlayerProfile();
+    if (!profile?.nickname && !profile?.avatarUrl) {
+      this.platform.notify?.('需要授权头像昵称后才能展示完整榜单');
+      return false;
+    }
+    this.modal = null;
+    this.syncFriends();
+    await this.syncWorldLeaderboard();
+    return true;
   }
   async loadWorldLeaderboard(force = false) {
     if (!this.platform.worldLeaderboard?.available) {
@@ -226,6 +241,8 @@ export class GameController {
       });
     } else if (this.modal === 'friends' && action === 'friends:refresh' && this.friendsTab === 'world') {
       this.loadWorldLeaderboard(true);
+    } else if (this.modal === 'profile' && action === 'authorize-profile') {
+      this.authorizePlayerProfile();
     } else if (this.modal === 'tutorial' && (action === 'understood' || action === 'skip')) {
       this.progress.finishTutorial(); this.modal = null;
     } else if (this.modal === 'deadlock') {

@@ -130,25 +130,24 @@ test('首页功能图标独立加载，未完成前回退、完成后分别绘�
   assert.deepEqual(calls.at(-1), [pushCharacter, 272, 0, 136, 362, 10, 20, 84, 84]);
 });
 
-test('加载人物动画只使用包内素材，不等待或进入云资源清单', () => {
+test('加载人物动画使用云文件 ID，并保留公开地址回退', () => {
   assert.equal(homeBackgroundSource,
     'https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/animation/push-outdoor-background-v1.png');
   assert.equal(homeIconFileIDs.background,
     'cloud://cloud1-d5gqpaioo2d8acf27.636c-cloud1-d5gqpaioo2d8acf27-1443887035/images/animation/push-outdoor-background-v1.png');
   assert.deepEqual(localPushAnimationSources, {
-    pushCharacterCycle: 'assets/animation/push-character-cycle-v2.png',
-    pushCharacterUnderLegForward: 'assets/animation/push-character-under-leg-forward.png',
-    pushCrate: 'assets/animation/push-crate-new.png',
+    pushCharacterCycle: 'https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/animation/push-character-cycle-v2.png',
+    pushCharacterUnderLegForward: 'https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/animation/push-character-under-leg-forward.png',
+    pushCrate: 'https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/animation/push-crate-new.png',
   });
   Object.entries(localPushAnimationSources).forEach(([name, source]) => {
-    assert.equal(name in homeIconFileIDs, false);
-    assert.equal(source.startsWith('assets/animation/'), true);
-    assert.equal(source.startsWith('cloud://'), false);
-    assert.equal(source.startsWith('https://'), false);
+    assert.match(homeIconFileIDs[name], /^cloud:\/\//);
+    assert.equal(source.startsWith('https://'), true);
   });
 
   const images = [];
   let resolveCloud;
+  let requestedFileIDs;
   const ctx = {};
   loadHomeIcons(ctx, {
     createImage() {
@@ -156,12 +155,12 @@ test('加载人物动画只使用包内素材，不等待或进入云资源清�
       images.push(image);
       return image;
     },
-    resolveCloudFiles() {
+    resolveCloudFiles(fileIDs) {
+      requestedFileIDs = fileIDs;
       return new Promise((resolve) => { resolveCloud = resolve; });
     },
   });
-  const animationImages = images.filter(image => Object.values(localPushAnimationSources).includes(image.src));
-  assert.deepEqual(animationImages.map((image) => image.src), Object.values(localPushAnimationSources));
+  Object.keys(localPushAnimationSources).forEach(name => assert.equal(requestedFileIDs[name], homeIconFileIDs[name]));
   assert.equal(images[4].src, undefined);
   assert.equal(typeof resolveCloud, 'function');
 });

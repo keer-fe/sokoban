@@ -25,6 +25,7 @@ export class FriendsPage extends Screen {
     super(controller, onAction);
     this.swipe = null;
     this.worldScrollY = 0;
+    this.worldAvatars = new Map();
     this.assets = {};
     if (controller.platform.createImage) Object.entries(friendsAssetSources).forEach(([name, fallback]) => {
       const entry = { image: controller.platform.createImage(), ready: false };
@@ -177,13 +178,37 @@ export class FriendsPage extends Screen {
       const rankLabel = row.rank <= 3 ? ['🥇', '🥈', '🥉'][row.rank - 1] : `#${row.rank}`;
       text(ctx, rankLabel, x + 25, rowY + rowHeight / 2,
         { size: row.rank <= 3 ? 19 : 15, color: '#985322' });
-      text(ctx, row.isMe ? `（我）${row.nickname}` : row.nickname, x + 54, rowY + rowHeight / 2 - 8,
+      this.drawWorldAvatar(ctx, row, x + 65, rowY + rowHeight / 2, 18);
+      text(ctx, row.isMe ? `（我）${row.nickname}` : row.nickname, x + 89, rowY + rowHeight / 2 - 8,
         { size: 13, color: DARK_WOOD, align: 'left' });
-      text(ctx, `${row.totalStars} 星`, x + 54, rowY + rowHeight / 2 + 13,
+      text(ctx, `${row.totalStars} 星`, x + 89, rowY + rowHeight / 2 + 13,
         { size: 10, color: '#9A795C', align: 'left' });
       text(ctx, `${row.completed} 关`, x + width - 14, rowY + rowHeight / 2,
         { size: 17, color: '#2F8A3B', align: 'right', font: getHomeFont() });
     });
+    ctx.restore();
+  }
+
+  drawWorldAvatar(ctx, row, centerX, centerY, radius) {
+    let entry = this.worldAvatars.get(row.avatarUrl);
+    if (row.avatarUrl && !entry && this.controller.platform.createImage) {
+      entry = { image: this.controller.platform.createImage(), ready: false, failed: false };
+      entry.image.onload = () => { entry.ready = true; };
+      entry.image.onerror = () => { entry.failed = true; };
+      entry.image.src = row.avatarUrl;
+      this.worldAvatars.set(row.avatarUrl, entry);
+    }
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.clip();
+    if (entry?.ready) ctx.drawImage(entry.image, centerX - radius, centerY - radius, radius * 2, radius * 2);
+    else {
+      ctx.fillStyle = '#D8EFCB';
+      ctx.fillRect(centerX - radius, centerY - radius, radius * 2, radius * 2);
+      text(ctx, Array.from(row.nickname)[0] || '玩', centerX, centerY,
+        { size: 16, color: '#517E39' });
+    }
     ctx.restore();
   }
 

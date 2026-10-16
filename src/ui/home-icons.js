@@ -9,12 +9,10 @@ const PUBLIC_ANIMATION_ROOT = `https://${CLOUD_BUCKET}.tcb.qcloud.la/images/anim
 const CLOUD_MODE_ROOT = `cloud://cloud1-d5gqpaioo2d8acf27.${CLOUD_BUCKET}/images/modes`;
 const PUBLIC_MODE_ROOT = `https://${CLOUD_BUCKET}.tcb.qcloud.la/images/modes`;
 
-// The loading character must be available before any cloud request completes.
-// Keep these files in the mini-game package instead of the cloud image manifest.
 export const localPushAnimationSources = Object.freeze({
-  pushCharacterCycle: 'assets/animation/push-character-cycle-v2.png',
-  pushCharacterUnderLegForward: 'assets/animation/push-character-under-leg-forward.png',
-  pushCrate: 'assets/animation/push-crate-new.png',
+  pushCharacterCycle: `${PUBLIC_ANIMATION_ROOT}/push-character-cycle-v2.png`,
+  pushCharacterUnderLegForward: `${PUBLIC_ANIMATION_ROOT}/push-character-under-leg-forward.png`,
+  pushCrate: `${PUBLIC_ANIMATION_ROOT}/push-crate-new.png`,
 });
 export const homeBackgroundSource = `${PUBLIC_ANIMATION_ROOT}/push-outdoor-background-v1.png`;
 export const levelsBackgroundSource = publicUISource('levels-texture-v2.png');
@@ -72,6 +70,9 @@ export const homeIconFileIDs = Object.freeze({
   campaignAdventure: `${CLOUD_MODE_ROOT}/adventure-card-v2.jpg`,
   campaignCoop: `${CLOUD_MODE_ROOT}/coop-card-v2.jpg`,
   campaignPk: `${CLOUD_MODE_ROOT}/pk-card-v1.jpg`,
+  pushCharacterCycle: `${CLOUD_ANIMATION_ROOT}/push-character-cycle-v2.png`,
+  pushCharacterUnderLegForward: `${CLOUD_ANIMATION_ROOT}/push-character-under-leg-forward.png`,
+  pushCrate: `${CLOUD_ANIMATION_ROOT}/push-crate-new.png`,
 });
 
 function assignSources(icons, sources) {
@@ -100,9 +101,8 @@ export function loadHomeIcons(ctx, platform, onCloudProgress = () => {}) {
     };
   });
   iconSets.set(ctx, icons);
-  assignSources(icons, localPushAnimationSources);
   if (!platform.resolveCloudFiles) {
-    assignSources(icons, { ...cloudHomeIconSources, background: homeBackgroundSource,
+    assignSources(icons, { ...cloudHomeIconSources, ...localPushAnimationSources, background: homeBackgroundSource,
       levelsBackground: levelsBackgroundSource, backButton: homeIconSources.backButton,
       starSelected: homeIconSources.starSelected, starUnselected: homeIconSources.starUnselected,
       lock: homeIconSources.lock, ...campaignIconSources });
@@ -119,7 +119,7 @@ export function loadHomeIcons(ctx, platform, onCloudProgress = () => {}) {
         }
       });
       console.warn('Cloud home images failed to resolve.', error);
-      assignSources(icons, { ...cloudHomeIconSources, background: homeBackgroundSource,
+      assignSources(icons, { ...cloudHomeIconSources, ...localPushAnimationSources, background: homeBackgroundSource,
         levelsBackground: levelsBackgroundSource, backButton: homeIconSources.backButton,
         starSelected: homeIconSources.starSelected, starUnselected: homeIconSources.starUnselected,
         lock: homeIconSources.lock, ...campaignIconSources });

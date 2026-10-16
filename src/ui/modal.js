@@ -4,7 +4,7 @@ import { illustration } from './illustrations.js';
 import { theme } from './theme.js';
 import { getHomeFont } from './home-font.js';
 import { leaderboardCloseFileID, leaderboardCloseSource } from './leaderboard-assets.js';
-import { cloudUIFileID, publicUISource } from './cloud-assets.js';
+import { cloudImageFileID, cloudUIFileID, publicImageSource, publicUISource } from './cloud-assets.js';
 
 const WOOD = '#A85E2E';
 const DARK_WOOD = '#4A2716';
@@ -13,12 +13,23 @@ const PAPER = '#FFF2C7';
 const GREEN = '#55B941';
 export const settingsPanelSource = publicUISource('settings-panel-v1.png');
 export const settingsPanelFileID = cloudUIFileID('settings-panel-v1.png');
+export const settingIconSources = Object.freeze({
+  music: publicImageSource('generated/game-controls-v1/music-v1.png'),
+  sound: publicImageSource('generated/game-controls-v1/sound-v1.png'),
+  vibration: publicImageSource('generated/game-controls-v1/vibration-v1.png'),
+});
+export const settingIconFileIDs = Object.freeze({
+  music: cloudImageFileID('generated/game-controls-v1/music-v1.png'),
+  sound: cloudImageFileID('generated/game-controls-v1/sound-v1.png'),
+  vibration: cloudImageFileID('generated/game-controls-v1/vibration-v1.png'),
+});
 
 export class Modal extends Screen {
   constructor(controller, onAction) {
     super(controller, onAction);
     this.settingsPanel = null;
     this.closeButton = null;
+    this.settingIcons = {};
     if (controller.platform.createImage) {
       const image = controller.platform.createImage();
       this.settingsPanel = { image, ready: false };
@@ -45,6 +56,22 @@ export class Modal extends Screen {
           .then(({ close }) => { closeImage.src = close; })
           .catch(() => { closeImage.src = leaderboardCloseSource; });
       } else closeImage.src = leaderboardCloseSource;
+
+      Object.entries(settingIconSources).forEach(([name, source]) => {
+        const iconImage = controller.platform.createImage();
+        const entry = { image: iconImage, ready: false };
+        this.settingIcons[name] = entry;
+        iconImage.onload = () => { entry.ready = true; };
+        iconImage.onerror = () => { entry.ready = false; };
+        iconImage.src = source;
+      });
+      if (controller.platform.resolveCloudFiles) {
+        controller.platform.resolveCloudFiles(settingIconFileIDs)
+          .then((sources) => Object.entries(sources).forEach(([name, source]) => {
+            if (this.settingIcons[name]) this.settingIcons[name].image.src = source;
+          }))
+          .catch((error) => console.warn('Cloud setting icons failed to resolve.', error));
+      }
     }
   }
 
@@ -57,6 +84,9 @@ export class Modal extends Screen {
     const button = (id, label, row, options = {}) => ({ id, label, x: 59, y: y + 226 + row * 64,
       width: 296, height: 50, icon: false, ...options });
     this.buttons = [];
+    if (c.modal === 'profile') this.buttons = [
+      button('authorize-profile', '同意并进入游戏', 1, { primary: true }),
+    ];
     if (c.modal === 'deadlock') this.buttons = [
       button('undo', '撤销一步（1 张卡）', 1, { primary: true }),
       button('restart', '重新开始', 2), button('close', '返回棋盘', 3)];
@@ -102,12 +132,16 @@ export class Modal extends Screen {
     panel(ctx, 37, top, 340, c.modal === 'win' ? 680 : 520, { fill: theme.sky, radius: 10, lineWidth: 5, shadow: theme.ink, offset: 7 });
     for (let i = 0; i < 8; i += 1) panel(ctx, 41 + i * 41.5, top + 3, 41.5, 13,
       { fill: theme.brick, lineWidth: 2, radius: 0 });
-    const titles = { menu: '休息一下', settings: '游戏设置', win: '太棒了！', tutorial: '推箱子小课堂', signin: '每日签到', cards: '撤销卡不足', deadlock: '箱子卡住了' };
+    const titles = { menu: '休息一下', settings: '游戏设置', win: '太棒了！', tutorial: '推箱子小课堂', signin: '每日签到', cards: '撤销卡不足', deadlock: '箱子卡住了', profile: '完善玩家资料' };
     illustration(ctx, c.modal === 'win' ? 'done' : c.modal === 'signin' ? 'question' : 'crate', 181, top + 35, 52);
     text(ctx, titles[c.modal], 207, top + 118, { size: 28, color: theme.yellow, outline: 2 });
     const caption = (value, offset, options = {}) => text(ctx, value, 207, top + offset,
       { size: 15, color: theme.white, ...options });
-    if (c.modal === 'deadlock') {
+    if (c.modal === 'profile') {
+      caption('一次授权，后续不再重复询问', 173);
+      caption('用于在好友榜和世界榜展示', 211, { size: 13 });
+      caption('你的头像、昵称和闯关成绩', 243, { size: 13 });
+    } else if (c.modal === 'deadlock') {
       caption('有箱子已无法推到目标格', 173);
       caption('可以撤销刚才的一步，或重新开始', 211, { size: 13 });
       caption(`当前拥有 ${c.progress.state.cards} 张撤销卡`, 249, { size: 13 });
@@ -256,7 +290,7 @@ export class Modal extends Screen {
         fill: disabled ? '#E7DDC7' : '#FFF9E5', stroke: disabled ? '#A9967F' : DARK_WOOD, lineWidth: 3, radius: 14,
         shadow: pressed ? null : '#D2A75B', offset: 3,
       });
-      this.drawSettingIcon(ctx, button.id, button.x + 30 + shift, centerY, active);
+      this.drawSettingIcon(ctx, button.id, button.x + 30 + shift, centerY, active, disabled);
       const labels = { music: '背景音乐', sound: '游戏音效', vibration: '震动反馈' };
       text(ctx, labels[button.id], button.x + 58 + shift,
         centerY, { size: 18, color: disabled ? '#8C7C6D' : DARK_WOOD, align: 'left', font: getHomeFont() });
@@ -272,7 +306,15 @@ export class Modal extends Screen {
     circle(ctx, x + (active ? 41 : 17), y + 17, 12, '#FFF9E5', 2, DARK_WOOD);
   }
 
-  drawSettingIcon(ctx, id, x, y, active) {
+  drawSettingIcon(ctx, id, x, y, active, disabled = false) {
+    const asset = this.settingIcons[id];
+    if (asset?.ready) {
+      ctx.save();
+      ctx.globalAlpha = disabled ? 0.35 : active ? 1 : 0.58;
+      ctx.drawImage(asset.image, x - 21, y - 21, 42, 42);
+      ctx.restore();
+      return;
+    }
     const color = active ? '#3D9634' : '#9B8064';
     ctx.save(); ctx.fillStyle = color; ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineCap = 'round';
     if (id === 'music') {

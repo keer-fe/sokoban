@@ -39,7 +39,9 @@ exports.main = async (event = {}) => {
       rank,
       completed: player.completed,
       totalStars: player.totalStars,
-      nickname: anonymousName(player._id),
+      nickname: typeof player.nickname === 'string' && player.nickname.trim()
+        ? player.nickname.trim().slice(0, 16) : anonymousName(player._id),
+      avatarUrl: typeof player.avatarUrl === 'string' ? player.avatarUrl.trim().slice(0, 1024) : '',
       isMe: player._id === OPENID,
     };
   });

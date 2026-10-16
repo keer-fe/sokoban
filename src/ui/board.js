@@ -1,54 +1,81 @@
 import { panel, circle, line } from './draw.js';
 import { illustration } from './illustrations.js';
 import { theme } from './theme.js';
-import { drawArt, drawCharacterFrame } from './art.js';
+import { drawCharacterFrame, drawCrate, drawGate, drawGoal, drawWall,
+  drawPressurePlate } from './art.js';
 import { areDoorsOpen } from '../game/engine.js';
 
-export function drawBoard(ctx, game, bounds, zoom = false, elapsed = 0, playerAnimation = null) {
+export function getBoardLayout(game, bounds, zoom = false) {
   const { board, state } = game;
   const fit = Math.min(bounds.width / board.width, bounds.height / board.height);
   const cell = zoom ? Math.max(28, fit * 2) : fit;
   const follow = (count, size, player) => count * cell <= size ? (size - count * cell) / 2
     : Math.max(size - count * cell, Math.min(0, size / 2 - (player + 0.5) * cell));
-  const x = bounds.x + follow(board.width, bounds.width, state.player % board.width);
-  const y = bounds.y + follow(board.height, bounds.height, Math.floor(state.player / board.width));
+  return {
+    cell,
+    x: bounds.x + follow(board.width, bounds.width, state.player % board.width),
+    y: bounds.y + follow(board.height, bounds.height, Math.floor(state.player / board.width)),
+  };
+}
+
+export function drawBoard(ctx, game, bounds, zoom = false, elapsed = 0, playerAnimation = null) {
+  const { board, state } = game;
+  const { cell, x, y } = getBoardLayout(game, bounds, zoom);
   ctx.save();
   ctx.beginPath();
   ctx.rect(bounds.x, bounds.y, bounds.width, bounds.height);
   ctx.clip();
+  const texturedWalls = drawWalls(ctx, board, x, y, cell);
   for (let row = 0; row < board.height; row += 1) {
     for (let col = 0; col < board.width; col += 1) {
       const pos = row * board.width + col;
       const px = x + col * cell;
       const py = y + row * cell;
       if (board.walls.has(pos)) {
-        if (drawArt(ctx, 'wall', px, py, cell)) continue;
+        if (texturedWalls) continue;
         panel(ctx, px, py, cell, cell, { fill: theme.brick, lineWidth: 2, radius: 1 });
         line(ctx, [[px + 2, py + cell / 2], [px + cell - 2, py + cell / 2]], theme.ink, 2);
         line(ctx, [[px + cell / 2, py], [px + cell / 2, py + cell / 2]], theme.ink, 2);
         line(ctx, [[px + cell / 3, py + cell / 2], [px + cell / 3, py + cell]], theme.ink, 2);
         line(ctx, [[px + 4, py + cell / 2 - 4], [px + 4, py + 4], [px + cell - 4, py + 4]], '#E58B50', 2);
       } else if (board.floors.has(pos)) {
-        if (!drawArt(ctx, 'floor', px, py, cell)) panel(ctx, px, py, cell, cell, { fill: (row + col) % 2 ? '#F4D6A0' : '#EBC78F',
-          stroke: '#D3AB70', lineWidth: 1, radius: 0 });
         if (board.buttons.has(pos)) drawPressureButton(ctx, px, py, cell,
           pos === state.player || state.boxes.includes(pos));
-        if (board.goals.has(pos) && !state.boxes.includes(pos)) {
+        if (board.goals.has(pos)) {
           // A slow 1.6-second pulse keeps the marker visible even at its dimmest.
-          illustration(ctx, 'target', px + 2, py + 2, cell - 4,
-            { frameAlpha: 0.65 + 0.35 * Math.cos(elapsed * Math.PI * 2 / 1.6) });
+          ctx.save();
+          ctx.globalAlpha *= 0.65 + 0.35 * Math.cos(elapsed * Math.PI * 2 / 1.6);
+          if (!drawGoal(ctx, px + 2, py + 2, cell - 4)) {
+            illustration(ctx, 'target', px + 2, py + 2, cell - 4);
+          }
+          ctx.restore();
         }
         if (board.doors.has(pos)) drawDoor(ctx, px, py, cell,
           areDoorsOpen(board, state) || pos === state.player || state.boxes.includes(pos));
       }
-      if (state.boxes.includes(pos)) illustration(ctx, board.goals.has(pos) ? 'done' : 'crate', px + 2, py + 2, cell - 4);
+      if (state.boxes.includes(pos) && !drawCrate(ctx, px, py, cell)) {
+        illustration(ctx, board.goals.has(pos) ? 'done' : 'crate', px + 2, py + 2, cell - 4);
+      }
       if (pos === state.player) drawPlayer(ctx, px, py, cell, state.facing, playerAnimation);
     }
   }
   ctx.restore();
 }
 
+function drawWalls(ctx, board, x, y, cell) {
+  let drawn = true;
+  board.walls.forEach((pos) => {
+    const col = pos % board.width;
+    const row = Math.floor(pos / board.width);
+    if (!drawWall(ctx, x + col * cell, y + row * cell, cell)) {
+      drawn = false;
+    }
+  });
+  return drawn;
+}
+
 function drawPressureButton(ctx, x, y, size, pressed) {
+  if (drawPressurePlate(ctx, pressed, x, y, size)) return;
   const inset = size * 0.2;
   panel(ctx, x + inset, y + inset, size - inset * 2, size - inset * 2,
     { fill: pressed ? '#42C96B' : '#FFD34E', stroke: '#6B4B1F', lineWidth: Math.max(1, size * 0.06), radius: size * 0.16 });
@@ -56,6 +83,7 @@ function drawPressureButton(ctx, x, y, size, pressed) {
 }
 
 function drawDoor(ctx, x, y, size, open) {
+  if (drawGate(ctx, open, x, y, size)) return;
   if (open) {
     panel(ctx, x + size * 0.05, y + size * 0.04, size * 0.13, size * 0.92,
       { fill: '#63738B', lineWidth: 1, radius: 1 });
@@ -72,9 +100,10 @@ function drawDoor(ctx, x, y, size, open) {
 }
 
 function drawPlayer(ctx, x, y, size, facing = 'down', animation = null) {
-  const artSize = size * 1.24;
-  if (drawCharacterFrame(ctx, facing, animation?.kind || 'walk', animation?.frame ?? 1,
-    x - (artSize - size) / 2, y + size - artSize, artSize)) return;
+  const kind = animation?.kind || 'walk';
+  const frame = animation?.frame ?? 1;
+  if (drawCharacterFrame(ctx, facing, kind, frame,
+    x, y, size)) return;
   ctx.save(); ctx.translate(x, y); ctx.scale(size / 44, size / 44);
   panel(ctx, 11, 26, 22, 15, { fill: '#E74C3C', radius: 5, lineWidth: 2 });
   panel(ctx, 17, 31, 10, 7, { fill: '#2ECC71', radius: 2, lineWidth: 1.5 });

@@ -26,6 +26,7 @@ export function normalizeWorldRows(value) {
       totalStars: row.totalStars,
       nickname: typeof row.nickname === 'string' && row.nickname.trim()
         ? row.nickname.trim().slice(0, 16) : `玩家${index + 1}`,
+      avatarUrl: typeof row.avatarUrl === 'string' ? row.avatarUrl.trim().slice(0, 1024) : '',
       isMe: row.isMe === true,
     }];
   });
@@ -34,10 +35,12 @@ export function normalizeWorldRows(value) {
 export function createWorldLeaderboard(cloud) {
   return {
     available: Boolean(cloud && typeof cloud.callFunction === 'function'),
-    submit({ completed, totalStars }) {
+    submit({ completed, totalStars, nickname = '', avatarUrl = '' }) {
       return callCloudFunction(cloud, 'submitLeaderboard', {
         completed,
         totalStars,
+        nickname,
+        avatarUrl,
         scoreVersion: SCORE_VERSION,
       });
     },

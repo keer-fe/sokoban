@@ -12,6 +12,10 @@ function validInteger(value, min, max) {
   return Number.isInteger(value) && value >= min && value <= max;
 }
 
+function cleanText(value, maxLength) {
+  return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
+}
+
 function isMissingDocument(error) {
   const detail = `${error && error.errCode || ''} ${error && error.message || ''}`;
   return /DOCUMENT_NOT_FOUND|not\s+exist|does not exist|-1/i.test(detail);
@@ -22,6 +26,8 @@ exports.main = async (event = {}) => {
   const completed = Number(event.completed);
   const totalStars = Number(event.totalStars);
   const scoreVersion = Number(event.scoreVersion);
+  const nickname = cleanText(event.nickname, 16);
+  const avatarUrl = cleanText(event.avatarUrl, 1024);
 
   if (!OPENID) throw new Error('MISSING_OPENID');
   if (!validInteger(completed, 0, MAX_COMPLETED)) throw new Error('INVALID_COMPLETED');
@@ -50,6 +56,8 @@ exports.main = async (event = {}) => {
       completed: nextCompleted,
       totalStars: nextStars,
       scoreVersion: SCORE_VERSION,
+      nickname: nickname || cleanText(previous && previous.nickname, 16),
+      avatarUrl: avatarUrl || cleanText(previous && previous.avatarUrl, 1024),
       updatedAt: updatedAt || db.serverDate(),
     } });
 
