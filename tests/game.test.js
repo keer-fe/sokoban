@@ -134,24 +134,38 @@ test('导航、弹窗阻断、撤销卡、重开和完整通关流程', () => {
   assert.equal(restored.progress.allComplete, true); assert.equal(restored.progress.state.cards, 4);
 });
 
-test('暂停菜单进入设置后返回菜单，首页设置完成后直接关闭', () => {
+test('暂停菜单直接提供设置、重新开始和放弃挑战', () => {
   const p = platform();
   const c = new GameController(p, levels);
   assert.equal(c.progress.state.music, true);
   assert.equal(c.progress.state.sound, false);
   assert.equal(c.progress.state.vibration, false);
   c.openLevel(0); c.modal = null;
-  c.handle('menu'); c.handle('settings');
-  assert.equal(c.modal, 'settings');
-  assert.equal(c.settingsReturn, 'menu');
-  c.handle('music'); assert.equal(c.progress.state.music, false);
-  c.handle('sound'); assert.equal(c.progress.state.sound, false);
-  c.handle('vibration'); assert.equal(c.progress.state.vibration, false);
-  c.handle('close'); assert.equal(c.modal, 'menu');
-  c.handle('close'); assert.equal(c.modal, null);
+  c.handle('right');
+  c.handle('menu');
+  c.handle('music'); c.handle('sound'); c.handle('vibration');
+  assert.equal(c.progress.state.music, false);
+  assert.equal(c.progress.state.sound, true);
+  assert.equal(c.progress.state.vibration, true);
+  c.handle('restart'); assert.equal(c.modal, null); assert.equal(c.game.state.steps, 0);
+  c.handle('menu'); c.handle('give-up'); assert.equal(c.route, 'levels');
   c.navigate('home'); c.handle('settings'); c.handle('close');
   assert.equal(c.modal, null);
   assert.equal(new GameController(p, levels).progress.state.music, false);
+});
+
+test('暂停菜单底部双按钮严格收在设置项宽度内', () => {
+  const c = new GameController(platform(), levels);
+  c.openLevel(0); c.modal = 'menu';
+  const modal = new Modal(c, () => {});
+  modal.resize(createViewport({ width: 390, height: 844, safeTop: 91, safeBottom: 34 }));
+  const settings = modal.buttons.filter(({ id }) => ['music', 'sound', 'vibration'].includes(id));
+  const actions = modal.buttons.filter(({ id }) => ['restart', 'give-up'].includes(id));
+  const contentLeft = settings[0].x;
+  const contentRight = settings[0].x + settings[0].width;
+  assert.equal(Math.min(...actions.map(({ x }) => x)), contentLeft);
+  assert.equal(Math.max(...actions.map(({ x, width }) => x + width)), contentRight);
+  assert.ok(actions[0].x + actions[0].width < actions[1].x);
 });
 
 test('小屏和全面屏上的方向键、棋盘、弹窗均在安全区域内', () => {
@@ -161,14 +175,15 @@ test('小屏和全面屏上的方向键、棋盘、弹窗均在安全区域内',
     const page = new GamePage(c, () => {}); page.resize(viewport);
     const bottom = viewport.height - viewport.safeBottom;
     page.buttons.forEach((button) => {
-      assert.ok(button.y >= viewport.safeTop);
+      if (button.id === 'menu') assert.equal(button.y + button.height / 2, viewport.navigationCenterY);
+      else assert.ok(button.y >= viewport.safeTop);
       assert.ok(button.y + button.height < bottom);
     });
     assert.ok(page.boardBounds.y + page.boardBounds.height < page.buttons.find((b) => b.id === 'undo').y);
     const modal = new Modal(c, () => {});
     for (const kind of ['menu', 'settings', 'win', 'tutorial', 'signin', 'cards', 'deadlock']) {
       c.modal = kind; modal.resize(viewport);
-      const height = kind === 'win' ? 680 : kind === 'settings' ? 450 : 520;
+      const height = kind === 'win' ? 680 : kind === 'menu' || kind === 'settings' ? 450 : 520;
       assert.ok(modal.top + height < bottom);
       modal.buttons.forEach((button) => assert.ok(button.y + button.height < modal.top + height));
     }

@@ -11,6 +11,7 @@ export class GameController {
     this.modal = null;
     this.settingsReturn = null;
     this.friendsTab = 'friends';
+    this.worldBoard = { state: 'idle', rows: [], error: null };
     this.levelCampaign = 'classic';
     this.levelView = 'campaigns';
     this.listPage = 0;
@@ -58,6 +59,37 @@ export class GameController {
   now() { return this.platform.wallNow ? this.platform.wallNow() : Date.now(); }
   syncFriends() {
     if (this.platform.friendBoard) this.platform.friendBoard.send('sync', { completed: this.progress.completedLevels });
+  }
+  async syncWorldLeaderboard() {
+    if (!this.platform.worldLeaderboard?.available) return null;
+    try {
+      return await this.platform.worldLeaderboard.submit({
+        completed: this.progress.completedLevels,
+        totalStars: this.progress.totalStars,
+      });
+    } catch (error) {
+      console.warn('World leaderboard sync failed.', error);
+      return null;
+    }
+  }
+  async loadWorldLeaderboard(force = false) {
+    if (!this.platform.worldLeaderboard?.available) {
+      this.worldBoard = { state: 'error', rows: [], error: new Error('微信云函数不可用') };
+      return [];
+    }
+    if (!force && (this.worldBoard.state === 'loading' || this.worldBoard.state === 'ready')) {
+      return this.worldBoard.rows;
+    }
+    this.worldBoard = { ...this.worldBoard, state: 'loading', error: null };
+    try {
+      const rows = await this.platform.worldLeaderboard.load(50);
+      this.worldBoard = { state: 'ready', rows, error: null };
+      return rows;
+    } catch (error) {
+      this.worldBoard = { state: 'error', rows: [], error };
+      console.warn('World leaderboard load failed.', error);
+      return [];
+    }
   }
   syncLevelFriends() {
     const record = this.progress.state.records[this.game.level.id];
@@ -171,7 +203,7 @@ export class GameController {
     if (this.game.complete) {
       const stars = this.game.level.minSteps ? score(this.game.state.steps, this.game.level.minSteps) : 0;
       const saved = this.progress.finish(this.game.level, this.game.state.steps, stars, this.game.moves);
-      if (saved) { this.syncLevelFriends(); this.syncFriends(); }
+      if (saved) { this.syncLevelFriends(); this.syncFriends(); this.syncWorldLeaderboard(); }
       this.result = { stars, steps: this.game.state.steps, saved };
       this.modal = 'win';
     } else if (this.game.deadlock && !previousDeadlock) {
@@ -187,23 +219,24 @@ export class GameController {
     }
     if (this.modal === 'friends' && (action === 'friends:tab-friends' || action === 'friends:tab-world')) {
       this.friendsTab = action === 'friends:tab-world' ? 'world' : 'friends';
+      if (this.friendsTab === 'world') this.loadWorldLeaderboard();
     } else if (this.modal === 'friends' && action === 'friends:refresh' && this.friendsTab === 'friends') {
       if (this.platform.friendBoard) this.platform.friendBoard.send(action.slice(8), {
         completed: this.progress.completedLevels,
       });
+    } else if (this.modal === 'friends' && action === 'friends:refresh' && this.friendsTab === 'world') {
+      this.loadWorldLeaderboard(true);
     } else if (this.modal === 'tutorial' && (action === 'understood' || action === 'skip')) {
       this.progress.finishTutorial(); this.modal = null;
     } else if (this.modal === 'deadlock') {
       if (action === 'restart') { this.game.restart(); this.modal = null; }
       if (action === 'undo') { this.modal = null; this.handle('undo'); }
     } else if (this.modal === 'menu' || this.modal === 'settings') {
-      if (this.modal === 'menu' && action === 'settings') {
-        this.settingsReturn = 'menu'; this.modal = 'settings'; return;
-      }
       if (action === 'replay-saved') this.startReplay(this.progress.state.solutions[this.game.level.id]?.moves);
       if (action === 'restart') { this.game.restart(); this.modal = null; }
-      if (action === 'levels' || action === 'home') this.navigate(action);
-      if (action === 'music') this.progress.toggle(action);
+      if (action === 'give-up' || action === 'levels') this.navigate('levels');
+      if (action === 'home') this.navigate(action);
+      if (['music', 'sound', 'vibration'].includes(action)) this.progress.toggle(action);
     } else if (this.modal === 'signin' && action === 'claim') {
       if (!this.progress.canSignIn(this.now())) this.platform.notify('今天已领取，明天再来吧');
       else if (this.progress.signIn(this.now())) this.platform.notify('已获得 5 张撤销卡');
@@ -220,7 +253,7 @@ export class GameController {
       if (action === 'next') {
         if (!this.result.saved) {
           this.result.saved = this.progress.finish(this.game.level, this.result.steps, this.result.stars, this.game.moves);
-          if (this.result.saved) { this.syncLevelFriends(); this.syncFriends(); }
+          if (this.result.saved) { this.syncLevelFriends(); this.syncFriends(); this.syncWorldLeaderboard(); }
         }
         const next = this.nextLevelIndex();
         if (this.result.saved && next !== null) this.openLevel(next);

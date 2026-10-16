@@ -24,6 +24,7 @@ export class FriendsPage extends Screen {
   constructor(controller, onAction) {
     super(controller, onAction);
     this.swipe = null;
+    this.worldScrollY = 0;
     this.assets = {};
     if (controller.platform.createImage) Object.entries(friendsAssetSources).forEach(([name, fallback]) => {
       const entry = { image: controller.platform.createImage(), ready: false };
@@ -61,7 +62,7 @@ export class FriendsPage extends Screen {
       { id: 'friends:tab-friends', label: '好友榜', x: 58, y: top + 138, width: 88, height: 38 },
       { id: 'friends:tab-world', label: '世界榜', x: 152, y: top + 138, width: 88, height: 38 },
     ];
-    if (this.controller.friendsTab === 'friends') this.buttons.push(
+    this.buttons.push(
       { id: 'friends:refresh', label: '刷新', x: 303, y: top + 132, width: 52, height: 52,
         fontSize: 12, fill: '#FFE7A1', color: DARK_WOOD });
     const bridge = this.controller.platform.friendBoard;
@@ -91,10 +92,7 @@ export class FriendsPage extends Screen {
     this.drawTabs(ctx);
     const bridge = this.controller.platform.friendBoard;
     if (isWorld) {
-      text(ctx, '世界榜', 207, y + boardHeight / 2 - 28,
-        { size: 19, color: '#358A34', font: getHomeFont() });
-      text(ctx, '正在开发中', 207, y + boardHeight / 2 + 22,
-        { size: 25, color: DARK_WOOD, font: getHomeFont() });
+      this.drawWorldBoard(ctx, x, y, boardWidth, boardHeight);
     } else if (bridge?.available && bridge.canvas) ctx.drawImage(bridge.canvas, x, y, boardWidth, boardHeight);
     else {
       text(ctx, '请在微信小游戏中查看好友榜', 207, y + boardHeight / 2 - 14,
@@ -112,7 +110,7 @@ export class FriendsPage extends Screen {
       text(ctx, '×', close.x + close.width / 2, close.y + close.height / 2 - 1,
         { size: 29, color: DARK_WOOD });
     }
-    if (this.assets.refresh?.ready && !isWorld) {
+    if (this.assets.refresh?.ready) {
       const angle = this.input.activeId === 'friends:refresh' ? -0.22 : Math.sin(elapsed * 1.8) * 0.055;
       ctx.save();
       ctx.translate(refreshButton.x + refreshButton.width / 2, refreshButton.y + refreshButton.height / 2);
@@ -125,8 +123,68 @@ export class FriendsPage extends Screen {
         refreshButton.y + refreshButton.height / 2,
         { size: 14, color: '#FFF5CE', outline: 2 });
     }
-    text(ctx, isWorld ? '更多玩法 · 敬请期待' : '上下滑动 · 查看完整榜单', 207, top + frameHeight - 69,
+    text(ctx, '上下滑动 · 查看完整榜单', 207, top + frameHeight - 69,
       { size: 12, color: '#FFECC0', outline: 2, spacing: 1 });
+  }
+
+  drawWorldBoard(ctx, x, y, width, height) {
+    let board = this.controller.worldBoard;
+    if (board.state === 'idle') {
+      this.controller.loadWorldLeaderboard();
+      board = this.controller.worldBoard;
+    }
+    if (board.state === 'idle' || board.state === 'loading') {
+      text(ctx, '正在获取世界排名…', x + width / 2, y + height / 2,
+        { size: 17, color: DARK_WOOD, font: getHomeFont() });
+      return;
+    }
+    if (board.state === 'error') {
+      text(ctx, '世界榜暂时加载失败', x + width / 2, y + height / 2 - 13,
+        { size: 17, color: DARK_WOOD, font: getHomeFont() });
+      text(ctx, '点击右上角刷新重试', x + width / 2, y + height / 2 + 20,
+        { size: 12, color: '#8C674C' });
+      return;
+    }
+    if (!board.rows.length) {
+      text(ctx, '还没有世界榜成绩', x + width / 2, y + height / 2 - 13,
+        { size: 17, color: DARK_WOOD, font: getHomeFont() });
+      text(ctx, '完成一关后就会出现在这里', x + width / 2, y + height / 2 + 20,
+        { size: 12, color: '#8C674C' });
+      return;
+    }
+
+    const headerHeight = 30;
+    const rowHeight = 62;
+    const viewHeight = height - headerHeight;
+    const maxScroll = Math.max(0, board.rows.length * rowHeight - viewHeight);
+    this.worldScrollY = Math.max(0, Math.min(maxScroll, this.worldScrollY));
+    text(ctx, '排名', x + 18, y + 14, { size: 11, color: '#8C674C' });
+    text(ctx, '玩家', x + 96, y + 14, { size: 11, color: '#8C674C' });
+    text(ctx, '战绩', x + width - 20, y + 14, { size: 11, color: '#8C674C', align: 'right' });
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y + headerHeight, width, viewHeight);
+    ctx.clip();
+    board.rows.forEach((row, index) => {
+      const rowY = y + headerHeight + index * rowHeight - this.worldScrollY;
+      if (rowY + rowHeight < y + headerHeight || rowY > y + height) return;
+      panel(ctx, x + 2, rowY + 3, width - 7, rowHeight - 7, {
+        fill: row.isMe ? '#E5F6D8' : index % 2 ? '#FFFDF6' : '#FFF7E7',
+        stroke: row.rank <= 3 ? ['#E9B640', '#AAB5A1', '#D69B67'][row.rank - 1] : '#E8D7B5',
+        lineWidth: row.isMe ? 2 : 1,
+        radius: 13,
+      });
+      const rankLabel = row.rank <= 3 ? ['🥇', '🥈', '🥉'][row.rank - 1] : `#${row.rank}`;
+      text(ctx, rankLabel, x + 25, rowY + rowHeight / 2,
+        { size: row.rank <= 3 ? 19 : 15, color: '#985322' });
+      text(ctx, row.isMe ? `（我）${row.nickname}` : row.nickname, x + 54, rowY + rowHeight / 2 - 8,
+        { size: 13, color: DARK_WOOD, align: 'left' });
+      text(ctx, `${row.totalStars} 星`, x + 54, rowY + rowHeight / 2 + 13,
+        { size: 10, color: '#9A795C', align: 'left' });
+      text(ctx, `${row.completed} 关`, x + width - 14, rowY + rowHeight / 2,
+        { size: 17, color: '#2F8A3B', align: 'right', font: getHomeFont() });
+    });
+    ctx.restore();
   }
 
   drawTabs(ctx) {
@@ -144,12 +202,13 @@ export class FriendsPage extends Screen {
   }
 
   handleWheel(deltaY, point) {
-    if (this.controller.friendsTab === 'friends' && contains(this.bounds, point)) this.scrollBy(deltaY);
+    if (contains(this.bounds, point)) this.scrollBy(deltaY);
   }
 
   scrollBy(delta) {
     if (Math.abs(delta) < 1) return;
-    this.controller.platform.friendBoard?.send('scroll', { delta });
+    if (this.controller.friendsTab === 'world') this.worldScrollY += delta;
+    else this.controller.platform.friendBoard?.send('scroll', { delta });
   }
 
   handlePointer(type, point) {
@@ -158,7 +217,7 @@ export class FriendsPage extends Screen {
       super.handlePointer(type, point);
       return;
     }
-    if (type === 'start' && this.controller.friendsTab === 'friends' && contains(this.bounds, point)) {
+    if (type === 'start' && contains(this.bounds, point)) {
       this.swipe = { id: point.id, y: point.y };
       return;
     }

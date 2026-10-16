@@ -59,6 +59,9 @@ export class ProgressStore {
   }
   get allComplete() { return this.catalog.every(({ id }) => this.state.records[id]); }
   get completedLevels() { return this.catalog.filter(level => this.state.records[level.id]).length; }
+  get totalStars() {
+    return this.catalog.reduce((total, level) => total + (this.state.records[level.id]?.stars || 0), 0);
+  }
   isUnlocked(index) {
     const level = this.catalog[index];
     if (!level) return false;
@@ -93,7 +96,7 @@ export class ProgressStore {
   }
   spendCard() { return this.state.cards > 0 && this.commit({ ...this.state, cards: this.state.cards - 1 }); }
   toggle(key) {
-    if (key !== 'music') return false;
+    if (!['music', 'sound', 'vibration'].includes(key)) return false;
     return this.commit({ ...this.state, [key]: !this.state[key] });
   }
   finishTutorial() { return this.commit({ ...this.state, tutorialDone: true }); }

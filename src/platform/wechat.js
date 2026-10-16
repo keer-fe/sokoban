@@ -1,4 +1,5 @@
 import { createFriendBoard } from './friend-board.js';
+import { createWorldLeaderboard } from './world-leaderboard.js';
 
 const CLOUD_ENV_ID = 'cloud1-d5gqpaioo2d8acf27';
 
@@ -75,6 +76,7 @@ export function createWechatPlatform(api) {
   return {
     canvas,
     friendBoard: createFriendBoard(api),
+    worldLeaderboard: createWorldLeaderboard(api.cloud),
     gameClubButton: typeof api.createGameClubButton === 'function' ? {
       update(style) {
         if (!gameClubButton) {

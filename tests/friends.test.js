@@ -166,28 +166,30 @@ test('好友榜拖动和滚轮按像素连续滚动，不再发送翻页动作',
   controller.friendsTab = 'world';
   page.handleWheel(80, center);
   assert.deepEqual(messages.at(-1), { type: 'scroll', delta: 80 });
+  assert.equal(page.worldScrollY, 80);
 });
 
-test('世界榜显示开发中，并将关闭按钮放在弹窗右上角', () => {
+test('世界榜加载失败时给出重试提示，并保留刷新和关闭按钮', () => {
   const labels = [];
   const titleLetters = [];
-  const footerLetters = [];
   const ctx = new Proxy({ fillText(value, x, y) {
     labels.push(value);
     if (['排', '行', '榜'].includes(value)) titleLetters.push({ value, y });
-    if (value === '更') footerLetters.push({ value, y });
   },
     measureText: value => ({ width: String(value).length * 8 }) },
     { get: (target, key) => key in target ? target[key] : () => {} });
-  const controller = new GameController({ readStorage: () => null }, levels);
+  const controller = new GameController({ readStorage: () => null,
+    worldLeaderboard: { available: true, load: () => Promise.reject(new Error('offline')) } }, levels);
   controller.friendsTab = 'world';
+  controller.worldBoard = { state: 'error', rows: [], error: new Error('offline') };
   const page = new FriendsPage(controller, () => {});
   page.resize(createViewport({ width: 390, height: 844, safeTop: 91, safeBottom: 34 }));
   page.render(ctx);
-  assert.ok(labels.includes('正在开发中'));
-  assert.deepEqual(titleLetters.map(({ y }) => y), [page.frame.y + 65, page.frame.y + 65, page.frame.y + 65]);
-  assert.deepEqual(footerLetters.map(({ y }) => y), [page.frame.y + page.frame.height - 69]);
-  assert.equal(page.buttons.some(button => button.id === 'friends:refresh'), false);
+  assert.ok(labels.includes('世界榜暂时加载失败'));
+  assert.ok(labels.includes('点击右上角刷新重试'));
+  assert.deepEqual(titleLetters.filter(({ y }) => y === page.frame.y + 65).map(({ y }) => y),
+    [page.frame.y + 65, page.frame.y + 65, page.frame.y + 65]);
+  assert.equal(page.buttons.some(button => button.id === 'friends:refresh'), true);
   const close = page.buttons.find(button => button.id === 'close');
   assert.ok(close.x > page.frame.x + page.frame.width / 2);
   assert.ok(close.y < page.bounds.y);

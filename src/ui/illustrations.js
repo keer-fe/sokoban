@@ -23,8 +23,9 @@ export function illustration(ctx, kind, x, y, size, options = {}) {
       panel(ctx, 9, 9, 5, 4, { fill: 'rgba(255,255,255,0.35)', lineWidth: 0, radius: 1 });
     }
   } else if (kind === 'target') {
-    illustration(ctx, 'crate', 11, 11, 22);
     ctx.globalAlpha *= animatedTarget ? options.frameAlpha : 1;
+    if (drawArt(ctx, 'target', 0, 0, 44)) { ctx.restore(); return; }
+    illustration(ctx, 'crate', 11, 11, 22);
     if (drawArt(ctx, 'targetFrame', 0, 0, 44)) { ctx.restore(); return; }
     [[[3, 14], [3, 3], [14, 3]], [[30, 3], [41, 3], [41, 14]],
       [[41, 30], [41, 41], [30, 41]], [[14, 41], [3, 41], [3, 30]]]

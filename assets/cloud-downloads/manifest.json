@@ -1,0 +1,144 @@
+{
+  "createdAt": "2026-10-16T04:20:40.250Z",
+  "scope": "All cloud images referenced by current src code; not a full bucket listing",
+  "files": [
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/animation/push-outdoor-background-v1.png",
+      "path": "images/animation/push-outdoor-background-v1.png",
+      "bytes": 1443057,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/generated/sokoban-style-sprite-sheet-v2.png",
+      "path": "images/generated/sokoban-style-sprite-sheet-v2.png",
+      "bytes": 1609016,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/home/button-select-levels.png",
+      "path": "images/home/button-select-levels.png",
+      "bytes": 281042,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/home/button-start-game.png",
+      "path": "images/home/button-start-game.png",
+      "bytes": 292354,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/home/ranking.png",
+      "path": "images/home/ranking.png",
+      "bytes": 101973,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/home/settings.png",
+      "path": "images/home/settings.png",
+      "bytes": 85492,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/home/signin.png",
+      "path": "images/home/signin.png",
+      "bytes": 93458,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/home/title-xiangbudao8-text-v2.png",
+      "path": "images/home/title-xiangbudao8-text-v2.png",
+      "bytes": 522576,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/home/undo-card.png",
+      "path": "images/home/undo-card.png",
+      "bytes": 93725,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/modes/adventure-card-v2.jpg",
+      "path": "images/modes/adventure-card-v2.jpg",
+      "bytes": 177905,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/modes/classic-card-v2.jpg",
+      "path": "images/modes/classic-card-v2.jpg",
+      "bytes": 174374,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/modes/coop-card-v2.jpg",
+      "path": "images/modes/coop-card-v2.jpg",
+      "bytes": 190290,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/modes/pk-card-v1.jpg",
+      "path": "images/modes/pk-card-v1.jpg",
+      "bytes": 187337,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/ui/button-back-wood-v2.png",
+      "path": "images/ui/button-back-wood-v2.png",
+      "bytes": 1359111,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/ui/current-level-v5.png",
+      "path": "images/ui/current-level-v5.png",
+      "bytes": 1186180,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/ui/friends-close-v2.png",
+      "path": "images/ui/friends-close-v2.png",
+      "bytes": 23118,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/ui/friends-panel-v4.png",
+      "path": "images/ui/friends-panel-v4.png",
+      "bytes": 1301341,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/ui/friends-refresh-v2.png",
+      "path": "images/ui/friends-refresh-v2.png",
+      "bytes": 31784,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/ui/levels-texture-v2.png",
+      "path": "images/ui/levels-texture-v2.png",
+      "bytes": 2215130,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/ui/lock-v1.png",
+      "path": "images/ui/lock-v1.png",
+      "bytes": 1117507,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/ui/settings-panel-v1.png",
+      "path": "images/ui/settings-panel-v1.png",
+      "bytes": 894159,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/ui/star-selected-v2.png",
+      "path": "images/ui/star-selected-v2.png",
+      "bytes": 58382,
+      "status": "downloaded"
+    },
+    {
+      "url": "https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/ui/star-unselected-v2.png",
+      "path": "images/ui/star-unselected-v2.png",
+      "bytes": 57042,
+      "status": "downloaded"
+    }
+  ]
+}

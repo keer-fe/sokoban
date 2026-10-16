@@ -166,11 +166,11 @@ test('加载人物动画只使用包内素材，不等待或进入云资源清�
   assert.equal(typeof resolveCloud, 'function');
 });
 
-test('模式卡片从独立的 images/mode 目录加载', () => {
+test('模式卡片从独立的 images/modes 目录加载', () => {
   const names = ['campaignClassic', 'campaignAdventure', 'campaignCoop', 'campaignPk'];
   names.forEach((name) => {
-    assert.match(homeIconSources[name], /\.tcb\.qcloud\.la\/images\/mode\//);
-    assert.match(homeIconFileIDs[name], /\/images\/mode\//);
+    assert.match(homeIconSources[name], /\.tcb\.qcloud\.la\/images\/modes\//);
+    assert.match(homeIconFileIDs[name], /\/images\/modes\//);
     assert.equal(homeIconSources[name].includes('/images/ui/'), false);
     assert.equal(homeIconFileIDs[name].includes('/images/ui/'), false);
   });
