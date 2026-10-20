@@ -18,6 +18,7 @@
   "simulatorPluginLibVersion": {},
   "packOptions": {
     "ignore": [
+      { "type": "folder", "value": "images/visual-v1/reference" },
       { "type": "folder", "value": "assets/source" },
       { "type": "folder", "value": "assets/home" },
       { "type": "folder", "value": "assets/generated" },

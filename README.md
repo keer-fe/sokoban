@@ -23,8 +23,8 @@ tests/                  布局、交互和生命周期的 Node 测试
 ```
 
 - 页面仅通过注入的动作回调调用业务，不直接访问 `wx`；后续选关、游戏页复用 `ui` 和 `core`。
-- 颜色在 `ui/theme.js` 维护，文案和展示数据在 `pages/home/config.js` 维护，布局在 `layout.js` 维护。
-- 游戏元素复用由用户 SVG 导出的本地高清图集，加载失败时回退 Canvas 路径绘制；不依赖远程素材地址。源图、转换方法和素材索引见 `assets/README.md`、`tools/build-art.cjs` 和 `src/ui/art.js`。
+- 新视觉唯一标准为 [视觉规范 v1](docs/visual-spec.md)，母版原件归档在 `images/visual-v1/reference/`；新素材放在 `images/visual-v1/`。`src/ui/theme.js` 仍为待迁移旧主题，不能作为新设计配色依据。
+- 当前资源包含本地资源和 CloudBase 图片，实际加载来源以 `src/ui/home-icons.js`、`src/ui/art.js` 为准。规范已确认，首页资源和布局尚待迁移，实施清单见 [首页资产拆分](docs/home-assets.md)。
 - 输入与绘制共享逻辑坐标，DPR 只影响画布清晰度；应用进入后台停止动画，销毁时解绑事件。
 - 页面统一通过 `GameController` 分发动作；弹窗打开时只处理弹窗输入，阻断底层方向键和页面导航。
 - `GameSession` 是纯规则引擎：成功移动计步、禁止拉箱/连推、撤销恢复状态、重开清空历史，供棋盘与求解测试共用。
