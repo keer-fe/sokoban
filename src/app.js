@@ -10,8 +10,7 @@ import { homeIconFileIDs, loadHomeIcons } from './ui/home-icons.js';
 import { loadHomeFont } from './ui/home-font.js';
 import { FriendsPage } from './pages/friends/index.js';
 import { drawLoading } from './ui/loading.js';
-
-const BG_MUSIC_URL = 'https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/music/bg.mp3?sign=389193686ab75c45471eed1d38bd3e4f&t=1791866058';
+import { audioSnapshot, createSoundBank, musicSource, soundForAction } from './audio.js';
 
 export function createApp(platform, actions = {}) {
   const ctx = platform.canvas.getContext('2d');
@@ -28,8 +27,9 @@ export function createApp(platform, actions = {}) {
   loadHomeFont(platform, cloudSettled);
   const controller = new GameController(platform);
   const bgMusic = platform.createAudio
-    ? platform.createAudio(BG_MUSIC_URL, { loop: true, volume: 0.5 })
+    ? platform.createAudio(musicSource, { loop: true, volume: 0.28 })
     : null;
+  const soundBank = createSoundBank(platform);
   let musicPlaying = false;
   const syncBgMusic = () => {
     const shouldPlay = running && controller.progress.state.music;
@@ -39,8 +39,11 @@ export function createApp(platform, actions = {}) {
     musicPlaying = shouldPlay;
   };
   const dispatch = (id) => {
+    const before = audioSnapshot(controller);
     if (actions[id]) actions[id](); else controller.handle(id);
     syncBgMusic();
+    const after = audioSnapshot(controller);
+    if (after.sound) soundBank.play(soundForAction(id, before, after));
     Object.values(pages).forEach((screen) => screen.pause());
     modal.pause();
     friendsDialog.pause();
@@ -200,6 +203,7 @@ export function createApp(platform, actions = {}) {
       started = false;
       if (platform.gameClubButton) platform.gameClubButton.destroy();
       if (bgMusic) bgMusic.destroy();
+      soundBank.destroy();
     },
   };
 }

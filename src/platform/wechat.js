@@ -199,6 +199,7 @@ export function createWechatPlatform(api) {
       audio.autoplay = false;
       return {
         play: () => audio.play(),
+        replay: () => { audio.stop(); audio.play(); },
         pause: () => audio.pause(),
         stop: () => audio.stop(),
         destroy: () => audio.destroy && audio.destroy(),

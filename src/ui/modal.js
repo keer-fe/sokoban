@@ -168,7 +168,7 @@ export class Modal extends Screen {
     } else if (c.modal === 'menu') {
       caption(`第 ${c.campaignLevelNumber()} 关 · ${c.game.state.steps} 步`, 165);
       caption('好好想一想，答案就在下一步', 195, { size: 13 });
-      caption('音乐与音效资源即将上线', 490, { size: 12 });
+      caption('音乐、音效和震动都可单独设置', 490, { size: 12 });
     } else if (c.modal === 'win') {
       caption(`第 ${c.campaignLevelNumber()} 关完成`, 157);
       if (c.result.stars) stars(ctx, c.result.stars, 140, top + 182, 38, 10);

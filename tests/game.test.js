@@ -296,14 +296,14 @@ test('暂停菜单直接提供设置、重新开始和放弃挑战', () => {
   const p = platform();
   const c = new GameController(p, levels);
   assert.equal(c.progress.state.music, true);
-  assert.equal(c.progress.state.sound, false);
+  assert.equal(c.progress.state.sound, true);
   assert.equal(c.progress.state.vibration, false);
   c.openLevel(0); c.modal = null;
   c.handle('right');
   c.handle('menu');
   c.handle('music'); c.handle('sound'); c.handle('vibration');
   assert.equal(c.progress.state.music, false);
-  assert.equal(c.progress.state.sound, true);
+  assert.equal(c.progress.state.sound, false);
   assert.equal(c.progress.state.vibration, true);
   c.handle('restart'); assert.equal(c.modal, null); assert.equal(c.game.state.steps, 0);
   c.handle('menu'); c.handle('give-up'); assert.equal(c.route, 'levels');

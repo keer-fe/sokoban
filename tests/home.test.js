@@ -397,5 +397,5 @@ test('生命周期重复启动不叠加动画，隐藏停止，销毁解绑', ()
   app.destroy();
   assert.equal(frames.size, 0);
   assert.equal(subscriptions, 0);
-  assert.deepEqual(audioCalls, ['play', 'pause', 'play', 'pause', 'destroy']);
+  assert.deepEqual(audioCalls, ['play', 'pause', 'play', 'pause', ...Array(9).fill('destroy')]);
 });

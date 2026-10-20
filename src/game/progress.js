@@ -35,7 +35,7 @@ export class ProgressStore {
       }
     }
     this.state = { records, unlockedIds, solutions, cards: integer(saved.cards),
-      music: saved.music !== false, sound: false,
+      music: saved.music !== false, sound: saved.sound !== false,
       vibration: false, tutorialDone: saved.tutorialDone === true };
   }
   commit(next) {
