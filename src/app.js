@@ -125,6 +125,10 @@ export function createApp(platform, actions = {}) {
       drawLoading(ctx, viewport, elapsed, cloudTotal ? cloudLoaded / cloudTotal : 1);
       return;
     }
+    // Cloud room callbacks can change route/modal outside a pointer dispatch.
+    if (pages[controller.route].viewport !== viewport) pages[controller.route].resize(viewport);
+    if (controller.modal === 'friends' && friendsDialog.viewport !== viewport) friendsDialog.resize(viewport);
+    else if (controller.modal && modal.viewport !== viewport) modal.resize(viewport);
     pages[controller.route].render(ctx, elapsed);
     if (controller.modal === 'friends') friendsDialog.render(ctx, elapsed);
     else if (controller.modal) modal.render(ctx, elapsed);
@@ -134,6 +138,7 @@ export function createApp(platform, actions = {}) {
     if (!running) return;
     const now = platform.now();
     controller.advanceReplay(now - previousTime);
+    controller.advancePk(now - previousTime);
     elapsed += Math.min((now - previousTime) / 1000, 0.1);
     previousTime = now;
     render();
@@ -194,6 +199,7 @@ export function createApp(platform, actions = {}) {
         resize,
       });
       resume();
+      if (platform.initialPkRoom) controller.joinPkRoom(platform.initialPkRoom);
     },
     destroy() {
       pause();

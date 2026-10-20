@@ -26,7 +26,6 @@ const campaignIconSources = Object.freeze({
 
 const cloudHomeIconSources = Object.freeze({
   settings: `${PUBLIC_HOME_ROOT}/settings.png`,
-  signin: `${PUBLIC_HOME_ROOT}/signin.png`,
   friends: `${PUBLIC_HOME_ROOT}/ranking.png`,
   title: `${PUBLIC_HOME_ROOT}/title-xiangbudao8-text-v2.png`,
   startButton: `${PUBLIC_HOME_ROOT}/button-start-game.png`,
@@ -36,7 +35,6 @@ const cloudHomeIconSources = Object.freeze({
 
 export const homeIconSources = Object.freeze({
   settings: cloudHomeIconSources.settings,
-  signin: cloudHomeIconSources.signin,
   friends: cloudHomeIconSources.friends,
   title: cloudHomeIconSources.title,
   background: homeBackgroundSource,
@@ -54,7 +52,6 @@ export const homeIconSources = Object.freeze({
 
 export const homeIconFileIDs = Object.freeze({
   settings: `${CLOUD_HOME_ROOT}/settings.png`,
-  signin: `${CLOUD_HOME_ROOT}/signin.png`,
   friends: `${CLOUD_HOME_ROOT}/ranking.png`,
   title: `${CLOUD_HOME_ROOT}/title-xiangbudao8-text-v2.png`,
   background: `${CLOUD_ANIMATION_ROOT}/push-outdoor-background-v1.png`,

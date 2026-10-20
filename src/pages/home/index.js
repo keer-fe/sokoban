@@ -70,20 +70,8 @@ export class HomePage {
       ctx.save();
       ctx.translate(shift, shift);
       ctx.save();
-      if (button.id === 'signin' && !pressed) {
-        const floatY = Math.sin(elapsed * Math.PI * 2 / 2.2) * 2;
-        const pop = Math.pow(Math.max(0, Math.sin(elapsed * Math.PI * 2 / 2.8)), 10);
-        const scale = 1 + pop * 0.07;
-        const centerX = button.x + 37;
-        const centerY = button.y + 32;
-        ctx.translate(centerX, centerY + floatY);
-        ctx.scale(scale, scale);
-        ctx.translate(-centerX, -centerY);
-        ctx.shadowColor = `rgba(255, 224, 76, ${0.32 + pop * 0.42})`;
-        ctx.shadowBlur = 5 + pop * 9;
-      }
       if (!drawHomeIcon(ctx, button.icon, button.x + 5, button.y, 64)) {
-        illustration(ctx, button.id === 'friends' ? 'star' : button.id === 'signin' ? 'done' : 'question',
+        illustration(ctx, button.id === 'friends' ? 'star' : 'question',
           button.x + 11, button.y + 4, 52);
       }
       ctx.restore();

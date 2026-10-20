@@ -192,7 +192,7 @@ function drawLevelCard(ctx, button, data, pressed) {
 export class LevelsPage extends Screen {
   constructor(controller, onAction) {
     super(controller, onAction);
-    this.scrollOffsets = { classic: 0, adventure: 0, coop: 0 };
+    this.scrollOffsets = { classic: 0, adventure: 0, coop: 0, pk: 0 };
     this.campaignScroll = 0;
     this.previews = new Map();
     this.levelAssets = {};
@@ -334,7 +334,7 @@ export class LevelsPage extends Screen {
     for (const button of this.buttons.filter(item => item.id.startsWith('campaign:'))) {
       const meta = campaignMeta[button.campaign];
       const available = c.campaignAvailable(button.campaign);
-      const developing = button.campaign === 'coop' || button.campaign === 'pk';
+      const developing = button.campaign === 'coop';
       const pressed = this.input.activeId === button.id;
       ctx.save();
       if (pressed) ctx.translate(0, 3);

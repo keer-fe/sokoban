@@ -20,6 +20,7 @@ export class GameController {
     this.result = null;
     this.zoom = false;
     this.replay = null;
+    this.pk = null;
   }
   startReplay(moves) {
     if (!Array.isArray(moves) || !moves.length) return;
@@ -57,6 +58,128 @@ export class GameController {
     } else if (action === 'zoom') this.zoom = !this.zoom;
   }
   now() { return this.platform.wallNow ? this.platform.wallNow() : Date.now(); }
+  startPk() {
+    this.pk = null;
+    this.modal = 'pk-choice';
+  }
+  pkLevel() {
+    const candidates = this.campaignEntries('classic').slice(1, 6);
+    return candidates[Math.abs(Math.floor(this.now() / 1000)) % candidates.length] || null;
+  }
+  async createPkRoom() {
+    if (!this.platform.pkRooms?.available) { this.platform.notify('微信云函数不可用'); return; }
+    const selected = this.pkLevel();
+    if (!selected) return;
+    this.modal = 'pk-loading';
+    try {
+      const profile = this.platform.readPlayerProfile?.() || {};
+      const { room } = await this.platform.pkRooms.create(selected.level.id, profile);
+      this.enterPkRoom(room);
+    } catch (error) {
+      console.warn('Create PK room failed.', error);
+      this.pk = null; this.modal = 'pk-choice';
+      this.platform.notify(error?.message ? `创建失败：${error.message}`.slice(0, 24) : '创建房间失败，请重试');
+    }
+  }
+  async promptJoinPkRoom() {
+    const code = await this.platform.pkRooms?.promptCode?.();
+    if (code) this.joinPkRoom(code);
+  }
+  async joinPkRoom(code) {
+    if (!this.platform.pkRooms?.available || !code) return;
+    this.modal = 'pk-loading';
+    try {
+      const profile = this.platform.readPlayerProfile?.() || {};
+      const { room } = await this.platform.pkRooms.join(code, profile);
+      this.enterPkRoom(room);
+    } catch (error) {
+      console.warn('Join PK room failed.', error);
+      this.pk = null; this.modal = 'pk-choice'; this.platform.notify('房间不存在、已满或已过期');
+    }
+  }
+  enterPkRoom(room) {
+    const levelIndex = this.levels.findIndex(level => level.id === room.levelId);
+    if (levelIndex < 0) { this.platform.notify('双方版本不一致，请更新小游戏'); return; }
+    this.pk = { room, levelIndex, pollElapsed: 0, submitting: false, startedAt: null };
+    this.levelIndex = levelIndex;
+    this.levelCampaign = 'pk';
+    this.game = new GameSession(this.levels[levelIndex]);
+    this.route = 'game';
+    this.platform.pkRooms.setSharedRoom(room.code);
+    this.applyPkRoom(room);
+    this.result = null;
+    this.zoom = false;
+  }
+  applyPkRoom(room) {
+    if (!this.pk) return;
+    const wasPlaying = this.pk.room?.status === 'playing';
+    this.pk.room = room;
+    if (Number.isFinite(room.serverNow)) this.pk.serverOffset = room.serverNow - this.now();
+    if (room.status === 'waiting') this.modal = 'pk-room';
+    else if (room.status === 'countdown') this.modal = 'pk-countdown';
+    else if (room.status === 'cancelled') { this.modal = 'pk-cancelled'; this.pk.startedAt = null; }
+    else if (room.status === 'finished') { this.modal = 'pk-result'; this.pk.startedAt = null; }
+    else if (room.me?.finished) { this.modal = 'pk-finished'; this.pk.startedAt = null; }
+    else if (room.status === 'playing') {
+      if (!wasPlaying || !this.pk.startedAt) {
+        this.game = new GameSession(this.levels[this.pk.levelIndex]);
+        this.pk.startedAt = room.startAt - (this.pk.serverOffset || 0);
+      }
+      this.modal = null;
+    }
+  }
+  pkElapsedMs() {
+    return this.pk?.startedAt === null || this.pk?.startedAt === undefined
+      ? 0 : Math.max(0, this.now() - this.pk.startedAt);
+  }
+  async refreshPkRoom() {
+    if (!this.pk || this.pk.refreshing) return;
+    this.pk.refreshing = true;
+    try {
+      const { room } = await this.platform.pkRooms.get(this.pk.room.code);
+      this.applyPkRoom(room);
+    } catch (error) { console.warn('Refresh PK room failed.', error); }
+    finally { if (this.pk) this.pk.refreshing = false; }
+  }
+  async setPkReady() {
+    if (!this.pk || this.pk.updatingReady) return;
+    this.pk.updatingReady = true;
+    try {
+      const { room } = await this.platform.pkRooms.ready(this.pk.room.code, !this.pk.room.me.ready);
+      this.applyPkRoom(room);
+    } catch (error) { console.warn('Update PK ready state failed.', error); this.platform.notify('准备状态更新失败'); }
+    finally { if (this.pk) this.pk.updatingReady = false; }
+  }
+  async startPkMatch() {
+    if (!this.pk || this.pk.starting) return;
+    this.pk.starting = true;
+    try {
+      const { room } = await this.platform.pkRooms.start(this.pk.room.code);
+      this.applyPkRoom(room);
+    } catch (error) { console.warn('Start PK match failed.', error); this.platform.notify('请等待双方准备'); }
+    finally { if (this.pk) this.pk.starting = false; }
+  }
+  advancePk(delta) {
+    if (!this.pk || this.pk.room.status === 'finished' || this.pk.room.status === 'cancelled') return;
+    if (this.pk.room.status === 'countdown') {
+      const serverNow = this.now() + (this.pk.serverOffset || 0);
+      if (serverNow >= this.pk.room.startAt) this.applyPkRoom({ ...this.pk.room, status: 'playing' });
+    }
+    this.pk.pollElapsed += Math.max(0, delta);
+    if (this.pk.pollElapsed >= 1500) { this.pk.pollElapsed = 0; this.refreshPkRoom(); }
+  }
+  async finishPkRound() {
+    if (!this.pk || this.pk.submitting) return;
+    this.pk.submitting = true;
+    this.modal = 'pk-finished';
+    try {
+      const { room } = await this.platform.pkRooms.finish(this.pk.room.code, this.game.state.steps);
+      this.applyPkRoom(room);
+    } catch (error) {
+      console.warn('Submit PK result failed.', error);
+      this.modal = null; this.platform.notify('成绩提交失败，请重试');
+    } finally { if (this.pk) this.pk.submitting = false; }
+  }
   syncFriends() {
     if (this.platform.friendBoard) this.platform.friendBoard.send('sync', { completed: this.progress.completedLevels });
   }
@@ -117,7 +240,7 @@ export class GameController {
       .filter(({ level }) => (level.campaign || 'classic') === id);
   }
   campaignAvailable(id = this.levelCampaign) {
-    if (id === 'classic' || id === 'coop') return true;
+    if (id === 'classic' || id === 'coop' || id === 'pk') return true;
     return this.campaignEntries('classic').slice(0, 6)
       .every(({ level }) => this.progress.state.records[level.id]);
   }
@@ -166,7 +289,7 @@ export class GameController {
     if (action.startsWith('campaign:')) {
       const campaign = action.slice('campaign:'.length);
       if (campaign === 'pk') {
-        this.platform.notify('双人PK即将开放');
+        this.startPk();
         return;
       }
       if (!campaigns.some(item => item.id === campaign)) return;
@@ -195,7 +318,6 @@ export class GameController {
       }
       return;
     }
-    if (action === 'signin') { this.modal = 'signin'; return; }
     if (action === 'settings') { this.settingsReturn = null; this.modal = 'settings'; return; }
     if (action.startsWith('level:')) { this.openLevel(Number(action.split(':')[1])); return; }
     if (action === 'previous' || action === 'following') {
@@ -207,6 +329,7 @@ export class GameController {
     if (action === 'zoom') { this.zoom = !this.zoom; return; }
     if (action === 'menu') { this.modal = 'menu'; return; }
     if (action === 'undo') {
+      if (this.pk) { if (!this.game.undo()) this.platform.notify('暂无可撤销的操作'); return; }
       if (!this.game.history.length) this.platform.notify('暂无可撤销的操作');
       else if (!this.progress.state.cards) this.modal = 'cards';
       else if (this.progress.spendCard()) this.game.undo();
@@ -216,6 +339,7 @@ export class GameController {
     const previousDeadlock = this.game.deadlock;
     if (!this.game.move(action)) return;
     if (this.game.complete) {
+      if (this.pk) { this.finishPkRound(); return; }
       const stars = this.game.level.minSteps ? score(this.game.state.steps, this.game.level.minSteps) : 0;
       const saved = this.progress.finish(this.game.level, this.game.state.steps, stars, this.game.moves);
       if (saved) { this.syncLevelFriends(); this.syncFriends(); this.syncWorldLeaderboard(); }
@@ -227,12 +351,29 @@ export class GameController {
   }
   handleModal(action) {
     if (action === 'dismiss') action = 'close';
-    if (action === 'close' && this.modal !== 'win') {
+    if (action === 'close' && !['win', 'pk-choice', 'pk-loading', 'pk-room', 'pk-finished', 'pk-result', 'pk-cancelled'].includes(this.modal)) {
       this.modal = this.modal === 'settings' ? this.settingsReturn : null;
       this.settingsReturn = null;
       return;
     }
-    if (this.modal === 'friends' && (action === 'friends:tab-friends' || action === 'friends:tab-world')) {
+    if (this.modal === 'pk-choice' && action === 'pk-create') {
+      this.createPkRoom();
+    } else if (this.modal === 'pk-choice' && action === 'pk-join') {
+      this.promptJoinPkRoom();
+    } else if (this.modal === 'pk-room' && action === 'pk-share') {
+      this.platform.pkRooms.share(this.pk.room.code);
+    } else if (this.modal === 'pk-room' && action === 'pk-ready-toggle') {
+      this.setPkReady();
+    } else if (this.modal === 'pk-room' && action === 'pk-start-match') {
+      this.startPkMatch();
+    } else if (this.modal === 'pk-result' && action === 'pk-restart') {
+      this.createPkRoom();
+    } else if (['pk-choice', 'pk-room', 'pk-finished', 'pk-result', 'pk-cancelled'].includes(this.modal)
+      && (action === 'levels' || action === 'home')) {
+      const code = this.pk?.room?.code;
+      if (code) this.platform.pkRooms.leave(code).catch(() => {});
+      this.platform.pkRooms?.setSharedRoom(''); this.pk = null; this.navigate(action);
+    } else if (this.modal === 'friends' && (action === 'friends:tab-friends' || action === 'friends:tab-world')) {
       this.friendsTab = action === 'friends:tab-world' ? 'world' : 'friends';
       if (this.friendsTab === 'world') this.loadWorldLeaderboard();
     } else if (this.modal === 'friends' && action === 'friends:refresh' && this.friendsTab === 'friends') {
@@ -250,15 +391,18 @@ export class GameController {
       if (action === 'undo') { this.modal = null; this.handle('undo'); }
     } else if (this.modal === 'menu' || this.modal === 'settings') {
       if (action === 'replay-saved') this.startReplay(this.progress.state.solutions[this.game.level.id]?.moves);
-      if (action === 'restart') { this.game.restart(); this.modal = null; }
-      if (action === 'give-up' || action === 'levels') this.navigate('levels');
+      if (action === 'restart') {
+        this.game.restart();
+        if (this.pk) this.pk.startedAt = this.now();
+        this.modal = null;
+      }
+      if (action === 'give-up' || action === 'levels') {
+        const code = this.pk?.room?.code;
+        if (code) this.platform.pkRooms.leave(code).catch(() => {});
+        this.pk = null; this.navigate('levels');
+      }
       if (action === 'home') this.navigate(action);
       if (['music', 'sound', 'vibration'].includes(action)) this.progress.toggle(action);
-    } else if (this.modal === 'signin' && action === 'claim') {
-      if (!this.progress.canSignIn(this.now())) this.platform.notify('今天已领取，明天再来吧');
-      else if (this.progress.signIn(this.now())) this.platform.notify('已获得 5 张撤销卡');
-    } else if (this.modal === 'cards') {
-      if (action === 'signin') this.modal = 'signin';
     } else if (this.modal === 'win') {
       if (action === 'replay-current') { this.startReplay(this.game.moves); return; }
       if (['level-refresh', 'level-previous', 'level-next'].includes(action)) {

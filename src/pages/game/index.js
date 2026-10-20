@@ -339,14 +339,16 @@ export class GamePage extends Screen {
       drawLevelsBackground(ctx, 0, 0, 414, this.viewport.height, true);
     }
 
-    text(ctx, `第 ${c.campaignLevelNumber()} 关`, 78, this.top + 28,
+    const header = c.pk ? `玩家 ${c.pk.room.me?.seat || '-'} · 在线 PK` : `第 ${c.campaignLevelNumber()} 关`;
+    text(ctx, header, 78, this.top + 28,
       { size: 25, color: CREAM, outline: 5, spacing: 2,
         align: 'left', font: FONT() });
 
     drawBoard(ctx, game, this.boardBounds, c.zoom, elapsed, this.playerPose);
 
     if (!c.replay) {
-      drawHudCard(ctx, this.stepsCardAsset, this.stepsBounds, '步数', game.state.steps,
+      const seconds = c.pk ? Math.floor(c.pkElapsedMs() / 1000) : game.state.steps;
+      drawHudCard(ctx, this.stepsCardAsset, this.stepsBounds, c.pk ? '用时' : '步数', seconds,
         { x: 0.828, y: 0.5 });
     } else {
       text(ctx, `${game.state.steps} / ${c.replay.moves.length} 步`, 207, this.statusY + 27,
@@ -361,7 +363,7 @@ export class GamePage extends Screen {
       const pressed = this.input.activeId === button.id;
       if (button.id === 'menu') drawMenu(ctx, button, pressed, this.menuAsset);
       else if (button.id === 'undo') {
-        drawHudCard(ctx, this.undoCardAsset, button, '撤销', c.progress.state.cards,
+        drawHudCard(ctx, this.undoCardAsset, button, '撤销', c.pk ? game.history.length : c.progress.state.cards,
           { x: 0.828, y: 0.47 }, pressed);
       }
       else if (['up', 'down', 'left', 'right'].includes(button.id)) {

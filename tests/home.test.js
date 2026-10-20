@@ -51,9 +51,9 @@ test('首页在短屏、全面屏及横屏中不遮挡按钮，坐标转换不�
         assert.ok(button.y > layout.title.y + layout.title.height);
         assert.ok(button.y + button.height < groundTop - 36);
       });
-      assert.deepEqual(shortcuts.map(button => button.x), [332, 332, 8]);
+      assert.deepEqual(shortcuts.map(button => button.x), [332, 8]);
       assert.deepEqual(shortcuts.map(button => button.y),
-        [layout.top + 148, layout.top + 238, layout.top + 148]);
+        [layout.top + 238, layout.top + 148]);
       const gameClub = layout.buttons.find(button => button.id === 'gameClub');
       assert.deepEqual({ x: gameClub.x, y: gameClub.y, native: gameClub.native,
         labelOffset: gameClub.labelOffset, nativeIconSize: gameClub.nativeIconSize },
@@ -80,7 +80,7 @@ test('首页在短屏、全面屏及横屏中不遮挡按钮，坐标转换不�
         assert.ok(Math.abs(point.x - center.x) < 0.001 && Math.abs(point.y - center.y) < 0.001);
       });
       assert.deepEqual(layout.buttons.filter(button => button.icon).map(button => button.id),
-        ['signin', 'friends', 'settings']);
+        ['friends', 'settings']);
     }
   }
 });
@@ -101,22 +101,23 @@ test('首页功能图标独立加载，未完成前回退、完成后分别绘�
   loadHomeIcons(ctx, platform);
   assert.equal(images.length, Object.keys(homeIconSources).length);
   assert.deepEqual(images.map(image => image.src), Object.values(homeIconSources));
-  assert.equal(drawHomeIcon(ctx, 'signin', 1, 2, 48), false);
+  assert.equal(drawHomeIcon(ctx, 'friends', 1, 2, 48), false);
   images.forEach(image => image.onload());
   assert.deepEqual(loaded.sort(), Object.keys(homeIconFileIDs).sort());
-  assert.equal(drawHomeIcon(ctx, 'signin', 1, 2, 48), true);
-  assert.deepEqual(calls.at(-1), [images[1], 1, 2, 48, 48]);
+  assert.equal(drawHomeIcon(ctx, 'friends', 1, 2, 48), true);
+  assert.deepEqual(calls.at(-1), [images[Object.keys(homeIconSources).indexOf('friends')], 1, 2, 48, 48]);
   assert.equal(drawHomeIcon(ctx, 'title', 3, 4, 120, 43), true);
-  assert.deepEqual(calls.at(-1), [images[3], 3, 4, 120, 43]);
-  images[4].width = 2172;
-  images[4].height = 724;
+  assert.deepEqual(calls.at(-1), [images[Object.keys(homeIconSources).indexOf('title')], 3, 4, 120, 43]);
+  const background = images[Object.keys(homeIconSources).indexOf('background')];
+  background.width = 2172;
+  background.height = 724;
   assert.equal(drawHomeBackground(ctx, 0, 0, 414, 896), true);
-  assert.equal(calls.at(-1)[0], images[4]);
+  assert.equal(calls.at(-1)[0], background);
   assert.equal(calls.at(-1).at(-1), 896);
   assert.equal(drawHomeIcon(ctx, 'startButton', 32, 600, 350, 102), true);
-  assert.deepEqual(calls.at(-1), [images[5], 32, 600, 350, 102]);
+  assert.deepEqual(calls.at(-1), [images[Object.keys(homeIconSources).indexOf('startButton')], 32, 600, 350, 102]);
   assert.equal(drawHomeIcon(ctx, 'undoCard', 337, 300, 64), true);
-  assert.deepEqual(calls.at(-1), [images[7], 337, 300, 64, 64]);
+  assert.deepEqual(calls.at(-1), [images[Object.keys(homeIconSources).indexOf('undoCard')], 337, 300, 64, 64]);
   assert.equal(drawHomeIcon(ctx, 'missing', 0, 0, 10), false);
   const levelsBackground = images.find(image => image.src === homeIconSources.levelsBackground);
   levelsBackground.width = 941;
@@ -161,7 +162,7 @@ test('加载人物动画使用云文件 ID，并保留公开地址回退', () =>
     },
   });
   Object.keys(localPushAnimationSources).forEach(name => assert.equal(requestedFileIDs[name], homeIconFileIDs[name]));
-  assert.equal(images[4].src, undefined);
+  assert.equal(images[Object.keys(homeIconSources).indexOf('background')].src, undefined);
   assert.equal(typeof resolveCloud, 'function');
 });
 
@@ -207,7 +208,7 @@ test('首页人物固定在中间，背景随时间向左移动并镜像衔接',
     images.push(image);
     return image;
   } });
-  const backgroundImage = images[4];
+  const backgroundImage = images[Object.keys(homeIconSources).indexOf('background')];
   backgroundImage.width = 2172;
   backgroundImage.height = 724;
   backgroundImage.onload();

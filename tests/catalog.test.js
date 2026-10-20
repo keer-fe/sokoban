@@ -81,6 +81,7 @@ test('棋盘画廊可滚动，模式切换保留独立滚动位置', () => {
   assert.ok(page.buttons.some(button => button.id === 'campaign:classic'));
   assert.ok(page.buttons.some(button => button.id === 'campaign:adventure'));
   assert.ok(page.buttons.some(button => button.id === 'campaign:coop'));
+  assert.ok(page.buttons.some(button => button.id === 'campaign:pk'));
   c.handle('campaign:classic');
   page.resize(createViewport({ width: 320, height: 568 }));
   const classicEntries = c.campaignEntries('classic');

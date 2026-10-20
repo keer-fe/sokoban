@@ -1,5 +1,6 @@
 import { createFriendBoard } from './friend-board.js';
 import { createWorldLeaderboard } from './world-leaderboard.js';
+import { createPkRooms } from './pk-rooms.js';
 
 const CLOUD_ENV_ID = 'cloud1-d5gqpaioo2d8acf27';
 const WORLD_PROFILE_KEY = 'worldLeaderboardProfile';
@@ -78,6 +79,8 @@ export function createWechatPlatform(api) {
     canvas,
     friendBoard: createFriendBoard(api),
     worldLeaderboard: createWorldLeaderboard(api.cloud),
+    pkRooms: createPkRooms(api),
+    initialPkRoom: String(api.getLaunchOptionsSync?.().query?.pkRoom || '').trim().toUpperCase(),
     canRequestPlayerProfile: typeof api.getUserProfile === 'function',
     readPlayerProfile() {
       const profile = typeof api.getStorageSync === 'function' ? api.getStorageSync(WORLD_PROFILE_KEY) : null;

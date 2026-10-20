@@ -1,7 +1,5 @@
 const KEY = 'sokoban.progress.v1';
 const integer = (value, fallback = 0) => Number.isSafeInteger(value) && value >= 0 ? value : fallback;
-export function beijingDate(time) { return new Date(time + 8 * 3600000).toISOString().slice(0, 10); }
-
 export class ProgressStore {
   constructor(platform, catalog) {
     this.platform = platform;
@@ -37,7 +35,6 @@ export class ProgressStore {
       }
     }
     this.state = { records, unlockedIds, solutions, cards: integer(saved.cards),
-      lastSignIn: typeof saved.lastSignIn === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(saved.lastSignIn) ? saved.lastSignIn : '',
       music: saved.music !== false, sound: false,
       vibration: false, tutorialDone: saved.tutorialDone === true };
   }
@@ -89,10 +86,6 @@ export class ProgressStore {
       bestSteps: Math.min(previous ? previous.bestSteps : Infinity, steps),
       stars: Math.max(previous ? previous.stars : 0, stars),
     } } });
-  }
-  canSignIn(time) { return beijingDate(time) > this.state.lastSignIn; }
-  signIn(time) {
-    return this.canSignIn(time) && this.commit({ ...this.state, cards: this.state.cards + 5, lastSignIn: beijingDate(time) });
   }
   spendCard() { return this.state.cards > 0 && this.commit({ ...this.state, cards: this.state.cards - 1 }); }
   toggle(key) {

@@ -5,7 +5,7 @@ import { levels } from './fixtures/levels.js';
 import { areDoorsOpen, GameSession, score } from '../src/game/engine.js';
 import { solve } from '../tools/solve-levels.js';
 import { GameController } from '../src/game/controller.js';
-import { beijingDate, ProgressStore } from '../src/game/progress.js';
+import { ProgressStore } from '../src/game/progress.js';
 import { createViewport } from '../src/core/viewport.js';
 import { directionPadSource, drawDirectionPad, drawGameBackground, drawGameGround,
   gameAssetFileIDs, gameBackgroundSource, GamePage, stepsCardSource,
@@ -171,18 +171,6 @@ test('评分边界、最高星级和最佳步数独立保存，损坏存档回�
   assert.equal(broken.state.cards, 0); assert.equal(broken.unlocked, 0);
 });
 
-test('签到按北京时间刷新、防重复领取和回拨；存储失败不发卡', () => {
-  const p = platform(); const store = new ProgressStore(p, levels);
-  const before = Date.parse('2026-10-12T15:59:59Z');
-  assert.equal(beijingDate(before), '2026-10-12');
-  assert.equal(store.signIn(before), true); assert.equal(store.state.cards, 5);
-  assert.equal(store.signIn(before), false);
-  assert.equal(store.signIn(before - 86400000), false);
-  assert.equal(store.signIn(before + 1000), true); assert.equal(store.state.cards, 10);
-  p.writeStorage = () => { throw new Error('full'); };
-  assert.equal(store.signIn(before + 86401000), false); assert.equal(store.state.cards, 10);
-});
-
 test('导航、弹窗阻断、撤销卡、重开和完整通关流程', () => {
   const p = platform(); const c = new GameController(p, levels);
   c.handle('level:1'); assert.equal(c.route, 'home');
@@ -191,10 +179,10 @@ test('导航、弹窗阻断、撤销卡、重开和完整通关流程', () => {
   c.handle('skip'); c.handle('undo'); assert.equal(c.modal, null);
   c.handle('up'); c.handle('undo'); assert.equal(c.modal, 'cards');
   c.handle('up'); assert.equal(c.game.state.steps, 1);
-  c.handle('signin'); c.handle('claim'); c.handle('claim');
-  assert.equal(c.progress.state.cards, 5);
+  c.handle('claim'); assert.equal(c.modal, 'cards');
+  c.progress.commit({ ...c.progress.state, cards: 1 });
   c.handle('close'); c.handle('undo'); assert.equal(c.game.state.steps, 0);
-  assert.equal(c.progress.state.cards, 4);
+  assert.equal(c.progress.state.cards, 0);
   c.handle('up'); c.handle('menu'); c.handle('down'); assert.equal(c.game.state.steps, 1);
   c.handle('restart'); assert.equal(c.game.state.steps, 0); assert.equal(c.game.history.length, 0);
   for (let i = 0; i < levels.length; i += 1) {
@@ -209,7 +197,66 @@ test('导航、弹窗阻断、撤销卡、重开和完整通关流程', () => {
   assert.equal(p.messages.at(-1), '地图关卡正在开发中');
   c.handle('levels'); c.handle('level:0'); assert.equal(c.game.state.steps, 0);
   const restored = new GameController(p, levels);
-  assert.equal(restored.progress.allComplete, true); assert.equal(restored.progress.state.cards, 4);
+  assert.equal(restored.progress.allComplete, true); assert.equal(restored.progress.state.cards, 0);
+});
+
+test('双人在线 PK 创建房间、同步开局并由服务端返回胜负', async () => {
+  let now = Date.parse('2026-10-19T08:00:00Z');
+  const room = (status, me = {}, players = [{ seat: 1, finished: false }]) => ({
+    code: 'ABC234', levelId: 'pk-1', status, winner: 0, players, serverNow: now,
+    startAt: now + 5000,
+    me: { seat: 1, isHost: true, ready: false, finished: false, ...me },
+  });
+  const pkRooms = {
+    available: true, setSharedRoom() {}, share() {}, promptCode: async () => '', leave: async () => ({}),
+    create: async () => ({ room: room('waiting') }),
+    ready: async () => ({ room: room('waiting', { ready: true }, [
+      { seat: 1, ready: true, finished: false }, { seat: 2, ready: true, finished: false },
+    ]) }),
+    start: async () => ({ room: room('countdown', { ready: true }, [
+      { seat: 1, ready: true, finished: false }, { seat: 2, ready: true, finished: false },
+    ]) }),
+    get: async () => ({ room: room('playing', { ready: true }, [
+      { seat: 1, ready: true, finished: false }, { seat: 2, ready: true, finished: false },
+    ]) }),
+    finish: async () => ({ room: {
+      ...room('finished', { finished: true, result: { steps: 2, elapsedMs: 2400 } }, [
+        { seat: 1, finished: true, result: { steps: 2, elapsedMs: 2400 } },
+        { seat: 2, finished: true, result: { steps: 3, elapsedMs: 1800 } },
+      ]), winner: 1,
+    } }),
+  };
+  const p = { ...platform(), wallNow: () => now, pkRooms };
+  const catalog = [
+    { id: 'pk-0', campaign: 'classic', rows: ['#####', '#@$.#', '#####'], minSteps: 1 },
+    { id: 'pk-1', campaign: 'classic', rows: ['######', '#@ $.#', '######'], minSteps: 2 },
+  ];
+  const c = new GameController(p, catalog);
+  c.handle('campaign:pk');
+  assert.equal(c.modal, 'pk-choice');
+  c.handle('pk-create');
+  await Promise.resolve(); await Promise.resolve();
+  assert.equal(c.modal, 'pk-room');
+  assert.equal(c.pk.room.code, 'ABC234');
+  c.handle('pk-ready-toggle');
+  await Promise.resolve(); await Promise.resolve();
+  assert.equal(c.pk.room.me.ready, true);
+  c.handle('pk-start-match');
+  await Promise.resolve(); await Promise.resolve();
+  assert.equal(c.modal, 'pk-countdown');
+  assert.equal(c.route, 'game');
+  now += 5000;
+  c.advancePk(5000);
+  assert.equal(c.modal, null);
+  now += 2400;
+  c.handle('right'); c.handle('right');
+  await Promise.resolve(); await Promise.resolve();
+  assert.equal(c.modal, 'pk-result');
+  assert.equal(c.pk.room.winner, 1);
+  assert.equal(c.progress.completedLevels, 0);
+  c.handle('levels');
+  assert.equal(c.pk, null);
+  assert.equal(c.route, 'levels');
 });
 
 test('暂停菜单直接提供设置、重新开始和放弃挑战', () => {
@@ -285,7 +332,7 @@ test('小屏和全面屏上的方向键、棋盘、弹窗均在安全区域内',
     });
     assert.ok(page.boardBounds.y + page.boardBounds.height < undo.y);
     const modal = new Modal(c, () => {});
-    for (const kind of ['menu', 'settings', 'win', 'tutorial', 'signin', 'cards', 'deadlock']) {
+    for (const kind of ['menu', 'settings', 'win', 'tutorial', 'cards', 'deadlock']) {
       c.modal = kind; modal.resize(viewport);
       const height = kind === 'win' ? 680 : kind === 'menu' || kind === 'settings' ? 450 : 520;
       assert.ok(modal.top + height < bottom);

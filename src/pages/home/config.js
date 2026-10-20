@@ -3,7 +3,6 @@ export const homeConfig = Object.freeze({
   title: '箱不到八',
   subtitle: '欢乐推箱子',
   shortcuts: [
-    { id: 'signin', label: '签到', icon: 'signin' },
     { id: 'friends', label: '排行榜', icon: 'friends' },
     { id: 'settings', label: '设置', icon: 'settings' },
     { id: 'gameClub', label: '游戏圈', native: true },

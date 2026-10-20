@@ -4,6 +4,11 @@ export function getHomeLayout(viewport) {
   const top = Math.max(48, viewport.safeTop + 16);
   const bottom = viewport.height - viewport.safeBottom;
   const shortcutWidth = 74;
+  const shortcutPositions = {
+    friends: [332, 238],
+    settings: [8, 148],
+    gameClub: [8, 238],
+  };
   // Keep secondary actions at the edges so the animated scene stays unobstructed.
   const groundHeight = Math.max(312, Math.min(350, bottom * 0.4));
   return {
@@ -15,8 +20,8 @@ export function getHomeLayout(viewport) {
       y: index === 0 ? bottom - 196 : bottom - 90,
       width: index === 0 ? 310 : 220,
       height: index === 0 ? 88 : 56,
-    })), ...homeConfig.shortcuts.map((shortcut, index) => ({ ...shortcut,
-      x: [332, 332, 8, 8][index], y: top + [148, 238, 148, 238][index],
+    })), ...homeConfig.shortcuts.map((shortcut) => ({ ...shortcut,
+      x: shortcutPositions[shortcut.id][0], y: top + shortcutPositions[shortcut.id][1],
       width: shortcutWidth, height: 88, fontSize: 14,
       labelOffset: 61,
       nativeIconSize: shortcut.native ? 48 : undefined,
