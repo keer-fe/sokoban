@@ -57,30 +57,40 @@ function addNoise(samples, start, duration, volume, seed = 1) {
   }
 }
 
-// 8 bars at 96 BPM. The last chord resolves into the first without a fade,
-// producing a loop that feels continuous instead of restarting.
-wav('workshop-garden-loop.wav', 20, (samples) => {
-  const beat = 0.625;
+// Eight bars at 112 BPM. A two-bar hook repeats with small answers in bars 4
+// and 8; the kick, clap and offbeat shaker make the pulse audible on phones.
+const beat = 60 / 112;
+wav('workshop-garden-loop.wav', beat * 32, (samples) => {
   const chords = [
-    [261.63, 329.63, 392], [220, 261.63, 329.63],
-    [174.61, 220, 261.63], [196, 246.94, 293.66],
-    [261.63, 329.63, 392], [220, 261.63, 329.63],
-    [174.61, 220, 261.63], [196, 246.94, 392],
+    [261.63, 329.63, 392], [196, 246.94, 392],
+    [220, 261.63, 329.63], [196, 246.94, 392],
+    [261.63, 329.63, 392], [196, 246.94, 392],
+    [220, 261.63, 329.63], [196, 246.94, 392],
   ];
-  const melody = [0, 2, 1, 2, 0, 1, 2, 1, 0, 2, 1, 0, 0, 1, 2, 1];
+  const hook = [
+    [0, 2], [0.75, 1], [1.5, 2], [2.5, 1], [3.25, 0],
+    [0, 2], [0.75, 1], [1.5, 2], [2.25, 1], [3, 2],
+  ];
   chords.forEach((chord, bar) => {
     const start = bar * beat * 4;
-    chord.forEach((frequency, voice) => addTone(samples, start, beat * 4, frequency / 2,
-      0.022 - voice * 0.003, { attack: 0.2, release: 0.22, wood: 0.08, air: 0.03 }));
-    for (let step = 0; step < 2; step += 1) {
-      const frequency = chord[melody[(bar * 2 + step) % melody.length]] * 2;
-      addTone(samples, start + step * beat * 2, beat * 1.7, frequency, 0.048,
-        { attack: 0.008, release: 0.18, decay: 1.55, wood: 0.34, air: 0.05 });
-    }
+    chord.forEach((frequency, voice) => addTone(samples, start, beat * 3.8, frequency / 2,
+      0.016 - voice * 0.003, { attack: 0.08, release: 0.25, wood: 0.08, air: 0.02 }));
+    hook.slice((bar % 2) * 5, (bar % 2 + 1) * 5).forEach(([offset, note], index) => {
+      const frequency = chord[note] * 2;
+      addTone(samples, start + offset * beat, beat * 0.42, frequency, index === 0 ? 0.075 : 0.06,
+        { attack: 0.003, release: 0.1, decay: 3.5, wood: 0.42, air: 0.04 });
+    });
     for (let pulse = 0; pulse < 4; pulse += 1) {
-      addTone(samples, start + pulse * beat, 0.075, chord[0] / 2, 0.035,
-        { attack: 0.004, release: 0.06, decay: 12, wood: 0.55, air: 0 });
-      if (pulse % 2) addNoise(samples, start + pulse * beat, 0.055, 0.006, bar * 11 + pulse);
+      const at = start + pulse * beat;
+      addTone(samples, at, beat * 0.38, chord[0] / 2, 0.055,
+        { attack: 0.003, release: 0.08, decay: 9, wood: 0.42, air: 0 });
+      if (pulse % 2 === 0) {
+        addTone(samples, at, 0.095, 72, 0.11,
+          { attack: 0.002, release: 0.065, decay: 19, bend: -12, wood: 0.08, air: 0 });
+      } else {
+        addNoise(samples, at, 0.105, 0.045, bar * 11 + pulse);
+      }
+      addNoise(samples, at + beat * 0.5, 0.045, 0.018, bar * 17 + pulse);
     }
   });
 }, 0.72);
@@ -88,12 +98,16 @@ wav('workshop-garden-loop.wav', 20, (samples) => {
 wav('ui-tap.wav', 0.09, (s) => addTone(s, 0, 0.085, 660, 0.24,
   { attack: 0.002, release: 0.04, decay: 10, wood: 0.35 }));
 wav('step.wav', 0.11, (s) => {
-  addTone(s, 0, 0.1, 185, 0.2, { attack: 0.002, release: 0.055, decay: 16, wood: 0.55, air: 0 });
-  addNoise(s, 0.005, 0.055, 0.035, 21);
+  addTone(s, 0, 0.09, 196, 0.18, { attack: 0.002, release: 0.045, decay: 18, wood: 0.5, air: 0 });
+  addTone(s, 0.018, 0.065, 587.33, 0.055,
+    { attack: 0.002, release: 0.04, decay: 17, wood: 0.38, air: 0 });
+  addNoise(s, 0.005, 0.045, 0.025, 21);
 });
 wav('push.wav', 0.2, (s) => {
-  addTone(s, 0, 0.19, 105, 0.3, { attack: 0.004, release: 0.08, decay: 8, bend: -9, wood: 0.62, air: 0 });
-  addNoise(s, 0.015, 0.12, 0.05, 32);
+  addTone(s, 0, 0.17, 110, 0.29, { attack: 0.003, release: 0.07, decay: 9, bend: -8, wood: 0.58, air: 0 });
+  addTone(s, 0.085, 0.09, 392, 0.11,
+    { attack: 0.002, release: 0.045, decay: 12, wood: 0.48, air: 0 });
+  addNoise(s, 0.012, 0.1, 0.04, 32);
 });
 wav('goal.wav', 0.38, (s) => [523.25, 659.25, 783.99].forEach((f, i) =>
   addTone(s, i * 0.075, 0.22, f, 0.18, { attack: 0.004, release: 0.12, decay: 5, wood: 0.32 })));
