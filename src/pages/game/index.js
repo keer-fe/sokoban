@@ -339,7 +339,9 @@ export class GamePage extends Screen {
       drawLevelsBackground(ctx, 0, 0, 414, this.viewport.height, true);
     }
 
-    const header = c.pk ? `玩家 ${c.pk.room.me?.seat || '-'} · 在线 PK` : `第 ${c.campaignLevelNumber()} 关`;
+    const header = c.pk
+      ? `玩家 ${c.pk.room.me?.seat || '-'} · ${c.pk.room.mode === 'coop' ? '合作闯关' : '在线 PK'}`
+      : `第 ${c.campaignLevelNumber()} 关`;
     text(ctx, header, 78, this.top + 28,
       { size: 25, color: CREAM, outline: 5, spacing: 2,
         align: 'left', font: FONT() });
@@ -347,8 +349,9 @@ export class GamePage extends Screen {
     drawBoard(ctx, game, this.boardBounds, c.zoom, elapsed, this.playerPose);
 
     if (!c.replay) {
-      const seconds = c.pk ? Math.floor(c.pkElapsedMs() / 1000) : game.state.steps;
-      drawHudCard(ctx, this.stepsCardAsset, this.stepsBounds, c.pk ? '用时' : '步数', seconds,
+      const hudValue = c.pk && c.pk.room.mode !== 'coop' ? Math.floor(c.pkElapsedMs() / 1000) : game.state.steps;
+      drawHudCard(ctx, this.stepsCardAsset, this.stepsBounds,
+        c.pk && c.pk.room.mode !== 'coop' ? '用时' : '步数', hudValue,
         { x: 0.828, y: 0.5 });
     } else {
       text(ctx, `${game.state.steps} / ${c.replay.moves.length} 步`, 207, this.statusY + 27,

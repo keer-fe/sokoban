@@ -81,6 +81,7 @@ export function createWechatPlatform(api) {
     worldLeaderboard: createWorldLeaderboard(api.cloud),
     pkRooms: createPkRooms(api),
     initialPkRoom: String(api.getLaunchOptionsSync?.().query?.pkRoom || '').trim().toUpperCase(),
+    initialCoopRoom: String(api.getLaunchOptionsSync?.().query?.coopRoom || '').trim().toUpperCase(),
     canRequestPlayerProfile: typeof api.getUserProfile === 'function',
     readPlayerProfile() {
       const profile = typeof api.getStorageSync === 'function' ? api.getStorageSync(WORLD_PROFILE_KEY) : null;

@@ -106,9 +106,9 @@ test('棋盘画廊可滚动，模式切换保留独立滚动位置', () => {
     ...Array.from({ length: 6 }, (_, index) => `adventure-weights-${index + 1}`),
   ]);
   c.handle('campaign:coop');
-  page.resize(createViewport({ width: 320, height: 568 }));
-  assert.equal(c.levelCampaign, 'coop');
-  assert.deepEqual(page.entries, []);
+  assert.equal(c.roomMode, 'coop');
+  assert.equal(c.modal, 'pk-choice');
+  c.handle('levels');
   c.handle('campaign:classic'); page.resize(createViewport({ width: 320, height: 568 }));
   assert.equal(page.scrollOffsets.classic, page.maxScroll);
 });

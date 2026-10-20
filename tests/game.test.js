@@ -259,6 +259,39 @@ test('双人在线 PK 创建房间、同步开局并由服务端返回胜负', a
   assert.equal(c.route, 'levels');
 });
 
+test('双人合作房间串行同步共享棋盘并共同通关', async () => {
+  const level = { id: 'coop-1', campaign: 'classic', rows: ['######', '#@ $.#', '######'], minSteps: 2 };
+  const players = [{ seat: 1, ready: true }, { seat: 2, ready: true }];
+  const makeRoom = (status, moves = []) => ({
+    code: 'COOP24', levelId: level.id, mode: 'coop', status, moves, players,
+    startAt: Date.now() - 1000, serverNow: Date.now(), completedBy: status === 'finished' ? 1 : 0,
+    me: { seat: 1, isHost: true, ready: true },
+  });
+  const sharedMoves = [];
+  const pkRooms = {
+    available: true, setSharedRoom() {}, share() {}, leave: async () => ({}),
+    create: async () => ({ room: makeRoom('waiting') }),
+    move: async (_code, direction) => {
+      sharedMoves.push(direction);
+      return { room: makeRoom('playing', [...sharedMoves]) };
+    },
+    complete: async () => ({ room: makeRoom('finished', [...sharedMoves]) }),
+  };
+  const c = new GameController({ ...platform(), pkRooms }, [level]);
+  c.startPk('coop');
+  c.enterPkRoom(makeRoom('playing'));
+  c.handle('right');
+  await Promise.resolve(); await Promise.resolve();
+  assert.equal(c.game.state.steps, 1);
+  assert.equal(c.modal, null);
+  c.handle('right');
+  await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+  assert.equal(c.game.complete, true);
+  assert.equal(c.modal, 'pk-result');
+  assert.deepEqual(c.pk.room.moves, ['right', 'right']);
+  assert.equal(c.progress.completedLevels, 0);
+});
+
 test('暂停菜单直接提供设置、重新开始和放弃挑战', () => {
   const p = platform();
   const c = new GameController(p, levels);

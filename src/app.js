@@ -190,7 +190,8 @@ export function createApp(platform, actions = {}) {
         resize,
       });
       resume();
-      if (platform.initialPkRoom) controller.joinPkRoom(platform.initialPkRoom);
+      if (platform.initialCoopRoom) controller.joinPkRoom(platform.initialCoopRoom, 'coop');
+      else if (platform.initialPkRoom) controller.joinPkRoom(platform.initialPkRoom, 'pk');
     },
     destroy() {
       pause();

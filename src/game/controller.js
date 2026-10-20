@@ -58,22 +58,23 @@ export class GameController {
     } else if (action === 'zoom') this.zoom = !this.zoom;
   }
   now() { return this.platform.wallNow ? this.platform.wallNow() : Date.now(); }
-  startPk() {
+  startPk(mode = 'pk') {
     this.pk = null;
+    this.roomMode = mode;
     this.modal = 'pk-choice';
   }
   pkLevel() {
     const candidates = this.campaignEntries('classic').slice(1, 6);
     return candidates[Math.abs(Math.floor(this.now() / 1000)) % candidates.length] || null;
   }
-  async createPkRoom() {
+  async createPkRoom(mode = this.roomMode || 'pk') {
     if (!this.platform.pkRooms?.available) { this.platform.notify('微信云函数不可用'); return; }
     const selected = this.pkLevel();
     if (!selected) return;
     this.modal = 'pk-loading';
     try {
       const profile = this.platform.readPlayerProfile?.() || {};
-      const { room } = await this.platform.pkRooms.create(selected.level.id, profile);
+      const { room } = await this.platform.pkRooms.create(selected.level.id, profile, mode);
       this.enterPkRoom(room);
     } catch (error) {
       console.warn('Create PK room failed.', error);
@@ -82,15 +83,17 @@ export class GameController {
     }
   }
   async promptJoinPkRoom() {
-    const code = await this.platform.pkRooms?.promptCode?.();
-    if (code) this.joinPkRoom(code);
+    const mode = this.roomMode || 'pk';
+    const code = await this.platform.pkRooms?.promptCode?.(mode);
+    if (code) this.joinPkRoom(code, mode);
   }
-  async joinPkRoom(code) {
+  async joinPkRoom(code, mode = this.roomMode || 'pk') {
     if (!this.platform.pkRooms?.available || !code) return;
     this.modal = 'pk-loading';
     try {
       const profile = this.platform.readPlayerProfile?.() || {};
       const { room } = await this.platform.pkRooms.join(code, profile);
+      if ((room.mode || 'pk') !== mode) throw new Error('ROOM_MODE_MISMATCH');
       this.enterPkRoom(room);
     } catch (error) {
       console.warn('Join PK room failed.', error);
@@ -100,12 +103,14 @@ export class GameController {
   enterPkRoom(room) {
     const levelIndex = this.levels.findIndex(level => level.id === room.levelId);
     if (levelIndex < 0) { this.platform.notify('双方版本不一致，请更新小游戏'); return; }
-    this.pk = { room, levelIndex, pollElapsed: 0, submitting: false, startedAt: null };
+    this.roomMode = room.mode || 'pk';
+    this.pk = { room, levelIndex, pollElapsed: 0, submitting: false, moving: false,
+      appliedMoves: 0, startedAt: null };
     this.levelIndex = levelIndex;
     this.levelCampaign = 'pk';
     this.game = new GameSession(this.levels[levelIndex]);
     this.route = 'game';
-    this.platform.pkRooms.setSharedRoom(room.code);
+    this.platform.pkRooms.setSharedRoom(room.code, this.roomMode);
     this.applyPkRoom(room);
     this.result = null;
     this.zoom = false;
@@ -118,15 +123,47 @@ export class GameController {
     if (room.status === 'waiting') this.modal = 'pk-room';
     else if (room.status === 'countdown') this.modal = 'pk-countdown';
     else if (room.status === 'cancelled') { this.modal = 'pk-cancelled'; this.pk.startedAt = null; }
-    else if (room.status === 'finished') { this.modal = 'pk-result'; this.pk.startedAt = null; }
+    else if (room.status === 'finished') {
+      if ((room.mode || 'pk') === 'coop') this.applyCoopMoves(room.moves || []);
+      this.modal = 'pk-result'; this.pk.startedAt = null;
+    }
     else if (room.me?.finished) { this.modal = 'pk-finished'; this.pk.startedAt = null; }
     else if (room.status === 'playing') {
       if (!wasPlaying || !this.pk.startedAt) {
         this.game = new GameSession(this.levels[this.pk.levelIndex]);
+        this.pk.appliedMoves = 0;
         this.pk.startedAt = room.startAt - (this.pk.serverOffset || 0);
       }
+      if ((room.mode || 'pk') === 'coop') this.applyCoopMoves(room.moves || []);
       this.modal = null;
     }
+  }
+  applyCoopMoves(moves) {
+    if (!this.pk || (this.pk.room.mode || 'pk') !== 'coop') return;
+    if (moves.length < this.pk.appliedMoves) {
+      this.game = new GameSession(this.levels[this.pk.levelIndex]);
+      this.pk.appliedMoves = 0;
+    }
+    while (this.pk.appliedMoves < moves.length) {
+      this.game.move(moves[this.pk.appliedMoves]);
+      this.pk.appliedMoves += 1;
+    }
+  }
+  async moveCoop(direction) {
+    if (!this.pk || this.pk.moving || this.pk.room.status !== 'playing') return;
+    this.pk.moving = true;
+    try {
+      const { room } = await this.platform.pkRooms.move(this.pk.room.code, direction);
+      this.applyPkRoom(room);
+      if (this.game.complete && this.pk.room.status === 'playing') {
+        const completed = await this.platform.pkRooms.complete(this.pk.room.code);
+        this.applyPkRoom(completed.room);
+      }
+    } catch (error) {
+      console.warn('Co-op move failed.', error);
+      this.platform.notify('操作同步失败，请重试');
+      this.refreshPkRoom();
+    } finally { if (this.pk) this.pk.moving = false; }
   }
   pkElapsedMs() {
     return this.pk?.startedAt === null || this.pk?.startedAt === undefined
@@ -289,7 +326,11 @@ export class GameController {
     if (action.startsWith('campaign:')) {
       const campaign = action.slice('campaign:'.length);
       if (campaign === 'pk') {
-        this.startPk();
+        this.startPk('pk');
+        return;
+      }
+      if (campaign === 'coop') {
+        this.startPk('coop');
         return;
       }
       if (!campaigns.some(item => item.id === campaign)) return;
@@ -329,13 +370,21 @@ export class GameController {
     if (action === 'zoom') { this.zoom = !this.zoom; return; }
     if (action === 'menu') { this.modal = 'menu'; return; }
     if (action === 'undo') {
-      if (this.pk) { if (!this.game.undo()) this.platform.notify('暂无可撤销的操作'); return; }
+      if (this.pk) {
+        if (this.pk.room.mode === 'coop') this.platform.notify('合作模式不能单独撤销');
+        else if (!this.game.undo()) this.platform.notify('暂无可撤销的操作');
+        return;
+      }
       if (!this.game.history.length) this.platform.notify('暂无可撤销的操作');
       else if (!this.progress.state.cards) this.modal = 'cards';
       else if (this.progress.spendCard()) this.game.undo();
       return;
     }
     if (!directions[action]) return;
+    if (this.pk && (this.pk.room.mode || 'pk') === 'coop') {
+      this.moveCoop(action);
+      return;
+    }
     const previousDeadlock = this.game.deadlock;
     if (!this.game.move(action)) return;
     if (this.game.complete) {
@@ -361,7 +410,7 @@ export class GameController {
     } else if (this.modal === 'pk-choice' && action === 'pk-join') {
       this.promptJoinPkRoom();
     } else if (this.modal === 'pk-room' && action === 'pk-share') {
-      this.platform.pkRooms.share(this.pk.room.code);
+      this.platform.pkRooms.share(this.pk.room.code, this.roomMode || 'pk');
     } else if (this.modal === 'pk-room' && action === 'pk-ready-toggle') {
       this.setPkReady();
     } else if (this.modal === 'pk-room' && action === 'pk-start-match') {
@@ -392,6 +441,7 @@ export class GameController {
     } else if (this.modal === 'menu' || this.modal === 'settings') {
       if (action === 'replay-saved') this.startReplay(this.progress.state.solutions[this.game.level.id]?.moves);
       if (action === 'restart') {
+        if (this.pk?.room.mode === 'coop') { this.platform.notify('合作模式不能单独重开'); return; }
         this.game.restart();
         if (this.pk) this.pk.startedAt = this.now();
         this.modal = null;

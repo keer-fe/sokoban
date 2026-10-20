@@ -116,12 +116,13 @@ export class Modal extends Screen {
       button('pk-create', '创建房间', 1, { primary: true }), button('pk-join', '输入房间码加入', 2),
       button('levels', '返回模式选择', 3)];
     if (c.modal === 'pk-room') {
+      const coop = c.pk.room.mode === 'coop';
       const playersReady = c.pk.room.players.length === 2
         && c.pk.room.players.every(player => player.ready);
       this.buttons = [
         button('pk-ready-toggle', c.pk.room.me.ready ? '取消准备' : '准备', 0,
           { y: y + 310, primary: !c.pk.room.me.ready }),
-        ...(c.pk.room.me.isHost ? [button('pk-start-match', '开始 PK', 0,
+        ...(c.pk.room.me.isHost ? [button('pk-start-match', coop ? '开始合作' : '开始 PK', 0,
           { y: y + 368, primary: playersReady, disabled: !playersReady })] : []),
         button('pk-share', '邀请好友', 0, { y: y + 426, width: 142 }),
         button('levels', '退出房间', 0, { y: y + 426, x: 213, width: 142 }),
@@ -150,7 +151,8 @@ export class Modal extends Screen {
     panel(ctx, 37, top, 340, c.modal === 'win' ? 680 : 520, { fill: theme.sky, radius: 10, lineWidth: 5, shadow: theme.ink, offset: 7 });
     for (let i = 0; i < 8; i += 1) panel(ctx, 41 + i * 41.5, top + 3, 41.5, 13,
       { fill: theme.brick, lineWidth: 2, radius: 0 });
-    const titles = { menu: '休息一下', settings: '游戏设置', win: '太棒了！', tutorial: '推箱子小课堂', cards: '撤销卡不足', deadlock: '箱子卡住了', profile: '完善玩家资料', 'pk-choice': '在线双人 PK', 'pk-loading': '正在连接', 'pk-room': '等待好友', 'pk-countdown': '准备开赛', 'pk-finished': '已完成挑战', 'pk-result': '对战结果', 'pk-cancelled': '房间已结束' };
+    const coop = c.roomMode === 'coop' || c.pk?.room?.mode === 'coop';
+    const titles = { menu: '休息一下', settings: '游戏设置', win: '太棒了！', tutorial: '推箱子小课堂', cards: '撤销卡不足', deadlock: '箱子卡住了', profile: '完善玩家资料', 'pk-choice': coop ? '双人合作闯关' : '在线双人 PK', 'pk-loading': '正在连接', 'pk-room': '等待好友', 'pk-countdown': coop ? '准备合作' : '准备开赛', 'pk-finished': '已完成挑战', 'pk-result': coop ? '合作成功' : '对战结果', 'pk-cancelled': '房间已结束' };
     illustration(ctx, c.modal === 'win' ? 'done' : 'crate', 181, top + 35, 52);
     text(ctx, titles[c.modal], 207, top + 118, { size: 28, color: theme.yellow, outline: 2 });
     const caption = (value, offset, options = {}) => text(ctx, value, 207, top + offset,
@@ -191,8 +193,8 @@ export class Modal extends Screen {
       caption('功能暂未开放', 217, { size: 13 });
     } else if (c.modal === 'pk-choice') {
       caption('创建房间并邀请微信好友', 173);
-      caption('好友加入后，双方同时挑战同一关', 211, { size: 13 });
-      caption('步数更少者获胜，用时用于打破平局', 249, { size: 13 });
+      caption(coop ? '好友加入后，共同操作同一个棋盘' : '好友加入后，双方同时挑战同一关', 211, { size: 13 });
+      caption(coop ? '每一步实时同步，一起把箱子推到终点' : '步数更少者获胜，用时用于打破平局', 249, { size: 13 });
     } else if (c.modal === 'pk-loading') {
       caption('正在连接 PK 房间…', 193, { size: 18 });
       caption('请稍候', 231, { size: 13 });
@@ -203,12 +205,12 @@ export class Modal extends Screen {
         { color: first?.ready ? theme.yellow : theme.white });
       caption(`玩家 2　${second ? (second.ready ? '已准备' : '未准备') : '等待加入'}`, 250,
         { color: second?.ready ? theme.yellow : theme.white });
-      caption(c.pk.room.me.isHost ? '双方准备后，由房主开始比赛' : '准备后等待房主开始', 286, { size: 13 });
+      caption(c.pk.room.me.isHost ? `双方准备后，由房主开始${coop ? '闯关' : '比赛'}` : '准备后等待房主开始', 286, { size: 13 });
     } else if (c.modal === 'pk-countdown') {
       const remaining = Math.max(1, Math.ceil((c.pk.room.startAt
         - (c.now() + (c.pk.serverOffset || 0))) / 1000));
       caption(String(remaining), 201, { size: 64, color: theme.yellow, outline: 2 });
-      caption('双方将在同一时间开始', 267, { size: 15 });
+      caption(coop ? '同一个棋盘即将开启' : '双方将在同一时间开始', 267, { size: 15 });
     } else if (c.modal === 'pk-finished') {
       const me = c.pk.room.me;
       caption(me?.result ? `你的成绩：${me.result.steps} 步 · ${formatPkTime(me.result.elapsedMs)}` : '正在提交成绩…', 183);
@@ -217,10 +219,16 @@ export class Modal extends Screen {
     } else if (c.modal === 'pk-result') {
       const room = c.pk.room;
       const [first, second] = room.players;
-      caption(room.winner ? `${room.winner === room.me.seat ? '你' : '对手'}获胜！` : '平局！', 173,
-        { size: 24, color: theme.yellow, outline: 1 });
-      caption(`玩家 1　${first.result.steps} 步 · ${formatPkTime(first.result.elapsedMs)}`, 218);
-      caption(`玩家 2　${second.result.steps} 步 · ${formatPkTime(second.result.elapsedMs)}`, 254);
+      if (coop) {
+        caption('你们一起完成了挑战！', 173, { size: 24, color: theme.yellow, outline: 1 });
+        caption(`共同完成　${c.game.state.steps} 步`, 218);
+        caption(`最后一步由玩家 ${room.completedBy || '-'} 完成`, 254);
+      } else {
+        caption(room.winner ? `${room.winner === room.me.seat ? '你' : '对手'}获胜！` : '平局！', 173,
+          { size: 24, color: theme.yellow, outline: 1 });
+        caption(`玩家 1　${first.result.steps} 步 · ${formatPkTime(first.result.elapsedMs)}`, 218);
+        caption(`玩家 2　${second.result.steps} 步 · ${formatPkTime(second.result.elapsedMs)}`, 254);
+      }
     } else if (c.modal === 'pk-cancelled') {
       caption('另一名玩家已退出，或房间已过期', 193);
       caption('返回后可以重新创建房间', 231, { size: 13 });

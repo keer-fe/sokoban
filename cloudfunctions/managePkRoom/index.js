@@ -40,7 +40,9 @@ function publicRoom(room, openid) {
   const now = Date.now();
   const status = room.status === 'countdown' && Number(room.startAt) <= now ? 'playing' : room.status;
   return {
-    code: room._id, levelId: room.levelId, status, winner: room.winner || 0,
+    code: room._id, levelId: room.levelId, mode: room.mode || 'pk', status, winner: room.winner || 0,
+    completedBy: Number(room.completedBy) || 0,
+    moves: room.mode === 'coop' ? (room.moves || []) : undefined,
     startAt: Number(room.startAt) || null, serverNow: now,
     players: room.players.map((player, index) => ({
       seat: index + 1, nickname: player.nickname || `玩家 ${index + 1}`,
@@ -74,11 +76,12 @@ exports.main = async (event = {}) => {
       try { await db.collection(ROOMS).doc(roomCode).get(); } catch (error) {
         if (!missing(error)) throw error;
         const player = { openid: OPENID, ...profile(event.profile), ready: false, result: null };
+        const mode = event.mode === 'coop' ? 'coop' : 'pk';
         await db.collection(ROOMS).doc(roomCode).set({ data: {
-          levelId: event.levelId, status: 'waiting', host: OPENID, players: [player], winner: 0,
+          levelId: event.levelId, mode, moves: [], status: 'waiting', host: OPENID, players: [player], winner: 0,
           createdAt: db.serverDate(), startAt: null, expiresAt: Date.now() + ROOM_TTL,
         } });
-        return { ok: true, room: publicRoom({ _id: roomCode, levelId: event.levelId,
+        return { ok: true, room: publicRoom({ _id: roomCode, levelId: event.levelId, mode, moves: [],
           status: 'waiting', host: OPENID, players: [player], winner: 0 }, OPENID) };
       }
     }
@@ -104,6 +107,7 @@ exports.main = async (event = {}) => {
         || !current.players.every(player => player.ready)) throw new Error('PLAYERS_NOT_READY');
       current.status = 'countdown'; current.startAt = Date.now() + START_DELAY;
     } else if (action === 'finish') {
+      if (current.mode === 'coop') throw new Error('INVALID_ACTION');
       if (current.status === 'countdown' && Date.now() >= Number(current.startAt)) current.status = 'playing';
       if (index < 0 || current.status !== 'playing') throw new Error('ROOM_NOT_PLAYING');
       const steps = Number(event.steps);
@@ -117,12 +121,26 @@ exports.main = async (event = {}) => {
         current.winner = comparison === 0 ? 0 : comparison < 0 ? 1 : 2;
         current.status = 'finished';
       }
+    } else if (action === 'move') {
+      if (current.status === 'countdown' && Date.now() >= Number(current.startAt)) current.status = 'playing';
+      if (current.mode !== 'coop' || index < 0 || current.status !== 'playing') throw new Error('ROOM_NOT_PLAYING');
+      const direction = cleanText(event.direction, 8);
+      if (!['up', 'down', 'left', 'right'].includes(direction)) throw new Error('INVALID_DIRECTION');
+      current.moves = Array.isArray(current.moves) ? current.moves : [];
+      if (current.moves.length >= 100000) throw new Error('TOO_MANY_MOVES');
+      current.moves.push(direction);
+    } else if (action === 'complete') {
+      if (current.status === 'countdown' && Date.now() >= Number(current.startAt)) current.status = 'playing';
+      if (current.mode !== 'coop' || index < 0 || current.status !== 'playing') throw new Error('ROOM_NOT_PLAYING');
+      current.status = 'finished';
+      current.completedBy = index + 1;
     } else if (action === 'leave') {
       if (index >= 0 && current.status !== 'finished') current.status = 'cancelled';
     } else throw new Error('INVALID_ACTION');
     await document.update({ data: {
       players: current.players, status: current.status, winner: current.winner || 0,
-      startAt: current.startAt || null, updatedAt: db.serverDate(),
+      startAt: current.startAt || null, moves: current.moves || [], completedBy: current.completedBy || 0,
+      updatedAt: db.serverDate(),
     } });
     return current;
   });

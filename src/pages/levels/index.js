@@ -334,7 +334,7 @@ export class LevelsPage extends Screen {
     for (const button of this.buttons.filter(item => item.id.startsWith('campaign:'))) {
       const meta = campaignMeta[button.campaign];
       const available = c.campaignAvailable(button.campaign);
-      const developing = button.campaign === 'coop';
+      const developing = false;
       const pressed = this.input.activeId === button.id;
       ctx.save();
       if (pressed) ctx.translate(0, 3);
