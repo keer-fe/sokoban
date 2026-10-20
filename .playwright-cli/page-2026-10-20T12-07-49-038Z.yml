@@ -1,0 +1,904 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "单人地图素材目录" [level=1] [ref=e5]
+      - paragraph [ref=e6]: 本地经典与外部地图集，按结构筛选并查看原始棋盘
+    - generic [ref=e7]: 离线可用 · 单文件
+  - region "总体统计" [ref=e8]:
+    - generic [ref=e9]:
+      - generic [ref=e10]: 6,186
+      - generic [ref=e11]: 地图记录
+    - generic [ref=e12]:
+      - generic [ref=e13]: 6,146
+      - generic [ref=e14]: 不同布局
+    - generic [ref=e15]:
+      - generic [ref=e16]: 6,186
+      - generic [ref=e17]: 当前筛选结果
+    - generic [ref=e18]:
+      - generic [ref=e19]: "100"
+      - generic [ref=e20]: 本地经典地图
+  - generic [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - text: 搜索来源、编号或关卡 ID
+        - searchbox "搜索来源、编号或关卡 ID" [ref=e24]
+      - generic [ref=e25]:
+        - text: 地图来源
+        - combobox "地图来源" [ref=e26]:
+          - option "全部来源" [selected]
+          - option "本地经典"
+          - option "Microban"
+          - option "Mas Microban"
+          - option "Microban III"
+          - option "Sasquatch"
+          - option "Mas Sasquatch"
+          - option "Sasquatch III"
+          - option "Sasquatch IV"
+          - option "Sasquatch V"
+          - option "Sasquatch VI"
+          - option "Sasquatch VII"
+          - option "Sasquatch VIII"
+          - option "Boxoban Hard"
+          - option "Boxoban Medium 样本"
+          - option "Boxoban Unfiltered 样本"
+      - generic [ref=e27]:
+        - text: 结构分类
+        - combobox "结构分类" [ref=e28]:
+          - option "全部分类" [selected]
+          - option "微型解谜"
+          - option "小型规划"
+          - option "中型规划"
+          - option "大型挑战"
+      - generic [ref=e29]:
+        - text: 箱子数量
+        - combobox "箱子数量" [ref=e30]:
+          - option "不限箱数" [selected]
+          - option "1 箱"
+          - option "2 箱"
+          - option "3 箱"
+          - option "4 箱"
+          - option "5 箱"
+          - option "6 箱"
+          - option "7 箱"
+          - option "8 箱"
+          - option "9 箱"
+          - option "10 箱"
+          - option "11 箱"
+          - option "12 箱"
+          - option "13 箱"
+          - option "14 箱"
+          - option "15 箱"
+          - option "16 箱"
+          - option "17 箱"
+          - option "18 箱"
+          - option "19 箱"
+          - option "20 箱"
+          - option "21 箱"
+          - option "22 箱"
+          - option "23 箱"
+          - option "24 箱"
+          - option "25 箱"
+          - option "26 箱"
+          - option "27 箱"
+          - option "28 箱"
+          - option "29 箱"
+          - option "30 箱"
+          - option "31 箱"
+          - option "32 箱"
+          - option "33 箱"
+          - option "34 箱"
+          - option "35 箱"
+          - option "36 箱"
+          - option "37 箱"
+          - option "39 箱"
+          - option "40 箱"
+          - option "42 箱"
+          - option "44 箱"
+          - option "48 箱"
+          - option "50 箱"
+          - option "52 箱"
+          - option "56 箱"
+          - option "60 箱"
+          - option "64 箱"
+          - option "68 箱"
+          - option "72 箱"
+          - option "74 箱"
+          - option "76 箱"
+          - option "80 箱"
+          - option "84 箱"
+          - option "88 箱"
+          - option "94 箱"
+          - option "97 箱"
+          - option "98 箱"
+          - option "100 箱"
+          - option "112 箱"
+          - option "128 箱"
+          - option "148 箱"
+          - option "152 箱"
+          - option "162 箱"
+          - option "174 箱"
+          - option "198 箱"
+          - option "208 箱"
+          - option "220 箱"
+          - option "236 箱"
+          - option "240 箱"
+          - option "256 箱"
+          - option "280 箱"
+          - option "288 箱"
+          - option "480 箱"
+      - button "清除筛选" [ref=e31] [cursor=pointer]
+    - generic [ref=e32]:
+      - generic [ref=e33]: 显示 1–50 / 6,186 条
+      - generic [ref=e34]: 点击列标题排序 · 点击编号看地图
+    - table [ref=e36]:
+      - rowgroup [ref=e37]:
+        - row [ref=e38]:
+          - columnheader "序号" [ref=e39] [cursor=pointer]
+          - columnheader "来源" [ref=e40] [cursor=pointer]
+          - columnheader "来源编号" [ref=e41] [cursor=pointer]
+          - columnheader "本地 ID" [ref=e42] [cursor=pointer]
+          - columnheader "结构分类" [ref=e43] [cursor=pointer]
+          - columnheader "箱子数" [ref=e44] [cursor=pointer]
+          - columnheader "宽" [ref=e45] [cursor=pointer]
+          - columnheader "高" [ref=e46] [cursor=pointer]
+          - columnheader "尺寸" [ref=e47] [cursor=pointer]
+          - columnheader "可行走格" [ref=e48] [cursor=pointer]
+          - columnheader "最少步数" [ref=e49] [cursor=pointer]
+          - columnheader "与本地重复" [ref=e50] [cursor=pointer]
+          - columnheader "试玩难度" [ref=e51] [cursor=pointer]
+      - rowgroup [ref=e52]:
+        - row [ref=e53]:
+          - cell [ref=e54]:
+            - button "1" [ref=e55] [cursor=pointer]
+          - cell "本地经典" [ref=e56]
+          - cell "1" [ref=e57]
+          - cell "selfboot-1" [ref=e58]
+          - cell "小型规划" [ref=e59]
+          - cell "3" [ref=e60]
+          - cell "6" [ref=e61]
+          - cell "7" [ref=e62]
+          - cell "6×7" [ref=e63]
+          - cell "19" [ref=e64]
+          - cell "16" [ref=e65]
+          - cell "—" [ref=e66]
+          - cell "待测" [ref=e67]
+        - row [ref=e68]:
+          - cell [ref=e69]:
+            - button "2" [ref=e70] [cursor=pointer]
+          - cell "本地经典" [ref=e71]
+          - cell "2" [ref=e72]
+          - cell "selfboot-2" [ref=e73]
+          - cell "微型解谜" [ref=e74]
+          - cell "2" [ref=e75]
+          - cell "6" [ref=e76]
+          - cell "7" [ref=e77]
+          - cell "6×7" [ref=e78]
+          - cell "14" [ref=e79]
+          - cell "33" [ref=e80]
+          - cell "—" [ref=e81]
+          - cell "待测" [ref=e82]
+        - row [ref=e83]:
+          - cell [ref=e84]:
+            - button "3" [ref=e85] [cursor=pointer]
+          - cell "本地经典" [ref=e86]
+          - cell "3" [ref=e87]
+          - cell "selfboot-3" [ref=e88]
+          - cell "微型解谜" [ref=e89]
+          - cell "2" [ref=e90]
+          - cell "9" [ref=e91]
+          - cell "6" [ref=e92]
+          - cell "9×6" [ref=e93]
+          - cell "20" [ref=e94]
+          - cell "41" [ref=e95]
+          - cell "—" [ref=e96]
+          - cell "待测" [ref=e97]
+        - row [ref=e98]:
+          - cell [ref=e99]:
+            - button "4" [ref=e100] [cursor=pointer]
+          - cell "本地经典" [ref=e101]
+          - cell "4" [ref=e102]
+          - cell "selfboot-4" [ref=e103]
+          - cell "小型规划" [ref=e104]
+          - cell "3" [ref=e105]
+          - cell "8" [ref=e106]
+          - cell "6" [ref=e107]
+          - cell "8×6" [ref=e108]
+          - cell "20" [ref=e109]
+          - cell "23" [ref=e110]
+          - cell "—" [ref=e111]
+          - cell "待测" [ref=e112]
+        - row [ref=e113]:
+          - cell [ref=e114]:
+            - button "5" [ref=e115] [cursor=pointer]
+          - cell "本地经典" [ref=e116]
+          - cell "5" [ref=e117]
+          - cell "selfboot-5" [ref=e118]
+          - cell "小型规划" [ref=e119]
+          - cell "4" [ref=e120]
+          - cell "8" [ref=e121]
+          - cell "7" [ref=e122]
+          - cell "8×7" [ref=e123]
+          - cell "27" [ref=e124]
+          - cell "25" [ref=e125]
+          - cell "—" [ref=e126]
+          - cell "待测" [ref=e127]
+        - row [ref=e128]:
+          - cell [ref=e129]:
+            - button "6" [ref=e130] [cursor=pointer]
+          - cell "本地经典" [ref=e131]
+          - cell "6" [ref=e132]
+          - cell "selfboot-6" [ref=e133]
+          - cell "小型规划" [ref=e134]
+          - cell "3" [ref=e135]
+          - cell "12" [ref=e136]
+          - cell "6" [ref=e137]
+          - cell "12×6" [ref=e138]
+          - cell "28" [ref=e139]
+          - cell "107" [ref=e140]
+          - cell "—" [ref=e141]
+          - cell "待测" [ref=e142]
+        - row [ref=e143]:
+          - cell [ref=e144]:
+            - button "7" [ref=e145] [cursor=pointer]
+          - cell "本地经典" [ref=e146]
+          - cell "7" [ref=e147]
+          - cell "selfboot-7" [ref=e148]
+          - cell "中型规划" [ref=e149]
+          - cell "6" [ref=e150]
+          - cell "7" [ref=e151]
+          - cell "8" [ref=e152]
+          - cell "7×8" [ref=e153]
+          - cell "30" [ref=e154]
+          - cell "—" [ref=e155]
+          - cell "—" [ref=e156]
+          - cell "待测" [ref=e157]
+        - row [ref=e158]:
+          - cell [ref=e159]:
+            - button "8" [ref=e160] [cursor=pointer]
+          - cell "本地经典" [ref=e161]
+          - cell "8" [ref=e162]
+          - cell "selfboot-8" [ref=e163]
+          - cell "微型解谜" [ref=e164]
+          - cell "2" [ref=e165]
+          - cell "8" [ref=e166]
+          - cell "12" [ref=e167]
+          - cell "8×12" [ref=e168]
+          - cell "27" [ref=e169]
+          - cell "97" [ref=e170]
+          - cell "—" [ref=e171]
+          - cell "待测" [ref=e172]
+        - row [ref=e173]:
+          - cell [ref=e174]:
+            - button "9" [ref=e175] [cursor=pointer]
+          - cell "本地经典" [ref=e176]
+          - cell "9" [ref=e177]
+          - cell "selfboot-9" [ref=e178]
+          - cell "微型解谜" [ref=e179]
+          - cell "2" [ref=e180]
+          - cell "6" [ref=e181]
+          - cell "7" [ref=e182]
+          - cell "6×7" [ref=e183]
+          - cell "13" [ref=e184]
+          - cell "30" [ref=e185]
+          - cell "—" [ref=e186]
+          - cell "待测" [ref=e187]
+        - row [ref=e188]:
+          - cell [ref=e189]:
+            - button "10" [ref=e190] [cursor=pointer]
+          - cell "本地经典" [ref=e191]
+          - cell "10" [ref=e192]
+          - cell "selfboot-10" [ref=e193]
+          - cell "小型规划" [ref=e194]
+          - cell "3" [ref=e195]
+          - cell "11" [ref=e196]
+          - cell "8" [ref=e197]
+          - cell "11×8" [ref=e198]
+          - cell "27" [ref=e199]
+          - cell "89" [ref=e200]
+          - cell "—" [ref=e201]
+          - cell "待测" [ref=e202]
+        - row [ref=e203]:
+          - cell [ref=e204]:
+            - button "11" [ref=e205] [cursor=pointer]
+          - cell "本地经典" [ref=e206]
+          - cell "11" [ref=e207]
+          - cell "selfboot-11" [ref=e208]
+          - cell "微型解谜" [ref=e209]
+          - cell "2" [ref=e210]
+          - cell "9" [ref=e211]
+          - cell "8" [ref=e212]
+          - cell "9×8" [ref=e213]
+          - cell "25" [ref=e214]
+          - cell "78" [ref=e215]
+          - cell "—" [ref=e216]
+          - cell "待测" [ref=e217]
+        - row [ref=e218]:
+          - cell [ref=e219]:
+            - button "12" [ref=e220] [cursor=pointer]
+          - cell "本地经典" [ref=e221]
+          - cell "12" [ref=e222]
+          - cell "selfboot-12" [ref=e223]
+          - cell "微型解谜" [ref=e224]
+          - cell "2" [ref=e225]
+          - cell "9" [ref=e226]
+          - cell "8" [ref=e227]
+          - cell "9×8" [ref=e228]
+          - cell "23" [ref=e229]
+          - cell "49" [ref=e230]
+          - cell "—" [ref=e231]
+          - cell "待测" [ref=e232]
+        - row [ref=e233]:
+          - cell [ref=e234]:
+            - button "13" [ref=e235] [cursor=pointer]
+          - cell "本地经典" [ref=e236]
+          - cell "13" [ref=e237]
+          - cell "selfboot-13" [ref=e238]
+          - cell "小型规划" [ref=e239]
+          - cell "3" [ref=e240]
+          - cell "7" [ref=e241]
+          - cell "9" [ref=e242]
+          - cell "7×9" [ref=e243]
+          - cell "20" [ref=e244]
+          - cell "52" [ref=e245]
+          - cell "—" [ref=e246]
+          - cell "待测" [ref=e247]
+        - row [ref=e248]:
+          - cell [ref=e249]:
+            - button "14" [ref=e250] [cursor=pointer]
+          - cell "本地经典" [ref=e251]
+          - cell "14" [ref=e252]
+          - cell "selfboot-14" [ref=e253]
+          - cell "微型解谜" [ref=e254]
+          - cell "2" [ref=e255]
+          - cell "7" [ref=e256]
+          - cell "6" [ref=e257]
+          - cell "7×6" [ref=e258]
+          - cell "16" [ref=e259]
+          - cell "51" [ref=e260]
+          - cell "—" [ref=e261]
+          - cell "待测" [ref=e262]
+        - row [ref=e263]:
+          - cell [ref=e264]:
+            - button "15" [ref=e265] [cursor=pointer]
+          - cell "本地经典" [ref=e266]
+          - cell "15" [ref=e267]
+          - cell "selfboot-15" [ref=e268]
+          - cell "微型解谜" [ref=e269]
+          - cell "2" [ref=e270]
+          - cell "9" [ref=e271]
+          - cell "7" [ref=e272]
+          - cell "9×7" [ref=e273]
+          - cell "19" [ref=e274]
+          - cell "37" [ref=e275]
+          - cell "—" [ref=e276]
+          - cell "待测" [ref=e277]
+        - row [ref=e278]:
+          - cell [ref=e279]:
+            - button "16" [ref=e280] [cursor=pointer]
+          - cell "本地经典" [ref=e281]
+          - cell "16" [ref=e282]
+          - cell "selfboot-16" [ref=e283]
+          - cell "小型规划" [ref=e284]
+          - cell "3" [ref=e285]
+          - cell "10" [ref=e286]
+          - cell "8" [ref=e287]
+          - cell "10×8" [ref=e288]
+          - cell "31" [ref=e289]
+          - cell "100" [ref=e290]
+          - cell "—" [ref=e291]
+          - cell "待测" [ref=e292]
+        - row [ref=e293]:
+          - cell [ref=e294]:
+            - button "17" [ref=e295] [cursor=pointer]
+          - cell "本地经典" [ref=e296]
+          - cell "17" [ref=e297]
+          - cell "selfboot-17" [ref=e298]
+          - cell "小型规划" [ref=e299]
+          - cell "3" [ref=e300]
+          - cell "6" [ref=e301]
+          - cell "7" [ref=e302]
+          - cell "6×7" [ref=e303]
+          - cell "17" [ref=e304]
+          - cell "25" [ref=e305]
+          - cell "—" [ref=e306]
+          - cell "待测" [ref=e307]
+        - row [ref=e308]:
+          - cell [ref=e309]:
+            - button "18" [ref=e310] [cursor=pointer]
+          - cell "本地经典" [ref=e311]
+          - cell "18" [ref=e312]
+          - cell "selfboot-18" [ref=e313]
+          - cell "微型解谜" [ref=e314]
+          - cell "2" [ref=e315]
+          - cell "7" [ref=e316]
+          - cell "9" [ref=e317]
+          - cell "7×9" [ref=e318]
+          - cell "22" [ref=e319]
+          - cell "71" [ref=e320]
+          - cell "—" [ref=e321]
+          - cell "待测" [ref=e322]
+        - row [ref=e323]:
+          - cell [ref=e324]:
+            - button "19" [ref=e325] [cursor=pointer]
+          - cell "本地经典" [ref=e326]
+          - cell "19" [ref=e327]
+          - cell "selfboot-19" [ref=e328]
+          - cell "微型解谜" [ref=e329]
+          - cell "2" [ref=e330]
+          - cell "8" [ref=e331]
+          - cell "8" [ref=e332]
+          - cell "8×8" [ref=e333]
+          - cell "19" [ref=e334]
+          - cell "41" [ref=e335]
+          - cell "—" [ref=e336]
+          - cell "待测" [ref=e337]
+        - row [ref=e338]:
+          - cell [ref=e339]:
+            - button "20" [ref=e340] [cursor=pointer]
+          - cell "本地经典" [ref=e341]
+          - cell "20" [ref=e342]
+          - cell "selfboot-20" [ref=e343]
+          - cell "微型解谜" [ref=e344]
+          - cell "2" [ref=e345]
+          - cell "9" [ref=e346]
+          - cell "8" [ref=e347]
+          - cell "9×8" [ref=e348]
+          - cell "23" [ref=e349]
+          - cell "50" [ref=e350]
+          - cell "—" [ref=e351]
+          - cell "待测" [ref=e352]
+        - row [ref=e353]:
+          - cell [ref=e354]:
+            - button "21" [ref=e355] [cursor=pointer]
+          - cell "本地经典" [ref=e356]
+          - cell "21" [ref=e357]
+          - cell "selfboot-21" [ref=e358]
+          - cell "微型解谜" [ref=e359]
+          - cell "2" [ref=e360]
+          - cell "7" [ref=e361]
+          - cell "6" [ref=e362]
+          - cell "7×6" [ref=e363]
+          - cell "15" [ref=e364]
+          - cell "17" [ref=e365]
+          - cell "—" [ref=e366]
+          - cell "待测" [ref=e367]
+        - row [ref=e368]:
+          - cell [ref=e369]:
+            - button "22" [ref=e370] [cursor=pointer]
+          - cell "本地经典" [ref=e371]
+          - cell "22" [ref=e372]
+          - cell "selfboot-22" [ref=e373]
+          - cell "微型解谜" [ref=e374]
+          - cell "2" [ref=e375]
+          - cell "7" [ref=e376]
+          - cell "9" [ref=e377]
+          - cell "7×9" [ref=e378]
+          - cell "25" [ref=e379]
+          - cell "47" [ref=e380]
+          - cell "—" [ref=e381]
+          - cell "待测" [ref=e382]
+        - row [ref=e383]:
+          - cell [ref=e384]:
+            - button "23" [ref=e385] [cursor=pointer]
+          - cell "本地经典" [ref=e386]
+          - cell "23" [ref=e387]
+          - cell "selfboot-23" [ref=e388]
+          - cell "微型解谜" [ref=e389]
+          - cell "2" [ref=e390]
+          - cell "7" [ref=e391]
+          - cell "7" [ref=e392]
+          - cell "7×7" [ref=e393]
+          - cell "18" [ref=e394]
+          - cell "56" [ref=e395]
+          - cell "—" [ref=e396]
+          - cell "待测" [ref=e397]
+        - row [ref=e398]:
+          - cell [ref=e399]:
+            - button "24" [ref=e400] [cursor=pointer]
+          - cell "本地经典" [ref=e401]
+          - cell "24" [ref=e402]
+          - cell "selfboot-24" [ref=e403]
+          - cell "微型解谜" [ref=e404]
+          - cell "2" [ref=e405]
+          - cell "7" [ref=e406]
+          - cell "7" [ref=e407]
+          - cell "7×7" [ref=e408]
+          - cell "19" [ref=e409]
+          - cell "35" [ref=e410]
+          - cell "—" [ref=e411]
+          - cell "待测" [ref=e412]
+        - row [ref=e413]:
+          - cell [ref=e414]:
+            - button "25" [ref=e415] [cursor=pointer]
+          - cell "本地经典" [ref=e416]
+          - cell "25" [ref=e417]
+          - cell "selfboot-25" [ref=e418]
+          - cell "小型规划" [ref=e419]
+          - cell "3" [ref=e420]
+          - cell "7" [ref=e421]
+          - cell "7" [ref=e422]
+          - cell "7×7" [ref=e423]
+          - cell "18" [ref=e424]
+          - cell "29" [ref=e425]
+          - cell "—" [ref=e426]
+          - cell "待测" [ref=e427]
+        - row [ref=e428]:
+          - cell [ref=e429]:
+            - button "26" [ref=e430] [cursor=pointer]
+          - cell "本地经典" [ref=e431]
+          - cell "26" [ref=e432]
+          - cell "selfboot-26" [ref=e433]
+          - cell "小型规划" [ref=e434]
+          - cell "3" [ref=e435]
+          - cell "6" [ref=e436]
+          - cell "8" [ref=e437]
+          - cell "6×8" [ref=e438]
+          - cell "18" [ref=e439]
+          - cell "41" [ref=e440]
+          - cell "—" [ref=e441]
+          - cell "待测" [ref=e442]
+        - row [ref=e443]:
+          - cell [ref=e444]:
+            - button "27" [ref=e445] [cursor=pointer]
+          - cell "本地经典" [ref=e446]
+          - cell "27" [ref=e447]
+          - cell "selfboot-27" [ref=e448]
+          - cell "微型解谜" [ref=e449]
+          - cell "2" [ref=e450]
+          - cell "7" [ref=e451]
+          - cell "7" [ref=e452]
+          - cell "7×7" [ref=e453]
+          - cell "18" [ref=e454]
+          - cell "50" [ref=e455]
+          - cell "—" [ref=e456]
+          - cell "待测" [ref=e457]
+        - row [ref=e458]:
+          - cell [ref=e459]:
+            - button "28" [ref=e460] [cursor=pointer]
+          - cell "本地经典" [ref=e461]
+          - cell "28" [ref=e462]
+          - cell "selfboot-28" [ref=e463]
+          - cell "微型解谜" [ref=e464]
+          - cell "2" [ref=e465]
+          - cell "7" [ref=e466]
+          - cell "7" [ref=e467]
+          - cell "7×7" [ref=e468]
+          - cell "17" [ref=e469]
+          - cell "33" [ref=e470]
+          - cell "—" [ref=e471]
+          - cell "待测" [ref=e472]
+        - row [ref=e473]:
+          - cell [ref=e474]:
+            - button "29" [ref=e475] [cursor=pointer]
+          - cell "本地经典" [ref=e476]
+          - cell "29" [ref=e477]
+          - cell "selfboot-29" [ref=e478]
+          - cell "小型规划" [ref=e479]
+          - cell "2" [ref=e480]
+          - cell "11" [ref=e481]
+          - cell "9" [ref=e482]
+          - cell "11×9" [ref=e483]
+          - cell "35" [ref=e484]
+          - cell "104" [ref=e485]
+          - cell "—" [ref=e486]
+          - cell "待测" [ref=e487]
+        - row [ref=e488]:
+          - cell [ref=e489]:
+            - button "30" [ref=e490] [cursor=pointer]
+          - cell "本地经典" [ref=e491]
+          - cell "30" [ref=e492]
+          - cell "selfboot-30" [ref=e493]
+          - cell "小型规划" [ref=e494]
+          - cell "3" [ref=e495]
+          - cell "6" [ref=e496]
+          - cell "7" [ref=e497]
+          - cell "6×7" [ref=e498]
+          - cell "17" [ref=e499]
+          - cell "21" [ref=e500]
+          - cell "—" [ref=e501]
+          - cell "待测" [ref=e502]
+        - row [ref=e503]:
+          - cell [ref=e504]:
+            - button "31" [ref=e505] [cursor=pointer]
+          - cell "本地经典" [ref=e506]
+          - cell "31" [ref=e507]
+          - cell "selfboot-31" [ref=e508]
+          - cell "小型规划" [ref=e509]
+          - cell "3" [ref=e510]
+          - cell "7" [ref=e511]
+          - cell "7" [ref=e512]
+          - cell "7×7" [ref=e513]
+          - cell "18" [ref=e514]
+          - cell "17" [ref=e515]
+          - cell "—" [ref=e516]
+          - cell "待测" [ref=e517]
+        - row [ref=e518]:
+          - cell [ref=e519]:
+            - button "32" [ref=e520] [cursor=pointer]
+          - cell "本地经典" [ref=e521]
+          - cell "32" [ref=e522]
+          - cell "selfboot-32" [ref=e523]
+          - cell "小型规划" [ref=e524]
+          - cell "3" [ref=e525]
+          - cell "7" [ref=e526]
+          - cell "7" [ref=e527]
+          - cell "7×7" [ref=e528]
+          - cell "17" [ref=e529]
+          - cell "35" [ref=e530]
+          - cell "—" [ref=e531]
+          - cell "待测" [ref=e532]
+        - row [ref=e533]:
+          - cell [ref=e534]:
+            - button "33" [ref=e535] [cursor=pointer]
+          - cell "本地经典" [ref=e536]
+          - cell "33" [ref=e537]
+          - cell "selfboot-33" [ref=e538]
+          - cell "小型规划" [ref=e539]
+          - cell "3" [ref=e540]
+          - cell "7" [ref=e541]
+          - cell "7" [ref=e542]
+          - cell "7×7" [ref=e543]
+          - cell "22" [ref=e544]
+          - cell "41" [ref=e545]
+          - cell "—" [ref=e546]
+          - cell "待测" [ref=e547]
+        - row [ref=e548]:
+          - cell [ref=e549]:
+            - button "34" [ref=e550] [cursor=pointer]
+          - cell "本地经典" [ref=e551]
+          - cell "34" [ref=e552]
+          - cell "selfboot-34" [ref=e553]
+          - cell "小型规划" [ref=e554]
+          - cell "4" [ref=e555]
+          - cell "9" [ref=e556]
+          - cell "6" [ref=e557]
+          - cell "9×6" [ref=e558]
+          - cell "23" [ref=e559]
+          - cell "30" [ref=e560]
+          - cell "—" [ref=e561]
+          - cell "待测" [ref=e562]
+        - row [ref=e563]:
+          - cell [ref=e564]:
+            - button "35" [ref=e565] [cursor=pointer]
+          - cell "本地经典" [ref=e566]
+          - cell "35" [ref=e567]
+          - cell "selfboot-35" [ref=e568]
+          - cell "中型规划" [ref=e569]
+          - cell "5" [ref=e570]
+          - cell "6" [ref=e571]
+          - cell "10" [ref=e572]
+          - cell "6×10" [ref=e573]
+          - cell "24" [ref=e574]
+          - cell "77" [ref=e575]
+          - cell "—" [ref=e576]
+          - cell "待测" [ref=e577]
+        - row [ref=e578]:
+          - cell [ref=e579]:
+            - button "36" [ref=e580] [cursor=pointer]
+          - cell "本地经典" [ref=e581]
+          - cell "36" [ref=e582]
+          - cell "selfboot-36" [ref=e583]
+          - cell "中型规划" [ref=e584]
+          - cell "5" [ref=e585]
+          - cell "15" [ref=e586]
+          - cell "5" [ref=e587]
+          - cell "15×5" [ref=e588]
+          - cell "28" [ref=e589]
+          - cell "—" [ref=e590]
+          - cell "—" [ref=e591]
+          - cell "待测" [ref=e592]
+        - row [ref=e593]:
+          - cell [ref=e594]:
+            - button "37" [ref=e595] [cursor=pointer]
+          - cell "本地经典" [ref=e596]
+          - cell "37" [ref=e597]
+          - cell "selfboot-37" [ref=e598]
+          - cell "小型规划" [ref=e599]
+          - cell "3" [ref=e600]
+          - cell "9" [ref=e601]
+          - cell "8" [ref=e602]
+          - cell "9×8" [ref=e603]
+          - cell "23" [ref=e604]
+          - cell "71" [ref=e605]
+          - cell "—" [ref=e606]
+          - cell "待测" [ref=e607]
+        - row [ref=e608]:
+          - cell [ref=e609]:
+            - button "38" [ref=e610] [cursor=pointer]
+          - cell "本地经典" [ref=e611]
+          - cell "38" [ref=e612]
+          - cell "selfboot-38" [ref=e613]
+          - cell "小型规划" [ref=e614]
+          - cell "3" [ref=e615]
+          - cell "10" [ref=e616]
+          - cell "7" [ref=e617]
+          - cell "10×7" [ref=e618]
+          - cell "28" [ref=e619]
+          - cell "37" [ref=e620]
+          - cell "—" [ref=e621]
+          - cell "待测" [ref=e622]
+        - row [ref=e623]:
+          - cell [ref=e624]:
+            - button "39" [ref=e625] [cursor=pointer]
+          - cell "本地经典" [ref=e626]
+          - cell "39" [ref=e627]
+          - cell "selfboot-39" [ref=e628]
+          - cell "微型解谜" [ref=e629]
+          - cell "2" [ref=e630]
+          - cell "10" [ref=e631]
+          - cell "9" [ref=e632]
+          - cell "10×9" [ref=e633]
+          - cell "30" [ref=e634]
+          - cell "85" [ref=e635]
+          - cell "—" [ref=e636]
+          - cell "待测" [ref=e637]
+        - row [ref=e638]:
+          - cell [ref=e639]:
+            - button "40" [ref=e640] [cursor=pointer]
+          - cell "本地经典" [ref=e641]
+          - cell "40" [ref=e642]
+          - cell "selfboot-40" [ref=e643]
+          - cell "小型规划" [ref=e644]
+          - cell "3" [ref=e645]
+          - cell "7" [ref=e646]
+          - cell "6" [ref=e647]
+          - cell "7×6" [ref=e648]
+          - cell "16" [ref=e649]
+          - cell "20" [ref=e650]
+          - cell "—" [ref=e651]
+          - cell "待测" [ref=e652]
+        - row [ref=e653]:
+          - cell [ref=e654]:
+            - button "41" [ref=e655] [cursor=pointer]
+          - cell "本地经典" [ref=e656]
+          - cell "41" [ref=e657]
+          - cell "selfboot-41" [ref=e658]
+          - cell "中型规划" [ref=e659]
+          - cell "7" [ref=e660]
+          - cell "8" [ref=e661]
+          - cell "9" [ref=e662]
+          - cell "8×9" [ref=e663]
+          - cell "30" [ref=e664]
+          - cell "34" [ref=e665]
+          - cell "—" [ref=e666]
+          - cell "待测" [ref=e667]
+        - row [ref=e668]:
+          - cell [ref=e669]:
+            - button "42" [ref=e670] [cursor=pointer]
+          - cell "本地经典" [ref=e671]
+          - cell "42" [ref=e672]
+          - cell "selfboot-42" [ref=e673]
+          - cell "中型规划" [ref=e674]
+          - cell "6" [ref=e675]
+          - cell "22" [ref=e676]
+          - cell "11" [ref=e677]
+          - cell "22×11" [ref=e678]
+          - cell "61" [ref=e679]
+          - cell "264" [ref=e680]
+          - cell "—" [ref=e681]
+          - cell "待测" [ref=e682]
+        - row [ref=e683]:
+          - cell [ref=e684]:
+            - button "43" [ref=e685] [cursor=pointer]
+          - cell "本地经典" [ref=e686]
+          - cell "43" [ref=e687]
+          - cell "selfboot-43" [ref=e688]
+          - cell "大型挑战" [ref=e689]
+          - cell "10" [ref=e690]
+          - cell "14" [ref=e691]
+          - cell "10" [ref=e692]
+          - cell "14×10" [ref=e693]
+          - cell "70" [ref=e694]
+          - cell "—" [ref=e695]
+          - cell "—" [ref=e696]
+          - cell "待测" [ref=e697]
+        - row [ref=e698]:
+          - cell [ref=e699]:
+            - button "44" [ref=e700] [cursor=pointer]
+          - cell "本地经典" [ref=e701]
+          - cell "44" [ref=e702]
+          - cell "selfboot-44" [ref=e703]
+          - cell "大型挑战" [ref=e704]
+          - cell "11" [ref=e705]
+          - cell "17" [ref=e706]
+          - cell "10" [ref=e707]
+          - cell "17×10" [ref=e708]
+          - cell "56" [ref=e709]
+          - cell "—" [ref=e710]
+          - cell "—" [ref=e711]
+          - cell "待测" [ref=e712]
+        - row [ref=e713]:
+          - cell [ref=e714]:
+            - button "45" [ref=e715] [cursor=pointer]
+          - cell "本地经典" [ref=e716]
+          - cell "45" [ref=e717]
+          - cell "selfboot-45" [ref=e718]
+          - cell "大型挑战" [ref=e719]
+          - cell "20" [ref=e720]
+          - cell "22" [ref=e721]
+          - cell "13" [ref=e722]
+          - cell "22×13" [ref=e723]
+          - cell "101" [ref=e724]
+          - cell "—" [ref=e725]
+          - cell "—" [ref=e726]
+          - cell "待测" [ref=e727]
+        - row [ref=e728]:
+          - cell [ref=e729]:
+            - button "46" [ref=e730] [cursor=pointer]
+          - cell "本地经典" [ref=e731]
+          - cell "46" [ref=e732]
+          - cell "selfboot-46" [ref=e733]
+          - cell "大型挑战" [ref=e734]
+          - cell "12" [ref=e735]
+          - cell "17" [ref=e736]
+          - cell "13" [ref=e737]
+          - cell "17×13" [ref=e738]
+          - cell "71" [ref=e739]
+          - cell "—" [ref=e740]
+          - cell "—" [ref=e741]
+          - cell "待测" [ref=e742]
+        - row [ref=e743]:
+          - cell [ref=e744]:
+            - button "47" [ref=e745] [cursor=pointer]
+          - cell "本地经典" [ref=e746]
+          - cell "47" [ref=e747]
+          - cell "selfboot-47" [ref=e748]
+          - cell "大型挑战" [ref=e749]
+          - cell "10" [ref=e750]
+          - cell "12" [ref=e751]
+          - cell "11" [ref=e752]
+          - cell "12×11" [ref=e753]
+          - cell "60" [ref=e754]
+          - cell "—" [ref=e755]
+          - cell "—" [ref=e756]
+          - cell "待测" [ref=e757]
+        - row [ref=e758]:
+          - cell [ref=e759]:
+            - button "48" [ref=e760] [cursor=pointer]
+          - cell "本地经典" [ref=e761]
+          - cell "48" [ref=e762]
+          - cell "selfboot-48" [ref=e763]
+          - cell "大型挑战" [ref=e764]
+          - cell "11" [ref=e765]
+          - cell "13" [ref=e766]
+          - cell "12" [ref=e767]
+          - cell "13×12" [ref=e768]
+          - cell "64" [ref=e769]
+          - cell "—" [ref=e770]
+          - cell "—" [ref=e771]
+          - cell "待测" [ref=e772]
+        - row [ref=e773]:
+          - cell [ref=e774]:
+            - button "49" [ref=e775] [cursor=pointer]
+          - cell "本地经典" [ref=e776]
+          - cell "49" [ref=e777]
+          - cell "selfboot-49" [ref=e778]
+          - cell "大型挑战" [ref=e779]
+          - cell "18" [ref=e780]
+          - cell "16" [ref=e781]
+          - cell "17" [ref=e782]
+          - cell "16×17" [ref=e783]
+          - cell "110" [ref=e784]
+          - cell "—" [ref=e785]
+          - cell "—" [ref=e786]
+          - cell "待测" [ref=e787]
+        - row [ref=e788]:
+          - cell [ref=e789]:
+            - button "50" [ref=e790] [cursor=pointer]
+          - cell "本地经典" [ref=e791]
+          - cell "50" [ref=e792]
+          - cell "selfboot-50" [ref=e793]
+          - cell "大型挑战" [ref=e794]
+          - cell "15" [ref=e795]
+          - cell "17" [ref=e796]
+          - cell "18" [ref=e797]
+          - cell "17×18" [ref=e798]
+          - cell "90" [ref=e799]
+          - cell "—" [ref=e800]
+          - cell "—" [ref=e801]
+          - cell "待测" [ref=e802]
+    - generic [ref=e803]:
+      - generic [ref=e804]: 第 1 / 124 页
+      - button "上一页" [disabled] [ref=e805]
+      - button "下一页" [ref=e806] [cursor=pointer]
+  - paragraph [ref=e807]: 尺寸为包含墙体的最小外接矩形，宽 × 高。结构分类依据箱子数和可行走格数，不能直接代表实际游玩难度。只有本地已验证的关卡显示最少步数；试玩难度等待玩家实测。

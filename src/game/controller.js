@@ -1,11 +1,14 @@
 import { campaigns, levels } from './levels.js';
+import { pkBank } from './pk-bank.js';
 import { GameSession, directions, score } from './engine.js';
 import { ProgressStore } from './progress.js';
 
 export class GameController {
-  constructor(platform, catalog = levels) {
+  constructor(platform, catalog = levels, pkCatalog = pkBank) {
     this.platform = platform;
     this.levels = catalog;
+    this.pkBank = pkCatalog;
+    this.pkDrawCount = 0;
     this.progress = new ProgressStore(platform, catalog);
     this.route = 'home';
     this.modal = platform.canRequestPlayerProfile && !platform.readPlayerProfile?.() ? 'profile' : null;
@@ -63,13 +66,17 @@ export class GameController {
     this.roomMode = mode;
     this.modal = 'pk-choice';
   }
-  pkLevel() {
+  pkLevel(mode = 'pk') {
+    if (mode === 'pk' && this.pkBank.length) {
+      const index = (Math.abs(Math.floor(this.now() / 1000)) + this.pkDrawCount++) % this.pkBank.length;
+      return { level: this.pkBank[index], index: -1 };
+    }
     const candidates = this.campaignEntries('classic').slice(1, 6);
     return candidates[Math.abs(Math.floor(this.now() / 1000)) % candidates.length] || null;
   }
   async createPkRoom(mode = this.roomMode || 'pk') {
     if (!this.platform.pkRooms?.available) { this.platform.notify('微信云函数不可用'); return; }
-    const selected = this.pkLevel();
+    const selected = this.pkLevel(mode);
     if (!selected) return;
     this.modal = 'pk-loading';
     try {
@@ -102,13 +109,15 @@ export class GameController {
   }
   enterPkRoom(room) {
     const levelIndex = this.levels.findIndex(level => level.id === room.levelId);
-    if (levelIndex < 0) { this.platform.notify('双方版本不一致，请更新小游戏'); return; }
+    const level = levelIndex >= 0 ? this.levels[levelIndex]
+      : this.pkBank.find(entry => entry.id === room.levelId);
+    if (!level) { this.platform.notify('双方版本不一致，请更新小游戏'); return; }
     this.roomMode = room.mode || 'pk';
-    this.pk = { room, levelIndex, pollElapsed: 0, submitting: false, moving: false,
+    this.pk = { room, level, levelIndex, pollElapsed: 0, submitting: false, moving: false,
       appliedMoves: 0, startedAt: null };
     this.levelIndex = levelIndex;
     this.levelCampaign = 'pk';
-    this.game = new GameSession(this.levels[levelIndex]);
+    this.game = new GameSession(level);
     this.route = 'game';
     this.platform.pkRooms.setSharedRoom(room.code, this.roomMode);
     this.applyPkRoom(room);
@@ -130,7 +139,7 @@ export class GameController {
     else if (room.me?.finished) { this.modal = 'pk-finished'; this.pk.startedAt = null; }
     else if (room.status === 'playing') {
       if (!wasPlaying || !this.pk.startedAt) {
-        this.game = new GameSession(this.levels[this.pk.levelIndex]);
+        this.game = new GameSession(this.pk.level);
         this.pk.appliedMoves = 0;
         this.pk.startedAt = room.startAt - (this.pk.serverOffset || 0);
       }
@@ -141,7 +150,7 @@ export class GameController {
   applyCoopMoves(moves) {
     if (!this.pk || (this.pk.room.mode || 'pk') !== 'coop') return;
     if (moves.length < this.pk.appliedMoves) {
-      this.game = new GameSession(this.levels[this.pk.levelIndex]);
+      this.game = new GameSession(this.pk.level);
       this.pk.appliedMoves = 0;
     }
     while (this.pk.appliedMoves < moves.length) {
@@ -282,6 +291,7 @@ export class GameController {
       .every(({ level }) => this.progress.state.records[level.id]);
   }
   campaignLevelNumber(index = this.levelIndex) {
+    if (this.pk?.level?.bankNo) return this.pk.level.bankNo;
     return this.campaignEntries(this.levels[index]?.campaign || 'classic')
       .findIndex(entry => entry.index === index) + 1;
   }

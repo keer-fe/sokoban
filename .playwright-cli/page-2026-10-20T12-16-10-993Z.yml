@@ -1,0 +1,1116 @@
+- main [ref=f2e2]:
+  - generic [ref=f2e3]:
+    - generic [ref=f2e4]:
+      - heading "单人地图素材目录" [level=1] [ref=f2e5]
+      - paragraph [ref=f2e6]: 本地经典与外部地图集，按结构筛选并查看原始棋盘
+    - generic [ref=f2e7]: 离线可用 · 单文件
+  - region "总体统计" [ref=f2e8]:
+    - generic [ref=f2e9]:
+      - generic [ref=f2e10]: 6,186
+      - generic [ref=f2e11]: 地图记录
+    - generic [ref=f2e12]:
+      - generic [ref=f2e13]: 5,768
+      - generic [ref=f2e14]: 尺寸与箱数初筛通过
+    - generic [ref=f2e15]:
+      - generic [ref=f2e16]: "237"
+      - generic [ref=f2e17]: 当前筛选结果
+    - generic [ref=f2e18]:
+      - generic [ref=f2e19]: "418"
+      - generic [ref=f2e20]: 建议暂不进主线
+  - generic [ref=f2e21]:
+    - generic [ref=f2e22]:
+      - generic [ref=f2e23]:
+        - text: 搜索来源、编号或关卡 ID
+        - searchbox "搜索来源、编号或关卡 ID" [ref=f2e24]
+      - generic [ref=f2e25]:
+        - text: 地图来源
+        - combobox "地图来源" [ref=f2e26]:
+          - option "全部来源" [selected]
+          - option "本地经典"
+          - option "Microban"
+          - option "Mas Microban"
+          - option "Microban III"
+          - option "Sasquatch"
+          - option "Mas Sasquatch"
+          - option "Sasquatch III"
+          - option "Sasquatch IV"
+          - option "Sasquatch V"
+          - option "Sasquatch VI"
+          - option "Sasquatch VII"
+          - option "Sasquatch VIII"
+          - option "Boxoban Hard"
+          - option "Boxoban Medium 样本"
+          - option "Boxoban Unfiltered 样本"
+      - generic [ref=f2e27]:
+        - text: 结构分类
+        - combobox "结构分类" [ref=f2e28]:
+          - option "全部分类" [selected]
+          - option "微型解谜"
+          - option "小型规划"
+          - option "中型规划"
+          - option "大型挑战"
+      - generic [ref=f2e29]:
+        - text: 箱子数量
+        - combobox "箱子数量" [ref=f2e30]:
+          - option "不限箱数" [selected]
+          - option "1 箱"
+          - option "2 箱"
+          - option "3 箱"
+          - option "4 箱"
+          - option "5 箱"
+          - option "6 箱"
+          - option "7 箱"
+          - option "8 箱"
+          - option "9 箱"
+          - option "10 箱"
+          - option "11 箱"
+          - option "12 箱"
+          - option "13 箱"
+          - option "14 箱"
+          - option "15 箱"
+          - option "16 箱"
+          - option "17 箱"
+          - option "18 箱"
+          - option "19 箱"
+          - option "20 箱"
+          - option "21 箱"
+          - option "22 箱"
+          - option "23 箱"
+          - option "24 箱"
+          - option "25 箱"
+          - option "26 箱"
+          - option "27 箱"
+          - option "28 箱"
+          - option "29 箱"
+          - option "30 箱"
+          - option "31 箱"
+          - option "32 箱"
+          - option "33 箱"
+          - option "34 箱"
+          - option "35 箱"
+          - option "36 箱"
+          - option "37 箱"
+          - option "39 箱"
+          - option "40 箱"
+          - option "42 箱"
+          - option "44 箱"
+          - option "48 箱"
+          - option "50 箱"
+          - option "52 箱"
+          - option "56 箱"
+          - option "60 箱"
+          - option "64 箱"
+          - option "68 箱"
+          - option "72 箱"
+          - option "74 箱"
+          - option "76 箱"
+          - option "80 箱"
+          - option "84 箱"
+          - option "88 箱"
+          - option "94 箱"
+          - option "97 箱"
+          - option "98 箱"
+          - option "100 箱"
+          - option "112 箱"
+          - option "128 箱"
+          - option "148 箱"
+          - option "152 箱"
+          - option "162 箱"
+          - option "174 箱"
+          - option "198 箱"
+          - option "208 箱"
+          - option "220 箱"
+          - option "236 箱"
+          - option "240 箱"
+          - option "256 箱"
+          - option "280 箱"
+          - option "288 箱"
+          - option "480 箱"
+      - generic [ref=f2e31]:
+        - text: 手机主线初筛
+        - combobox "手机主线初筛" [ref=f2e32]:
+          - option "全部结果"
+          - option "初筛通过"
+          - option "整图过小"
+          - option "箱子过多"
+          - option "两项都触发" [selected]
+      - button "清除筛选" [ref=f2e33] [cursor=pointer]
+    - generic [ref=f2e34]:
+      - generic [ref=f2e35]: 显示 1–50 / 237 条
+      - generic [ref=f2e36]: 点击列标题排序 · 点击编号看地图
+    - table [ref=f2e38]:
+      - rowgroup [ref=f2e39]:
+        - row [ref=f2e40]:
+          - columnheader "序号" [ref=f2e41] [cursor=pointer]
+          - columnheader "来源" [ref=f2e42] [cursor=pointer]
+          - columnheader "来源编号" [ref=f2e43] [cursor=pointer]
+          - columnheader "本地 ID" [ref=f2e44] [cursor=pointer]
+          - columnheader "结构分类" [ref=f2e45] [cursor=pointer]
+          - columnheader "箱子数" [ref=f2e46] [cursor=pointer]
+          - columnheader "宽" [ref=f2e47] [cursor=pointer]
+          - columnheader "高" [ref=f2e48] [cursor=pointer]
+          - columnheader "尺寸" [ref=f2e49] [cursor=pointer]
+          - columnheader "小屏单格" [ref=f2e50] [cursor=pointer]
+          - columnheader "整图过小" [ref=f2e51] [cursor=pointer]
+          - columnheader "箱子过多" [ref=f2e52] [cursor=pointer]
+          - columnheader "主线初筛" [ref=f2e53] [cursor=pointer]
+          - columnheader "可行走格" [ref=f2e54] [cursor=pointer]
+          - columnheader "最少步数" [ref=f2e55] [cursor=pointer]
+          - columnheader "与本地重复" [ref=f2e56] [cursor=pointer]
+          - columnheader "试玩难度" [ref=f2e57] [cursor=pointer]
+      - rowgroup [ref=f2e58]:
+        - row [ref=f2e1014]:
+          - cell [ref=f2e1015]:
+            - button "44" [ref=f2e1016] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1017]
+          - cell "44" [ref=f2e1018]
+          - cell "selfboot-44" [ref=f2e1019]
+          - cell "大型挑战" [ref=f2e1020]
+          - cell "11" [ref=f2e1021]
+          - cell "17" [ref=f2e1022]
+          - cell "10" [ref=f2e1023]
+          - cell "17×10" [ref=f2e1024]
+          - cell "15.2 px" [ref=f2e1025]
+          - cell "是" [ref=f2e1026]
+          - cell "是" [ref=f2e1027]
+          - cell "两项都触发" [ref=f2e1028]
+          - cell "56" [ref=f2e1029]
+          - cell "—" [ref=f2e1030]
+          - cell "—" [ref=f2e1031]
+          - cell "待测" [ref=f2e1032]
+        - row [ref=f2e1033]:
+          - cell [ref=f2e1034]:
+            - button "45" [ref=f2e1035] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1036]
+          - cell "45" [ref=f2e1037]
+          - cell "selfboot-45" [ref=f2e1038]
+          - cell "大型挑战" [ref=f2e1039]
+          - cell "20" [ref=f2e1040]
+          - cell "22" [ref=f2e1041]
+          - cell "13" [ref=f2e1042]
+          - cell "22×13" [ref=f2e1043]
+          - cell "11.7 px" [ref=f2e1044]
+          - cell "是" [ref=f2e1045]
+          - cell "是" [ref=f2e1046]
+          - cell "两项都触发" [ref=f2e1047]
+          - cell "101" [ref=f2e1048]
+          - cell "—" [ref=f2e1049]
+          - cell "—" [ref=f2e1050]
+          - cell "待测" [ref=f2e1051]
+        - row [ref=f2e1052]:
+          - cell [ref=f2e1053]:
+            - button "46" [ref=f2e1054] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1055]
+          - cell "46" [ref=f2e1056]
+          - cell "selfboot-46" [ref=f2e1057]
+          - cell "大型挑战" [ref=f2e1058]
+          - cell "12" [ref=f2e1059]
+          - cell "17" [ref=f2e1060]
+          - cell "13" [ref=f2e1061]
+          - cell "17×13" [ref=f2e1062]
+          - cell "15.2 px" [ref=f2e1063]
+          - cell "是" [ref=f2e1064]
+          - cell "是" [ref=f2e1065]
+          - cell "两项都触发" [ref=f2e1066]
+          - cell "71" [ref=f2e1067]
+          - cell "—" [ref=f2e1068]
+          - cell "—" [ref=f2e1069]
+          - cell "待测" [ref=f2e1070]
+        - row [ref=f2e1071]:
+          - cell [ref=f2e1072]:
+            - button "50" [ref=f2e1073] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1074]
+          - cell "50" [ref=f2e1075]
+          - cell "selfboot-50" [ref=f2e1076]
+          - cell "大型挑战" [ref=f2e1077]
+          - cell "15" [ref=f2e1078]
+          - cell "17" [ref=f2e1079]
+          - cell "18" [ref=f2e1080]
+          - cell "17×18" [ref=f2e1081]
+          - cell "15.2 px" [ref=f2e1082]
+          - cell "是" [ref=f2e1083]
+          - cell "是" [ref=f2e1084]
+          - cell "两项都触发" [ref=f2e1085]
+          - cell "90" [ref=f2e1086]
+          - cell "—" [ref=f2e1087]
+          - cell "—" [ref=f2e1088]
+          - cell "待测" [ref=f2e1089]
+        - row [ref=f2e1090]:
+          - cell [ref=f2e1091]:
+            - button "51" [ref=f2e1092] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1093]
+          - cell "51" [ref=f2e1094]
+          - cell "selfboot-51" [ref=f2e1095]
+          - cell "大型挑战" [ref=f2e1096]
+          - cell "34" [ref=f2e1097]
+          - cell "21" [ref=f2e1098]
+          - cell "20" [ref=f2e1099]
+          - cell "21×20" [ref=f2e1100]
+          - cell "12.3 px" [ref=f2e1101]
+          - cell "是" [ref=f2e1102]
+          - cell "是" [ref=f2e1103]
+          - cell "两项都触发" [ref=f2e1104]
+          - cell "182" [ref=f2e1105]
+          - cell "—" [ref=f2e1106]
+          - cell "—" [ref=f2e1107]
+          - cell "待测" [ref=f2e1108]
+        - row [ref=f2e1109]:
+          - cell [ref=f2e1110]:
+            - button "52" [ref=f2e1111] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1112]
+          - cell "52" [ref=f2e1113]
+          - cell "selfboot-52" [ref=f2e1114]
+          - cell "大型挑战" [ref=f2e1115]
+          - cell "14" [ref=f2e1116]
+          - cell "19" [ref=f2e1117]
+          - cell "15" [ref=f2e1118]
+          - cell "19×15" [ref=f2e1119]
+          - cell "13.6 px" [ref=f2e1120]
+          - cell "是" [ref=f2e1121]
+          - cell "是" [ref=f2e1122]
+          - cell "两项都触发" [ref=f2e1123]
+          - cell "93" [ref=f2e1124]
+          - cell "—" [ref=f2e1125]
+          - cell "—" [ref=f2e1126]
+          - cell "待测" [ref=f2e1127]
+        - row [ref=f2e1128]:
+          - cell [ref=f2e1129]:
+            - button "54" [ref=f2e1130] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1131]
+          - cell "54" [ref=f2e1132]
+          - cell "selfboot-54" [ref=f2e1133]
+          - cell "大型挑战" [ref=f2e1134]
+          - cell "18" [ref=f2e1135]
+          - cell "20" [ref=f2e1136]
+          - cell "13" [ref=f2e1137]
+          - cell "20×13" [ref=f2e1138]
+          - cell "12.9 px" [ref=f2e1139]
+          - cell "是" [ref=f2e1140]
+          - cell "是" [ref=f2e1141]
+          - cell "两项都触发" [ref=f2e1142]
+          - cell "124" [ref=f2e1143]
+          - cell "—" [ref=f2e1144]
+          - cell "—" [ref=f2e1145]
+          - cell "待测" [ref=f2e1146]
+        - row [ref=f2e1147]:
+          - cell [ref=f2e1148]:
+            - button "55" [ref=f2e1149] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1150]
+          - cell "55" [ref=f2e1151]
+          - cell "selfboot-55" [ref=f2e1152]
+          - cell "大型挑战" [ref=f2e1153]
+          - cell "15" [ref=f2e1154]
+          - cell "17" [ref=f2e1155]
+          - cell "13" [ref=f2e1156]
+          - cell "17×13" [ref=f2e1157]
+          - cell "15.2 px" [ref=f2e1158]
+          - cell "是" [ref=f2e1159]
+          - cell "是" [ref=f2e1160]
+          - cell "两项都触发" [ref=f2e1161]
+          - cell "103" [ref=f2e1162]
+          - cell "—" [ref=f2e1163]
+          - cell "—" [ref=f2e1164]
+          - cell "待测" [ref=f2e1165]
+        - row [ref=f2e1166]:
+          - cell [ref=f2e1167]:
+            - button "56" [ref=f2e1168] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1169]
+          - cell "56" [ref=f2e1170]
+          - cell "selfboot-56" [ref=f2e1171]
+          - cell "大型挑战" [ref=f2e1172]
+          - cell "15" [ref=f2e1173]
+          - cell "17" [ref=f2e1174]
+          - cell "17" [ref=f2e1175]
+          - cell "17×17" [ref=f2e1176]
+          - cell "15.2 px" [ref=f2e1177]
+          - cell "是" [ref=f2e1178]
+          - cell "是" [ref=f2e1179]
+          - cell "两项都触发" [ref=f2e1180]
+          - cell "105" [ref=f2e1181]
+          - cell "—" [ref=f2e1182]
+          - cell "—" [ref=f2e1183]
+          - cell "待测" [ref=f2e1184]
+        - row [ref=f2e1185]:
+          - cell [ref=f2e1186]:
+            - button "58" [ref=f2e1187] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1188]
+          - cell "58" [ref=f2e1189]
+          - cell "selfboot-58" [ref=f2e1190]
+          - cell "大型挑战" [ref=f2e1191]
+          - cell "18" [ref=f2e1192]
+          - cell "18" [ref=f2e1193]
+          - cell "16" [ref=f2e1194]
+          - cell "18×16" [ref=f2e1195]
+          - cell "14.3 px" [ref=f2e1196]
+          - cell "是" [ref=f2e1197]
+          - cell "是" [ref=f2e1198]
+          - cell "两项都触发" [ref=f2e1199]
+          - cell "121" [ref=f2e1200]
+          - cell "—" [ref=f2e1201]
+          - cell "—" [ref=f2e1202]
+          - cell "待测" [ref=f2e1203]
+        - row [ref=f2e1204]:
+          - cell [ref=f2e1205]:
+            - button "59" [ref=f2e1206] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1207]
+          - cell "59" [ref=f2e1208]
+          - cell "selfboot-59" [ref=f2e1209]
+          - cell "大型挑战" [ref=f2e1210]
+          - cell "13" [ref=f2e1211]
+          - cell "22" [ref=f2e1212]
+          - cell "13" [ref=f2e1213]
+          - cell "22×13" [ref=f2e1214]
+          - cell "11.7 px" [ref=f2e1215]
+          - cell "是" [ref=f2e1216]
+          - cell "是" [ref=f2e1217]
+          - cell "两项都触发" [ref=f2e1218]
+          - cell "117" [ref=f2e1219]
+          - cell "—" [ref=f2e1220]
+          - cell "—" [ref=f2e1221]
+          - cell "待测" [ref=f2e1222]
+        - row [ref=f2e1223]:
+          - cell [ref=f2e1224]:
+            - button "60" [ref=f2e1225] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1226]
+          - cell "60" [ref=f2e1227]
+          - cell "selfboot-60" [ref=f2e1228]
+          - cell "大型挑战" [ref=f2e1229]
+          - cell "20" [ref=f2e1230]
+          - cell "28" [ref=f2e1231]
+          - cell "20" [ref=f2e1232]
+          - cell "28×20" [ref=f2e1233]
+          - cell "9.2 px" [ref=f2e1234]
+          - cell "是" [ref=f2e1235]
+          - cell "是" [ref=f2e1236]
+          - cell "两项都触发" [ref=f2e1237]
+          - cell "180" [ref=f2e1238]
+          - cell "—" [ref=f2e1239]
+          - cell "—" [ref=f2e1240]
+          - cell "待测" [ref=f2e1241]
+        - row [ref=f2e1242]:
+          - cell [ref=f2e1243]:
+            - button "61" [ref=f2e1244] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1245]
+          - cell "61" [ref=f2e1246]
+          - cell "selfboot-61" [ref=f2e1247]
+          - cell "大型挑战" [ref=f2e1248]
+          - cell "29" [ref=f2e1249]
+          - cell "20" [ref=f2e1250]
+          - cell "20" [ref=f2e1251]
+          - cell "20×20" [ref=f2e1252]
+          - cell "12.9 px" [ref=f2e1253]
+          - cell "是" [ref=f2e1254]
+          - cell "是" [ref=f2e1255]
+          - cell "两项都触发" [ref=f2e1256]
+          - cell "175" [ref=f2e1257]
+          - cell "—" [ref=f2e1258]
+          - cell "—" [ref=f2e1259]
+          - cell "待测" [ref=f2e1260]
+        - row [ref=f2e1261]:
+          - cell [ref=f2e1262]:
+            - button "63" [ref=f2e1263] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1264]
+          - cell "63" [ref=f2e1265]
+          - cell "selfboot-63" [ref=f2e1266]
+          - cell "大型挑战" [ref=f2e1267]
+          - cell "35" [ref=f2e1268]
+          - cell "22" [ref=f2e1269]
+          - cell "20" [ref=f2e1270]
+          - cell "22×20" [ref=f2e1271]
+          - cell "11.7 px" [ref=f2e1272]
+          - cell "是" [ref=f2e1273]
+          - cell "是" [ref=f2e1274]
+          - cell "两项都触发" [ref=f2e1275]
+          - cell "216" [ref=f2e1276]
+          - cell "—" [ref=f2e1277]
+          - cell "—" [ref=f2e1278]
+          - cell "待测" [ref=f2e1279]
+        - row [ref=f2e1280]:
+          - cell [ref=f2e1281]:
+            - button "64" [ref=f2e1282] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1283]
+          - cell "64" [ref=f2e1284]
+          - cell "selfboot-64" [ref=f2e1285]
+          - cell "大型挑战" [ref=f2e1286]
+          - cell "18" [ref=f2e1287]
+          - cell "25" [ref=f2e1288]
+          - cell "14" [ref=f2e1289]
+          - cell "25×14" [ref=f2e1290]
+          - cell "10.3 px" [ref=f2e1291]
+          - cell "是" [ref=f2e1292]
+          - cell "是" [ref=f2e1293]
+          - cell "两项都触发" [ref=f2e1294]
+          - cell "126" [ref=f2e1295]
+          - cell "—" [ref=f2e1296]
+          - cell "—" [ref=f2e1297]
+          - cell "待测" [ref=f2e1298]
+        - row [ref=f2e1299]:
+          - cell [ref=f2e1300]:
+            - button "65" [ref=f2e1301] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1302]
+          - cell "65" [ref=f2e1303]
+          - cell "selfboot-65" [ref=f2e1304]
+          - cell "大型挑战" [ref=f2e1305]
+          - cell "23" [ref=f2e1306]
+          - cell "21" [ref=f2e1307]
+          - cell "19" [ref=f2e1308]
+          - cell "21×19" [ref=f2e1309]
+          - cell "12.3 px" [ref=f2e1310]
+          - cell "是" [ref=f2e1311]
+          - cell "是" [ref=f2e1312]
+          - cell "两项都触发" [ref=f2e1313]
+          - cell "175" [ref=f2e1314]
+          - cell "—" [ref=f2e1315]
+          - cell "—" [ref=f2e1316]
+          - cell "待测" [ref=f2e1317]
+        - row [ref=f2e1318]:
+          - cell [ref=f2e1319]:
+            - button "66" [ref=f2e1320] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1321]
+          - cell "66" [ref=f2e1322]
+          - cell "selfboot-66" [ref=f2e1323]
+          - cell "大型挑战" [ref=f2e1324]
+          - cell "21" [ref=f2e1325]
+          - cell "23" [ref=f2e1326]
+          - cell "17" [ref=f2e1327]
+          - cell "23×17" [ref=f2e1328]
+          - cell "11.2 px" [ref=f2e1329]
+          - cell "是" [ref=f2e1330]
+          - cell "是" [ref=f2e1331]
+          - cell "两项都触发" [ref=f2e1332]
+          - cell "164" [ref=f2e1333]
+          - cell "—" [ref=f2e1334]
+          - cell "—" [ref=f2e1335]
+          - cell "待测" [ref=f2e1336]
+        - row [ref=f2e1337]:
+          - cell [ref=f2e1338]:
+            - button "68" [ref=f2e1339] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1340]
+          - cell "68" [ref=f2e1341]
+          - cell "selfboot-68" [ref=f2e1342]
+          - cell "大型挑战" [ref=f2e1343]
+          - cell "20" [ref=f2e1344]
+          - cell "23" [ref=f2e1345]
+          - cell "13" [ref=f2e1346]
+          - cell "23×13" [ref=f2e1347]
+          - cell "11.2 px" [ref=f2e1348]
+          - cell "是" [ref=f2e1349]
+          - cell "是" [ref=f2e1350]
+          - cell "两项都触发" [ref=f2e1351]
+          - cell "135" [ref=f2e1352]
+          - cell "—" [ref=f2e1353]
+          - cell "—" [ref=f2e1354]
+          - cell "待测" [ref=f2e1355]
+        - row [ref=f2e1356]:
+          - cell [ref=f2e1357]:
+            - button "70" [ref=f2e1358] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1359]
+          - cell "70" [ref=f2e1360]
+          - cell "selfboot-70" [ref=f2e1361]
+          - cell "大型挑战" [ref=f2e1362]
+          - cell "16" [ref=f2e1363]
+          - cell "24" [ref=f2e1364]
+          - cell "11" [ref=f2e1365]
+          - cell "24×11" [ref=f2e1366]
+          - cell "10.7 px" [ref=f2e1367]
+          - cell "是" [ref=f2e1368]
+          - cell "是" [ref=f2e1369]
+          - cell "两项都触发" [ref=f2e1370]
+          - cell "115" [ref=f2e1371]
+          - cell "—" [ref=f2e1372]
+          - cell "—" [ref=f2e1373]
+          - cell "待测" [ref=f2e1374]
+        - row [ref=f2e1375]:
+          - cell [ref=f2e1376]:
+            - button "73" [ref=f2e1377] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1378]
+          - cell "73" [ref=f2e1379]
+          - cell "selfboot-73" [ref=f2e1380]
+          - cell "大型挑战" [ref=f2e1381]
+          - cell "20" [ref=f2e1382]
+          - cell "18" [ref=f2e1383]
+          - cell "16" [ref=f2e1384]
+          - cell "18×16" [ref=f2e1385]
+          - cell "14.3 px" [ref=f2e1386]
+          - cell "是" [ref=f2e1387]
+          - cell "是" [ref=f2e1388]
+          - cell "两项都触发" [ref=f2e1389]
+          - cell "110" [ref=f2e1390]
+          - cell "—" [ref=f2e1391]
+          - cell "—" [ref=f2e1392]
+          - cell "待测" [ref=f2e1393]
+        - row [ref=f2e1394]:
+          - cell [ref=f2e1395]:
+            - button "76" [ref=f2e1396] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1397]
+          - cell "76" [ref=f2e1398]
+          - cell "selfboot-76" [ref=f2e1399]
+          - cell "大型挑战" [ref=f2e1400]
+          - cell "17" [ref=f2e1401]
+          - cell "20" [ref=f2e1402]
+          - cell "16" [ref=f2e1403]
+          - cell "20×16" [ref=f2e1404]
+          - cell "12.9 px" [ref=f2e1405]
+          - cell "是" [ref=f2e1406]
+          - cell "是" [ref=f2e1407]
+          - cell "两项都触发" [ref=f2e1408]
+          - cell "147" [ref=f2e1409]
+          - cell "—" [ref=f2e1410]
+          - cell "—" [ref=f2e1411]
+          - cell "待测" [ref=f2e1412]
+        - row [ref=f2e1413]:
+          - cell [ref=f2e1414]:
+            - button "77" [ref=f2e1415] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1416]
+          - cell "77" [ref=f2e1417]
+          - cell "selfboot-77" [ref=f2e1418]
+          - cell "大型挑战" [ref=f2e1419]
+          - cell "21" [ref=f2e1420]
+          - cell "18" [ref=f2e1421]
+          - cell "19" [ref=f2e1422]
+          - cell "18×19" [ref=f2e1423]
+          - cell "14.3 px" [ref=f2e1424]
+          - cell "是" [ref=f2e1425]
+          - cell "是" [ref=f2e1426]
+          - cell "两项都触发" [ref=f2e1427]
+          - cell "130" [ref=f2e1428]
+          - cell "—" [ref=f2e1429]
+          - cell "—" [ref=f2e1430]
+          - cell "待测" [ref=f2e1431]
+        - row [ref=f2e1432]:
+          - cell [ref=f2e1433]:
+            - button "78" [ref=f2e1434] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1435]
+          - cell "78" [ref=f2e1436]
+          - cell "selfboot-78" [ref=f2e1437]
+          - cell "大型挑战" [ref=f2e1438]
+          - cell "20" [ref=f2e1439]
+          - cell "21" [ref=f2e1440]
+          - cell "15" [ref=f2e1441]
+          - cell "21×15" [ref=f2e1442]
+          - cell "12.3 px" [ref=f2e1443]
+          - cell "是" [ref=f2e1444]
+          - cell "是" [ref=f2e1445]
+          - cell "两项都触发" [ref=f2e1446]
+          - cell "131" [ref=f2e1447]
+          - cell "—" [ref=f2e1448]
+          - cell "—" [ref=f2e1449]
+          - cell "待测" [ref=f2e1450]
+        - row [ref=f2e1451]:
+          - cell [ref=f2e1452]:
+            - button "80" [ref=f2e1453] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1454]
+          - cell "80" [ref=f2e1455]
+          - cell "selfboot-80" [ref=f2e1456]
+          - cell "大型挑战" [ref=f2e1457]
+          - cell "25" [ref=f2e1458]
+          - cell "23" [ref=f2e1459]
+          - cell "18" [ref=f2e1460]
+          - cell "23×18" [ref=f2e1461]
+          - cell "11.2 px" [ref=f2e1462]
+          - cell "是" [ref=f2e1463]
+          - cell "是" [ref=f2e1464]
+          - cell "两项都触发" [ref=f2e1465]
+          - cell "158" [ref=f2e1466]
+          - cell "—" [ref=f2e1467]
+          - cell "—" [ref=f2e1468]
+          - cell "待测" [ref=f2e1469]
+        - row [ref=f2e1470]:
+          - cell [ref=f2e1471]:
+            - button "82" [ref=f2e1472] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1473]
+          - cell "82" [ref=f2e1474]
+          - cell "selfboot-82" [ref=f2e1475]
+          - cell "大型挑战" [ref=f2e1476]
+          - cell "16" [ref=f2e1477]
+          - cell "20" [ref=f2e1478]
+          - cell "15" [ref=f2e1479]
+          - cell "20×15" [ref=f2e1480]
+          - cell "12.9 px" [ref=f2e1481]
+          - cell "是" [ref=f2e1482]
+          - cell "是" [ref=f2e1483]
+          - cell "两项都触发" [ref=f2e1484]
+          - cell "96" [ref=f2e1485]
+          - cell "—" [ref=f2e1486]
+          - cell "—" [ref=f2e1487]
+          - cell "待测" [ref=f2e1488]
+        - row [ref=f2e1489]:
+          - cell [ref=f2e1490]:
+            - button "84" [ref=f2e1491] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1492]
+          - cell "84" [ref=f2e1493]
+          - cell "selfboot-84" [ref=f2e1494]
+          - cell "大型挑战" [ref=f2e1495]
+          - cell "16" [ref=f2e1496]
+          - cell "17" [ref=f2e1497]
+          - cell "16" [ref=f2e1498]
+          - cell "17×16" [ref=f2e1499]
+          - cell "15.2 px" [ref=f2e1500]
+          - cell "是" [ref=f2e1501]
+          - cell "是" [ref=f2e1502]
+          - cell "两项都触发" [ref=f2e1503]
+          - cell "107" [ref=f2e1504]
+          - cell "—" [ref=f2e1505]
+          - cell "—" [ref=f2e1506]
+          - cell "待测" [ref=f2e1507]
+        - row [ref=f2e1508]:
+          - cell [ref=f2e1509]:
+            - button "85" [ref=f2e1510] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1511]
+          - cell "85" [ref=f2e1512]
+          - cell "selfboot-85" [ref=f2e1513]
+          - cell "大型挑战" [ref=f2e1514]
+          - cell "16" [ref=f2e1515]
+          - cell "25" [ref=f2e1516]
+          - cell "19" [ref=f2e1517]
+          - cell "25×19" [ref=f2e1518]
+          - cell "10.3 px" [ref=f2e1519]
+          - cell "是" [ref=f2e1520]
+          - cell "是" [ref=f2e1521]
+          - cell "两项都触发" [ref=f2e1522]
+          - cell "169" [ref=f2e1523]
+          - cell "—" [ref=f2e1524]
+          - cell "—" [ref=f2e1525]
+          - cell "待测" [ref=f2e1526]
+        - row [ref=f2e1527]:
+          - cell [ref=f2e1528]:
+            - button "86" [ref=f2e1529] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1530]
+          - cell "86" [ref=f2e1531]
+          - cell "selfboot-86" [ref=f2e1532]
+          - cell "大型挑战" [ref=f2e1533]
+          - cell "9" [ref=f2e1534]
+          - cell "19" [ref=f2e1535]
+          - cell "11" [ref=f2e1536]
+          - cell "19×11" [ref=f2e1537]
+          - cell "13.6 px" [ref=f2e1538]
+          - cell "是" [ref=f2e1539]
+          - cell "是" [ref=f2e1540]
+          - cell "两项都触发" [ref=f2e1541]
+          - cell "88" [ref=f2e1542]
+          - cell "—" [ref=f2e1543]
+          - cell "—" [ref=f2e1544]
+          - cell "待测" [ref=f2e1545]
+        - row [ref=f2e1546]:
+          - cell [ref=f2e1547]:
+            - button "87" [ref=f2e1548] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1549]
+          - cell "87" [ref=f2e1550]
+          - cell "selfboot-87" [ref=f2e1551]
+          - cell "大型挑战" [ref=f2e1552]
+          - cell "19" [ref=f2e1553]
+          - cell "22" [ref=f2e1554]
+          - cell "17" [ref=f2e1555]
+          - cell "22×17" [ref=f2e1556]
+          - cell "11.7 px" [ref=f2e1557]
+          - cell "是" [ref=f2e1558]
+          - cell "是" [ref=f2e1559]
+          - cell "两项都触发" [ref=f2e1560]
+          - cell "156" [ref=f2e1561]
+          - cell "—" [ref=f2e1562]
+          - cell "—" [ref=f2e1563]
+          - cell "待测" [ref=f2e1564]
+        - row [ref=f2e1565]:
+          - cell [ref=f2e1566]:
+            - button "88" [ref=f2e1567] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1568]
+          - cell "88" [ref=f2e1569]
+          - cell "selfboot-88" [ref=f2e1570]
+          - cell "大型挑战" [ref=f2e1571]
+          - cell "9" [ref=f2e1572]
+          - cell "19" [ref=f2e1573]
+          - cell "15" [ref=f2e1574]
+          - cell "19×15" [ref=f2e1575]
+          - cell "13.6 px" [ref=f2e1576]
+          - cell "是" [ref=f2e1577]
+          - cell "是" [ref=f2e1578]
+          - cell "两项都触发" [ref=f2e1579]
+          - cell "95" [ref=f2e1580]
+          - cell "—" [ref=f2e1581]
+          - cell "—" [ref=f2e1582]
+          - cell "待测" [ref=f2e1583]
+        - row [ref=f2e1584]:
+          - cell [ref=f2e1585]:
+            - button "90" [ref=f2e1586] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1587]
+          - cell "90" [ref=f2e1588]
+          - cell "selfboot-90" [ref=f2e1589]
+          - cell "大型挑战" [ref=f2e1590]
+          - cell "16" [ref=f2e1591]
+          - cell "19" [ref=f2e1592]
+          - cell "16" [ref=f2e1593]
+          - cell "19×16" [ref=f2e1594]
+          - cell "13.6 px" [ref=f2e1595]
+          - cell "是" [ref=f2e1596]
+          - cell "是" [ref=f2e1597]
+          - cell "两项都触发" [ref=f2e1598]
+          - cell "133" [ref=f2e1599]
+          - cell "—" [ref=f2e1600]
+          - cell "—" [ref=f2e1601]
+          - cell "待测" [ref=f2e1602]
+        - row [ref=f2e1603]:
+          - cell [ref=f2e1604]:
+            - button "91" [ref=f2e1605] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1606]
+          - cell "91" [ref=f2e1607]
+          - cell "selfboot-91" [ref=f2e1608]
+          - cell "大型挑战" [ref=f2e1609]
+          - cell "24" [ref=f2e1610]
+          - cell "21" [ref=f2e1611]
+          - cell "16" [ref=f2e1612]
+          - cell "21×16" [ref=f2e1613]
+          - cell "12.3 px" [ref=f2e1614]
+          - cell "是" [ref=f2e1615]
+          - cell "是" [ref=f2e1616]
+          - cell "两项都触发" [ref=f2e1617]
+          - cell "159" [ref=f2e1618]
+          - cell "—" [ref=f2e1619]
+          - cell "—" [ref=f2e1620]
+          - cell "待测" [ref=f2e1621]
+        - row [ref=f2e1622]:
+          - cell [ref=f2e1623]:
+            - button "93" [ref=f2e1624] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1625]
+          - cell "93" [ref=f2e1626]
+          - cell "selfboot-93" [ref=f2e1627]
+          - cell "大型挑战" [ref=f2e1628]
+          - cell "16" [ref=f2e1629]
+          - cell "21" [ref=f2e1630]
+          - cell "14" [ref=f2e1631]
+          - cell "21×14" [ref=f2e1632]
+          - cell "12.3 px" [ref=f2e1633]
+          - cell "是" [ref=f2e1634]
+          - cell "是" [ref=f2e1635]
+          - cell "两项都触发" [ref=f2e1636]
+          - cell "105" [ref=f2e1637]
+          - cell "—" [ref=f2e1638]
+          - cell "—" [ref=f2e1639]
+          - cell "待测" [ref=f2e1640]
+        - row [ref=f2e1641]:
+          - cell [ref=f2e1642]:
+            - button "95" [ref=f2e1643] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1644]
+          - cell "95" [ref=f2e1645]
+          - cell "selfboot-95" [ref=f2e1646]
+          - cell "大型挑战" [ref=f2e1647]
+          - cell "22" [ref=f2e1648]
+          - cell "23" [ref=f2e1649]
+          - cell "20" [ref=f2e1650]
+          - cell "23×20" [ref=f2e1651]
+          - cell "11.2 px" [ref=f2e1652]
+          - cell "是" [ref=f2e1653]
+          - cell "是" [ref=f2e1654]
+          - cell "两项都触发" [ref=f2e1655]
+          - cell "246" [ref=f2e1656]
+          - cell "—" [ref=f2e1657]
+          - cell "—" [ref=f2e1658]
+          - cell "待测" [ref=f2e1659]
+        - row [ref=f2e1660]:
+          - cell [ref=f2e1661]:
+            - button "96" [ref=f2e1662] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1663]
+          - cell "96" [ref=f2e1664]
+          - cell "selfboot-96" [ref=f2e1665]
+          - cell "大型挑战" [ref=f2e1666]
+          - cell "24" [ref=f2e1667]
+          - cell "22" [ref=f2e1668]
+          - cell "15" [ref=f2e1669]
+          - cell "22×15" [ref=f2e1670]
+          - cell "11.7 px" [ref=f2e1671]
+          - cell "是" [ref=f2e1672]
+          - cell "是" [ref=f2e1673]
+          - cell "两项都触发" [ref=f2e1674]
+          - cell "168" [ref=f2e1675]
+          - cell "—" [ref=f2e1676]
+          - cell "—" [ref=f2e1677]
+          - cell "待测" [ref=f2e1678]
+        - row [ref=f2e1679]:
+          - cell [ref=f2e1680]:
+            - button "98" [ref=f2e1681] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1682]
+          - cell "98" [ref=f2e1683]
+          - cell "selfboot-98" [ref=f2e1684]
+          - cell "大型挑战" [ref=f2e1685]
+          - cell "16" [ref=f2e1686]
+          - cell "18" [ref=f2e1687]
+          - cell "11" [ref=f2e1688]
+          - cell "18×11" [ref=f2e1689]
+          - cell "14.3 px" [ref=f2e1690]
+          - cell "是" [ref=f2e1691]
+          - cell "是" [ref=f2e1692]
+          - cell "两项都触发" [ref=f2e1693]
+          - cell "85" [ref=f2e1694]
+          - cell "—" [ref=f2e1695]
+          - cell "—" [ref=f2e1696]
+          - cell "待测" [ref=f2e1697]
+        - row [ref=f2e1698]:
+          - cell [ref=f2e1699]:
+            - button "99" [ref=f2e1700] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1701]
+          - cell "99" [ref=f2e1702]
+          - cell "selfboot-99" [ref=f2e1703]
+          - cell "大型挑战" [ref=f2e1704]
+          - cell "23" [ref=f2e1705]
+          - cell "27" [ref=f2e1706]
+          - cell "20" [ref=f2e1707]
+          - cell "27×20" [ref=f2e1708]
+          - cell "9.5 px" [ref=f2e1709]
+          - cell "是" [ref=f2e1710]
+          - cell "是" [ref=f2e1711]
+          - cell "两项都触发" [ref=f2e1712]
+          - cell "189" [ref=f2e1713]
+          - cell "—" [ref=f2e1714]
+          - cell "—" [ref=f2e1715]
+          - cell "待测" [ref=f2e1716]
+        - row [ref=f2e1717]:
+          - cell [ref=f2e1718]:
+            - button "100" [ref=f2e1719] [cursor=pointer]
+          - cell "本地经典" [ref=f2e1720]
+          - cell "100" [ref=f2e1721]
+          - cell "selfboot-100" [ref=f2e1722]
+          - cell "大型挑战" [ref=f2e1723]
+          - cell "36" [ref=f2e1724]
+          - cell "29" [ref=f2e1725]
+          - cell "20" [ref=f2e1726]
+          - cell "29×20" [ref=f2e1727]
+          - cell "8.9 px" [ref=f2e1728]
+          - cell "是" [ref=f2e1729]
+          - cell "是" [ref=f2e1730]
+          - cell "两项都触发" [ref=f2e1731]
+          - cell "260" [ref=f2e1732]
+          - cell "—" [ref=f2e1733]
+          - cell "—" [ref=f2e1734]
+          - cell "待测" [ref=f2e1735]
+        - row [ref=f2e1736]:
+          - cell [ref=f2e1737]:
+            - button "255" [ref=f2e1738] [cursor=pointer]
+          - cell "Microban" [ref=f2e1739]
+          - cell "155" [ref=f2e1740]
+          - cell "—" [ref=f2e1741]
+          - cell "大型挑战" [ref=f2e1742]
+          - cell "11" [ref=f2e1743]
+          - cell "30" [ref=f2e1744]
+          - cell "17" [ref=f2e1745]
+          - cell "30×17" [ref=f2e1746]
+          - cell "8.6 px" [ref=f2e1747]
+          - cell "是" [ref=f2e1748]
+          - cell "是" [ref=f2e1749]
+          - cell "两项都触发" [ref=f2e1750]
+          - cell "227" [ref=f2e1751]
+          - cell "—" [ref=f2e1752]
+          - cell "—" [ref=f2e1753]
+          - cell "待测" [ref=f2e1754]
+        - row [ref=f2e1755]:
+          - cell [ref=f2e1756]:
+            - button "385" [ref=f2e1757] [cursor=pointer]
+          - cell "Mas Microban" [ref=f2e1758]
+          - cell "130" [ref=f2e1759]
+          - cell "—" [ref=f2e1760]
+          - cell "大型挑战" [ref=f2e1761]
+          - cell "24" [ref=f2e1762]
+          - cell "18" [ref=f2e1763]
+          - cell "17" [ref=f2e1764]
+          - cell "18×17" [ref=f2e1765]
+          - cell "14.3 px" [ref=f2e1766]
+          - cell "是" [ref=f2e1767]
+          - cell "是" [ref=f2e1768]
+          - cell "两项都触发" [ref=f2e1769]
+          - cell "80" [ref=f2e1770]
+          - cell "—" [ref=f2e1771]
+          - cell "—" [ref=f2e1772]
+          - cell "待测" [ref=f2e1773]
+        - row [ref=f2e1774]:
+          - cell [ref=f2e1775]:
+            - button "386" [ref=f2e1776] [cursor=pointer]
+          - cell "Mas Microban" [ref=f2e1777]
+          - cell "131" [ref=f2e1778]
+          - cell "—" [ref=f2e1779]
+          - cell "大型挑战" [ref=f2e1780]
+          - cell "44" [ref=f2e1781]
+          - cell "18" [ref=f2e1782]
+          - cell "17" [ref=f2e1783]
+          - cell "18×17" [ref=f2e1784]
+          - cell "14.3 px" [ref=f2e1785]
+          - cell "是" [ref=f2e1786]
+          - cell "是" [ref=f2e1787]
+          - cell "两项都触发" [ref=f2e1788]
+          - cell "98" [ref=f2e1789]
+          - cell "—" [ref=f2e1790]
+          - cell "—" [ref=f2e1791]
+          - cell "待测" [ref=f2e1792]
+        - row [ref=f2e1793]:
+          - cell [ref=f2e1794]:
+            - button "452" [ref=f2e1795] [cursor=pointer]
+          - cell "Microban III" [ref=f2e1796]
+          - cell "62" [ref=f2e1797]
+          - cell "—" [ref=f2e1798]
+          - cell "大型挑战" [ref=f2e1799]
+          - cell "13" [ref=f2e1800]
+          - cell "17" [ref=f2e1801]
+          - cell "11" [ref=f2e1802]
+          - cell "17×11" [ref=f2e1803]
+          - cell "15.2 px" [ref=f2e1804]
+          - cell "是" [ref=f2e1805]
+          - cell "是" [ref=f2e1806]
+          - cell "两项都触发" [ref=f2e1807]
+          - cell "95" [ref=f2e1808]
+          - cell "—" [ref=f2e1809]
+          - cell "—" [ref=f2e1810]
+          - cell "待测" [ref=f2e1811]
+        - row [ref=f2e1812]:
+          - cell [ref=f2e1813]:
+            - button "464" [ref=f2e1814] [cursor=pointer]
+          - cell "Sasquatch" [ref=f2e1815]
+          - cell "10" [ref=f2e1816]
+          - cell "—" [ref=f2e1817]
+          - cell "大型挑战" [ref=f2e1818]
+          - cell "11" [ref=f2e1819]
+          - cell "18" [ref=f2e1820]
+          - cell "17" [ref=f2e1821]
+          - cell "18×17" [ref=f2e1822]
+          - cell "14.3 px" [ref=f2e1823]
+          - cell "是" [ref=f2e1824]
+          - cell "是" [ref=f2e1825]
+          - cell "两项都触发" [ref=f2e1826]
+          - cell "86" [ref=f2e1827]
+          - cell "—" [ref=f2e1828]
+          - cell "—" [ref=f2e1829]
+          - cell "待测" [ref=f2e1830]
+        - row [ref=f2e1831]:
+          - cell [ref=f2e1832]:
+            - button "466" [ref=f2e1833] [cursor=pointer]
+          - cell "Sasquatch" [ref=f2e1834]
+          - cell "12" [ref=f2e1835]
+          - cell "—" [ref=f2e1836]
+          - cell "大型挑战" [ref=f2e1837]
+          - cell "15" [ref=f2e1838]
+          - cell "27" [ref=f2e1839]
+          - cell "12" [ref=f2e1840]
+          - cell "27×12" [ref=f2e1841]
+          - cell "9.5 px" [ref=f2e1842]
+          - cell "是" [ref=f2e1843]
+          - cell "是" [ref=f2e1844]
+          - cell "两项都触发" [ref=f2e1845]
+          - cell "99" [ref=f2e1846]
+          - cell "—" [ref=f2e1847]
+          - cell "—" [ref=f2e1848]
+          - cell "待测" [ref=f2e1849]
+        - row [ref=f2e1850]:
+          - cell [ref=f2e1851]:
+            - button "471" [ref=f2e1852] [cursor=pointer]
+          - cell "Sasquatch" [ref=f2e1853]
+          - cell "17" [ref=f2e1854]
+          - cell "—" [ref=f2e1855]
+          - cell "大型挑战" [ref=f2e1856]
+          - cell "13" [ref=f2e1857]
+          - cell "23" [ref=f2e1858]
+          - cell "12" [ref=f2e1859]
+          - cell "23×12" [ref=f2e1860]
+          - cell "11.2 px" [ref=f2e1861]
+          - cell "是" [ref=f2e1862]
+          - cell "是" [ref=f2e1863]
+          - cell "两项都触发" [ref=f2e1864]
+          - cell "106" [ref=f2e1865]
+          - cell "—" [ref=f2e1866]
+          - cell "—" [ref=f2e1867]
+          - cell "待测" [ref=f2e1868]
+        - row [ref=f2e1869]:
+          - cell [ref=f2e1870]:
+            - button "473" [ref=f2e1871] [cursor=pointer]
+          - cell "Sasquatch" [ref=f2e1872]
+          - cell "19" [ref=f2e1873]
+          - cell "—" [ref=f2e1874]
+          - cell "大型挑战" [ref=f2e1875]
+          - cell "9" [ref=f2e1876]
+          - cell "25" [ref=f2e1877]
+          - cell "15" [ref=f2e1878]
+          - cell "25×15" [ref=f2e1879]
+          - cell "10.3 px" [ref=f2e1880]
+          - cell "是" [ref=f2e1881]
+          - cell "是" [ref=f2e1882]
+          - cell "两项都触发" [ref=f2e1883]
+          - cell "101" [ref=f2e1884]
+          - cell "—" [ref=f2e1885]
+          - cell "—" [ref=f2e1886]
+          - cell "待测" [ref=f2e1887]
+        - row [ref=f2e1888]:
+          - cell [ref=f2e1889]:
+            - button "477" [ref=f2e1890] [cursor=pointer]
+          - cell "Sasquatch" [ref=f2e1891]
+          - cell "23" [ref=f2e1892]
+          - cell "—" [ref=f2e1893]
+          - cell "大型挑战" [ref=f2e1894]
+          - cell "14" [ref=f2e1895]
+          - cell "17" [ref=f2e1896]
+          - cell "9" [ref=f2e1897]
+          - cell "17×9" [ref=f2e1898]
+          - cell "15.2 px" [ref=f2e1899]
+          - cell "是" [ref=f2e1900]
+          - cell "是" [ref=f2e1901]
+          - cell "两项都触发" [ref=f2e1902]
+          - cell "71" [ref=f2e1903]
+          - cell "—" [ref=f2e1904]
+          - cell "—" [ref=f2e1905]
+          - cell "待测" [ref=f2e1906]
+        - row [ref=f2e1907]:
+          - cell [ref=f2e1908]:
+            - button "479" [ref=f2e1909] [cursor=pointer]
+          - cell "Sasquatch" [ref=f2e1910]
+          - cell "25" [ref=f2e1911]
+          - cell "—" [ref=f2e1912]
+          - cell "大型挑战" [ref=f2e1913]
+          - cell "19" [ref=f2e1914]
+          - cell "18" [ref=f2e1915]
+          - cell "14" [ref=f2e1916]
+          - cell "18×14" [ref=f2e1917]
+          - cell "14.3 px" [ref=f2e1918]
+          - cell "是" [ref=f2e1919]
+          - cell "是" [ref=f2e1920]
+          - cell "两项都触发" [ref=f2e1921]
+          - cell "87" [ref=f2e1922]
+          - cell "—" [ref=f2e1923]
+          - cell "—" [ref=f2e1924]
+          - cell "待测" [ref=f2e1925]
+        - row [ref=f2e1926]:
+          - cell [ref=f2e1927]:
+            - button "480" [ref=f2e1928] [cursor=pointer]
+          - cell "Sasquatch" [ref=f2e1929]
+          - cell "26" [ref=f2e1930]
+          - cell "—" [ref=f2e1931]
+          - cell "大型挑战" [ref=f2e1932]
+          - cell "12" [ref=f2e1933]
+          - cell "18" [ref=f2e1934]
+          - cell "11" [ref=f2e1935]
+          - cell "18×11" [ref=f2e1936]
+          - cell "14.3 px" [ref=f2e1937]
+          - cell "是" [ref=f2e1938]
+          - cell "是" [ref=f2e1939]
+          - cell "两项都触发" [ref=f2e1940]
+          - cell "75" [ref=f2e1941]
+          - cell "—" [ref=f2e1942]
+          - cell "—" [ref=f2e1943]
+          - cell "待测" [ref=f2e1944]
+        - row [ref=f2e1945]:
+          - cell [ref=f2e1946]:
+            - button "481" [ref=f2e1947] [cursor=pointer]
+          - cell "Sasquatch" [ref=f2e1948]
+          - cell "27" [ref=f2e1949]
+          - cell "—" [ref=f2e1950]
+          - cell "大型挑战" [ref=f2e1951]
+          - cell "12" [ref=f2e1952]
+          - cell "24" [ref=f2e1953]
+          - cell "16" [ref=f2e1954]
+          - cell "24×16" [ref=f2e1955]
+          - cell "10.7 px" [ref=f2e1956]
+          - cell "是" [ref=f2e1957]
+          - cell "是" [ref=f2e1958]
+          - cell "两项都触发" [ref=f2e1959]
+          - cell "165" [ref=f2e1960]
+          - cell "—" [ref=f2e1961]
+          - cell "—" [ref=f2e1962]
+          - cell "待测" [ref=f2e1963]
+    - generic [ref=f2e1009]:
+      - generic [ref=f2e1010]: 第 1 / 5 页
+      - button "上一页" [disabled] [ref=f2e1011]
+      - button "下一页" [ref=f2e1012] [cursor=pointer]
+  - paragraph [ref=f2e1013]: 手机初筛按本项目 320×568 小屏棋盘计算：全图单格低于 16 屏幕像素标“整图过小”，超过 8 箱标“箱子过多”。棋盘可以自动缩放，因此“过小”指整图难以看清，不是无法载入。结构分类和初筛都不代表实际游玩难度。

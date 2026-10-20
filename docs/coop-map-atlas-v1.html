@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>双人合作 · 地图集 v1</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f6f0e3;color:#423c30;font:16px/1.6 system-ui,sans-serif}
+main{max-width:1200px;margin:auto;padding:40px 24px}h1{font-size:36px;margin:0}header p{max-width:850px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin:24px 0}.legend span{background:white;padding:6px 12px;border-radius:8px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px}
+article{background:#fffcf5;border:1px solid #ded4c0;border-radius:18px;padding:22px}h2{font-size:21px;margin:0 0 6px}
+.meta{color:#7c725e;font-size:14px}.board{display:grid;margin:20px auto;max-width:380px;gap:2px;background:#ddd1b8;padding:5px;border-radius:8px}
+.tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:#eee4ce;font-weight:800;font-size:clamp(15px,2vw,22px);border-radius:3px}
+.wall{background:#6e7862;box-shadow:inset 0 -4px #56624b}.p1{background:#438ec0;color:white;border-radius:50%}.p2{background:#e28a55;color:white;border-radius:50%}
+.box{background:#b98146;border:3px solid #8e5e30;color:#fff0ce}.goal{color:#b77930;background:#f7d998}
+.plate{background:#ddc4ea;color:#78418b;border-radius:50%;border:2px solid #ae7dc1}.door{background:#9470a5;color:white;border:3px double white}
+details{font-size:13px;margin-top:12px}summary{cursor:pointer}code{overflow-wrap:anywhere}footer{margin-top:30px;color:#6d6454}
+</style>
+<main>
+<header><p>CO-OP SOKOBAN / 第一章原型</p><h1>两个人，一起把箱子送回家</h1>
+<p>6 张可解性验证地图。前 3 关学习守门与运箱，后 3 关加入岗位交换和接应。这是独立设计原型，尚未接入游戏，也未经过双人试玩。</p></header>
+<div class="legend"><span>🔵 1 / 🟠 2：各自控制的角色</span><span>▣：箱子</span><span>◎：目标</span><span>a → A、b → B：压力板控制同字母门</span></div>
+<p>规则：每次一个角色移动一格；不能重叠、拉箱或连续推多个箱子。人和箱子都可压板。离板关门，但门格内已有的人或箱子可以退出；能否进入门按本步开始时的板状态判断。所有箱子到目标即通关，无需角色到达出口。</p>
+<section class="cards" id="cards"></section>
+<footer>验证口径：步数是两人移动总和，包含走路与推箱。固定任意一个角色在出生点，另一角色均无法单独完成。此检查不等于证明每个机关都无法绕过；动作分配、等待时间与趣味性仍需试玩。</footer>
+</main>
+<script>
+const maps=[
+["01","你先过去",9,"合作入门","1 号到 a 值守，2 号穿过 A，从箱子上方把箱子推到目标。","先体验“你站在那里，我就能过去”。守门者等待较多，仅作为短教学。",
+["#########","#1 a#   #","#   A $ #","# 2 # . #","#   #   #","#########"],
+"1→ 1→ 2↑ 2→ 2→ 2→ 2↑ 2→ 2↓"],
+["02","转个弯送到",11,"站位教学","1 号守住 a，2 号进门后绕到箱子左侧，再转到上方完成入库。","增加转向站位；仍是教学变体，不引入新机关。",
+["##########","#1 a#    #","#   A $  #","# 2 # # .#","#   #    #","##########"],
+"1→ 1→ 2↑ 2→ 2→ 2→ 2→ 2→ 2↑ 2→ 2↓"],
+["03","两箱入库",13,"运箱练习","1 号开门，2 号进入仓库，为两个箱子分别找到推动位置。","复用守门规则完成双箱练习。可以交换玩家职责重玩；不强制箱子顺序。",
+["###########","#1 a#     #","#   A $ . #","# 2 # $ . #","#   #     #","###########"],
+"1→ 1→ 2↑ 2→ 2→ 2→ 2→ 2→ 2← 2← 2↓ 2→ 2→"],
+["04","换你接应我",25,"岗位交换","先整理左侧箱子并让出路口；1 号踩 a 送 2 号穿过 A，2 号踩 b 开 B，1 号从下路送箱。","核心关：开上门 → 伙伴过河 → 开下门 → 送箱。左侧窄口要求互相让位。",
+["###########","#1 a#  b  #","# # A     #","# $ #     #","# 2 B   . #","#   #     #","###########"],
+"1↓ 1↓ 2→ 2↑ 2↑ 1→ 1← 1↑ 1↑ 1→ 1→ 2→ 1↓ 1↓ 1← 1↓ 2→ 2↑ 2→ 2→ 1→ 1→ 1→ 1→ 1→"],
+["05","双向送货",34,"空间调度","利用上下两扇门交换工作区域，将两只箱子分别送到左右目标。","既要接应伙伴，也要给箱子留位置。目标归属不固定，允许玩家发现更好的分工。",
+["###########","#1 a#  b  #","# # A     #","# $ # $   #","# . B   . #","# 2 #     #","###########"],
+"1↓ 1↓ 2↑ 2→ 2↑ 2↑ 1→ 1← 1↑ 1↑ 1→ 1→ 2→ 1↓ 1↓ 1← 1↓ 2→ 2↑ 2→ 2→ 1→ 1↑ 2↓ 2← 2↓ 2← 2↓ 2→ 2→ 2← 2← 2← 2←"],
+["06","一起收工",33,"综合挑战","先通过接应把左侧箱子送入右侧仓库，再安排两只箱子的终点与站位。","先运入左侧箱子，再处理仓库里的箱子。不要过早占住伙伴需要的推箱位置。",
+["###########","#1 a#  b  #","# # A     #","# $ # $   #","#   B   . #","# 2 #   . #","###########"],
+"1↓ 1↓ 2↑ 2→ 2↑ 2↑ 1→ 1← 1↑ 1↑ 1→ 1→ 2→ 1↓ 1↓ 1← 1↓ 2→ 2↓ 2→ 2→ 2↑ 2↑ 1→ 1→ 1→ 1→ 2↓ 2→ 2↓ 2↓ 2↑ 1→"]
+];
+for(const [id,name,steps,type,intent,note,rows,solution] of maps){
+ const article=document.createElement("article");
+ const title=document.createElement("h2"); title.textContent=id+" · "+name;article.append(title);
+ const meta=document.createElement("div");meta.className="meta";meta.textContent=type+" · "+rows[0].length+"×"+rows.length+(steps?" · 最短 "+steps+" 步":"");article.append(meta);
+ const board=document.createElement("div");board.className="board";board.style.gridTemplateColumns=`repeat(${rows[0].length},1fr)`;board.setAttribute("aria-label",name+"地图");
+ for(const row of rows)for(const ch of row){
+  const tile=document.createElement("div");tile.className="tile "+({"#":"wall","1":"p1","2":"p2","$":"box",".":"goal","a":"plate","b":"plate","A":"door","B":"door"}[ch]||"");
+  tile.textContent=({"#":"","$":"▣",".":"◎"," ":""}[ch]??ch);board.append(tile);
+ }
+ article.append(board);
+ for(const text of [intent,note]){const p=document.createElement("p");p.textContent=text;article.append(p)}
+ if(solution){const details=document.createElement("details");const summary=document.createElement("summary");summary.textContent="查看一条最短解（数字为角色）";details.append(summary);const code=document.createElement("code");code.textContent=solution;details.append(code);article.append(details)}
+ document.querySelector("#cards").append(article);
+}
+</script>
+</html>

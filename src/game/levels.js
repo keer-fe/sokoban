@@ -3,17 +3,6 @@ import { minimumSteps } from './minimum-steps.js';
 
 const tiles = { 0: '_', 1: '#', 2: ' ', 3: '.', 4: '$', 5: '*', 6: '@', 7: '+' };
 
-// Original onboarding maps; shortest move counts verified by the BFS solver.
-const onboarding = [
-  { minSteps: 1, rows: ['######', '#@$. #', '######'] },
-  { minSteps: 3, rows: ['#######', '#@ $ .#', '#######'] },
-  { minSteps: 3, rows: ['#####', '# . #', '# $@#', '#   #', '#####'] },
-  { minSteps: 4, rows: ['######', '#  . #', '# $  #', '# @  #', '######'] },
-  { minSteps: 5, rows: ['#######', '# . . #', '# $ $ #', '# @   #', '#######'] },
-  { minSteps: 8, rows: ['#######', '# . . #', '#     #', '# $ $ #', '# @   #', '#######'] },
-].map((level, index) => ({ ...level, id: `onboarding-${index + 1}`, difficulty: '简单',
-  boxCount: level.rows.join('').split('$').length - 1 }));
-
 const originals = mapRows.map((grid, index) => ({
   id: `selfboot-${index + 1}`,
   sourceNumber: index + 1,
@@ -113,16 +102,23 @@ originals.forEach(level => {
 });
 // Campaign IDs are persisted with future level records, so keep them stable.
 export const campaigns = Object.freeze([
-  { id: 'classic', name: '经典模式', description: '原汁原味的 106 关推箱子' },
+  { id: 'classic', name: '经典模式', description: '从学习关开始的 100 关推箱子' },
   { id: 'adventure', name: '冒险模式', description: '机关章节与全新解谜规则' },
   { id: 'coop', name: '合作模式', description: '双人协作，共同破解机关' },
 ]);
 
-// Keep all 100 original maps in source order after the six onboarding levels.
-// Adventure levels will join this catalog with their own stable IDs and numbering.
-const classic = [...onboarding, ...originals].map((level, index) => ({
-  ...level, campaign: 'classic', campaignIndex: index,
-  name: `经典模式 · 第 ${index + 1} 关`,
-}));
+// A single-box first map teaches walking and pushing before original puzzles begin.
+// The oversized original #100 remains in the research catalog, outside the 100-level launch track.
+const classicIntro = {
+  id: 'classic-learn-1', campaign: 'classic', campaignIndex: 0,
+  name: '经典模式 · 第 1 关', tip: '向右走两步，再把箱子向右推两次',
+  difficulty: '教学', boxCount: 1, minSteps: 4,
+  rows: ['########', '#@  $ .#', '########'],
+};
+const classic = [classicIntro, ...originals.slice(0, 99).map((level, index) => ({
+  ...level, campaign: 'classic',
+  name: `经典模式 · 第 ${index + 2} 关`,
+  campaignIndex: index + 1,
+}))];
 
 export const levels = [...classic, ...adventureAll];

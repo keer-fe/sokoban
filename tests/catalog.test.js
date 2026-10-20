@@ -8,16 +8,23 @@ import { solve as bfsSolve } from '../tools/solve-levels.js';
 import { LevelsPage } from '../src/pages/levels/index.js';
 import { createViewport } from '../src/core/viewport.js';
 
-test('开放地图保留原始内容和稳定 ID，教学关独立编号', () => {
+test('经典模式首关教学，后接 99 张原始地图，稳定 ID 和连续编号', () => {
   const source = JSON.parse(readFileSync(new URL('../docs/levels-original.json', import.meta.url))).levels;
   const tiles = ['_', '#', ' ', '.', '$', '*', '@', '+'];
   const classic = levels.filter(level => level.campaign === 'classic');
   const adventure = levels.filter(level => level.campaign === 'adventure');
-  assert.equal(classic.length, 106);
+  assert.equal(classic.length, 100);
   assert.equal(adventure.length, 12);
   assert.deepEqual(campaigns.map(campaign => campaign.id), ['classic', 'adventure', 'coop']);
   assert.ok(classic.every((level, index) => level.campaignIndex === index));
-  assert.deepEqual(classic.slice(6).map(level => level.sourceNumber), Array.from({ length: 100 }, (_, i) => i + 1));
+  assert.deepEqual(classic.slice(1).map(level => level.sourceNumber), Array.from({ length: 99 }, (_, i) => i + 1));
+  assert.equal(classic[0].id, 'classic-learn-1');
+  assert.equal(classic[0].name, '经典模式 · 第 1 关');
+  assert.equal(classic[0].boxCount, 1);
+  assert.equal(classic[0].minSteps, 4);
+  assert.equal(classic[1].id, 'selfboot-1');
+  assert.equal(classic[1].name, '经典模式 · 第 2 关');
+  assert.ok(levels.every(level => !level.id.startsWith('onboarding-')));
   assert.equal(new Set(levels.map(level => level.id)).size, levels.length);
   classic.filter(level => level.sourceNumber).forEach(level => {
     const index = level.sourceNumber - 1;
@@ -140,11 +147,6 @@ test('画廊覆盖所有关卡并保持点击路由', () => {
   assert.ok(!page.buttons.some(button => button.id.startsWith('chapter:')));
 });
 
-test('前六个教学关逐步增加步数', () => {
-  assert.deepEqual(levels.slice(0, 6).map(level => level.minSteps), [1, 3, 3, 4, 5, 8]);
-  assert.ok(levels.slice(0, 6).every(level => level.difficulty === '简单'));
-});
-
 test('旧存档在重排和缩减目录后保留成绩、已开放地图及未发布地图记录', () => {
   let saved = { records: Object.fromEntries(Array.from({ length: 21 }, (_, i) =>
     [`selfboot-${i + 1}`, { bestSteps: 120, stars: 2 }])) };
@@ -153,12 +155,24 @@ test('旧存档在重排和缩减目录后保留成绩、已开放地图及未�
   levels.forEach((level, index) => {
     if (level.sourceNumber <= 22) assert.equal(c.progress.isUnlocked(index), true);
   });
-  assert.equal(c.progress.completedLevels, levels.filter(level => level.sourceNumber <= 21).length);
+  assert.equal(c.progress.completedLevels, 1 + levels.filter(level => level.sourceNumber <= 21).length);
+  assert.deepEqual(c.progress.state.records['classic-learn-1'], { bestSteps: 4, stars: 3 });
   c.progress.finish(levels[0], 1, 3);
   const restored = new GameController(platform);
   assert.deepEqual(restored.progress.state.records['selfboot-6'], { bestSteps: 120, stars: 2 });
   assert.equal(restored.progress.isUnlocked(0), true);
   assert.equal(restored.progress.isUnlocked(1), true);
+});
+
+test('旧教学关记录不会占用新的经典关卡进度', () => {
+  const saved = { records: Object.fromEntries(Array.from({ length: 6 }, (_, i) =>
+    [`onboarding-${i + 1}`, { bestSteps: i + 1, stars: 3 }])) };
+  const c = new GameController({ readStorage: () => saved });
+  assert.equal(c.progress.completedLevels, 0);
+  assert.equal(c.progress.isUnlocked(0), true);
+  assert.equal(c.progress.isUnlocked(1), false);
+  assert.equal(c.resumeLevelIndex('classic'), 0);
+  assert.deepEqual(c.progress.state.records['onboarding-1'], { bestSteps: 1, stars: 3 });
 });
 
 test('未标定星级的地图正常计步、保存和解锁', () => {

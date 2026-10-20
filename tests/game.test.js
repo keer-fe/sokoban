@@ -5,6 +5,8 @@ import { levels } from './fixtures/levels.js';
 import { areDoorsOpen, GameSession, score } from '../src/game/engine.js';
 import { solve } from '../tools/solve-levels.js';
 import { GameController } from '../src/game/controller.js';
+import { pkBank } from '../src/game/pk-bank.js';
+import { levels as releaseLevels } from '../src/game/levels.js';
 import { ProgressStore } from '../src/game/progress.js';
 import { createViewport } from '../src/core/viewport.js';
 import { directionPadSource, drawDirectionPad, drawGameBackground, drawGameGround,
@@ -177,13 +179,13 @@ test('导航、弹窗阻断、撤销卡、重开和完整通关流程', () => {
   c.handle('start'); assert.equal(c.modal, 'tutorial');
   c.handle('up'); assert.equal(c.game.state.steps, 0);
   c.handle('skip'); c.handle('undo'); assert.equal(c.modal, null);
-  c.handle('up'); c.handle('undo'); assert.equal(c.modal, 'cards');
-  c.handle('up'); assert.equal(c.game.state.steps, 1);
+  c.handle('right'); c.handle('undo'); assert.equal(c.modal, 'cards');
+  c.handle('right'); assert.equal(c.game.state.steps, 1);
   c.handle('claim'); assert.equal(c.modal, 'cards');
   c.progress.commit({ ...c.progress.state, cards: 1 });
   c.handle('close'); c.handle('undo'); assert.equal(c.game.state.steps, 0);
   assert.equal(c.progress.state.cards, 0);
-  c.handle('up'); c.handle('menu'); c.handle('down'); assert.equal(c.game.state.steps, 1);
+  c.handle('right'); c.handle('menu'); c.handle('down'); assert.equal(c.game.state.steps, 1);
   c.handle('restart'); assert.equal(c.game.state.steps, 0); assert.equal(c.game.history.length, 0);
   for (let i = 0; i < levels.length; i += 1) {
     solve(levels[i]).forEach((direction) => c.handle(direction));
@@ -257,6 +259,25 @@ test('双人在线 PK 创建房间、同步开局并由服务端返回胜负', a
   c.handle('levels');
   assert.equal(c.pk, null);
   assert.equal(c.route, 'levels');
+});
+
+test('双人 PK 从独立题库抽题，双方用相同题目开局', () => {
+  assert.equal(pkBank.length, 24);
+  assert.equal(new Set(pkBank.map(level => level.id)).size, 24);
+  pkBank.forEach(level => assert.equal(new GameSession(level).board.boxes.length, level.boxCount));
+  const p = { ...platform(), pkRooms: { setSharedRoom() {} } };
+  const c = new GameController(p, releaseLevels);
+  const selected = c.pkLevel('pk');
+  assert.ok(pkBank.some(level => level.id === selected.level.id));
+  assert.equal(c.pkLevel('coop').level.campaign, 'classic');
+  const room = { code: 'ABC234', levelId: selected.level.id, mode: 'pk', status: 'waiting',
+    players: [{ seat: 1, ready: false, finished: false }],
+    me: { seat: 1, isHost: true, ready: false, finished: false } };
+  c.enterPkRoom(room);
+  assert.equal(c.game.level.id, selected.level.id);
+  assert.equal(c.campaignLevelNumber(), selected.level.bankNo);
+  c.applyPkRoom({ ...room, status: 'playing', startAt: p.wallNow() });
+  assert.equal(c.game.level.id, selected.level.id);
 });
 
 test('双人合作房间串行同步共享棋盘并共同通关', async () => {

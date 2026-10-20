@@ -16,6 +16,13 @@ export class ProgressStore {
         records[id] = { stars: record.stars, bestSteps: record.bestSteps };
       }
     });
+    // Existing classic players have already learned the basic controls.
+    // Preserve their unlocked path when the new learning map is inserted first.
+    if (catalog.some(level => level.id === 'classic-learn-1')
+      && !records['classic-learn-1']
+      && Object.keys(records).some(id => id.startsWith('selfboot-'))) {
+      records['classic-learn-1'] = { stars: 3, bestSteps: 4 };
+    }
     const ids = new Set(catalog.map(level => level.id));
     const unlockedIds = Array.isArray(saved.unlockedIds) ? saved.unlockedIds.filter(id => ids.has(id)) : [];
     // v1 saves used source order. Preserve every previously accessible original map.

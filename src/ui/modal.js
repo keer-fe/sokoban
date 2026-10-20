@@ -185,9 +185,9 @@ export class Modal extends Screen {
       }
       if (!c.result.saved) caption('记录保存失败，请检查存储空间', 675, { size: 10 });
     } else if (c.modal === 'tutorial') {
-      caption('点击方向键，每次移动一格', 173);
-      caption('箱子只能推，不能拉', 208);
-      caption('箱子到达四角标记的目标格即可通关', 243, { size: 14 });
+      caption('先按右方向键，走到箱子左侧', 173);
+      caption('再向右推两次，送到目标格', 208);
+      caption('箱子只能推，不能拉', 243, { size: 14 });
     } else if (c.modal === 'cards') {
       caption('观看广告获得 3 张撤销卡', 176);
       caption('功能暂未开放', 217, { size: 13 });
