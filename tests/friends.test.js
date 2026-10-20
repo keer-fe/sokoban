@@ -146,7 +146,7 @@ test('平台缺少开放数据域或消息失败时回退，好友页适配安�
   }
 });
 
-test('好友榜拖动和滚轮按像素连续滚动，不再发送翻页动作', () => {
+test('好友榜拖动按像素连续滚动，不再发送翻页动作', () => {
   const messages = [];
   const controller = new GameController({ readStorage: () => null,
     friendBoard: { send: (type, data) => messages.push({ type, ...data }) } }, levels);
@@ -159,14 +159,11 @@ test('好友榜拖动和滚轮按像素连续滚动，不再发送翻页动作',
   page.handlePointer('move', { ...center, y: center.y - 32 });
   page.handlePointer('end', { ...center, y: center.y - 32 });
   assert.deepEqual(messages.slice(1), [{ type: 'scroll', delta: 18 }, { type: 'scroll', delta: 14 }]);
-  page.handleWheel(80, center);
-  assert.deepEqual(messages.at(-1), { type: 'scroll', delta: 80 });
-  page.handleWheel(-80, { x: 0, y: 0 });
-  assert.deepEqual(messages.at(-1), { type: 'scroll', delta: 80 });
   controller.friendsTab = 'world';
-  page.handleWheel(80, center);
-  assert.deepEqual(messages.at(-1), { type: 'scroll', delta: 80 });
-  assert.equal(page.worldScrollY, 80);
+  page.handlePointer('start', center);
+  page.handlePointer('move', { ...center, y: center.y - 20 });
+  page.handlePointer('end', { ...center, y: center.y - 20 });
+  assert.equal(page.worldScrollY, 20);
 });
 
 test('世界榜加载失败时给出重试提示，并保留刷新和关闭按钮', () => {

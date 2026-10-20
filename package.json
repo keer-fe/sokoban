@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node tools/preview-server.js",
     "test": "node --test tests/*.test.js",
     "check": "node tools/check.js"
   },

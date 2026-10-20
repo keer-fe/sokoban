@@ -96,9 +96,9 @@ export class FriendsPage extends Screen {
       this.drawWorldBoard(ctx, x, y, boardWidth, boardHeight);
     } else if (bridge?.available && bridge.canvas) ctx.drawImage(bridge.canvas, x, y, boardWidth, boardHeight);
     else {
-      text(ctx, '请在微信小游戏中查看好友榜', 207, y + boardHeight / 2 - 14,
+      text(ctx, '好友榜暂时无法加载', 207, y + boardHeight / 2 - 14,
         { size: 17, color: DARK_WOOD });
-      text(ctx, '浏览器无法读取微信好友数据', 207, y + boardHeight / 2 + 18,
+      text(ctx, '请稍后刷新重试', 207, y + boardHeight / 2 + 18,
         { size: 13, color: '#8C674C' });
     }
     const refreshButton = this.buttons.find((button) => button.id === 'friends:refresh');
@@ -224,10 +224,6 @@ export class FriendsPage extends Screen {
         { size: 17, color: active ? '#FFF8D5' : DARK_WOOD,
           outline: active ? 2 : 0, font: getHomeFont() });
     }
-  }
-
-  handleWheel(deltaY, point) {
-    if (contains(this.bounds, point)) this.scrollBy(deltaY);
   }
 
   scrollBy(delta) {

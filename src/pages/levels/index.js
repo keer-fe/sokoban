@@ -440,10 +440,6 @@ export class LevelsPage extends Screen {
     this.layout();
   }
 
-  handleWheel(deltaY, point) {
-    if (contains(this.listBounds, point)) this.scrollBy(deltaY);
-  }
-
   handlePointer(type, point) {
     if (type === 'cancel') {
       this.drag = null;

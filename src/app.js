@@ -185,15 +185,6 @@ export function createApp(platform, actions = {}) {
               ? modal : pages[controller.route]).handlePointer(type, toLogicalPoint(viewport, point));
           }
         },
-        wheel(deltaY, point) {
-          if (running && !loading && (controller.modal === 'friends' || (!controller.modal && controller.route === 'levels'))) {
-            const target = controller.modal === 'friends' ? friendsDialog : pages.levels;
-            target.handleWheel(deltaY, toLogicalPoint(viewport, point));
-          }
-        },
-        key(action) {
-          if (running && !loading && controller.route === 'game' && !controller.modal) dispatch(action);
-        },
         show: resume,
         hide: pause,
         resize,

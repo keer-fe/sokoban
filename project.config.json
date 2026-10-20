@@ -23,7 +23,6 @@
       { "type": "folder", "value": "assets/generated" },
       { "type": "folder", "value": "assets/cloud-downloads" },
       { "type": "folder", "value": "docs" },
-      { "type": "folder", "value": "preview" },
       { "type": "folder", "value": "tools" },
       { "type": "folder", "value": "tests" },
       { "type": "folder", "value": "cloudfunctions" },
