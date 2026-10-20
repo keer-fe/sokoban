@@ -30,7 +30,7 @@ with FUTURE.open(encoding='utf-8', newline='') as file:
 assert len(future) == 100 and {int(row['level_no']) for row in future.values()} == set(range(101, 201))
 with PK_BANK.open(encoding='utf-8', newline='') as file:
     pk_bank = {(row['source'], row['source_no']): row for row in csv.DictReader(file)}
-assert len(pk_bank) == 24 and {int(row['bank_no']) for row in pk_bank.values()} == set(range(1, 25))
+assert len(pk_bank) == 120 and {int(row['bank_no']) for row in pk_bank.values()} == set(range(1, 121))
 
 sources = list(dict.fromkeys(row['source'] for row in records))
 categories = ['微型解谜', '小型规划', '中型规划', '大型挑战']
@@ -124,7 +124,7 @@ pre{margin:0 20px 18px;padding:18px;background:#17303b;color:#f2faf8;border-radi
 <div class="stat"><b id="visibleCount">6,186</b><span>当前筛选结果</span></div>
 <div class="stat"><b id="excludeCount">418</b><span>建议暂不进主线</span></div>
 </section>
-<section class="learning"><div><strong>首发、后续与双人 PK 地图已分开</strong><p>首发 100 关已保留；后续批次另选 100 张。双人 PK 另有 24 张独立题库。使用“批次”筛选可逐张看图。<a href="../../docs/level-research/future-100-levels.json">后续关卡 JSON</a> · <a href="../../docs/level-research/pk-bank.json">PK 题库 JSON</a>。旧首轮备选池仅作研究记录。</p></div><pre>########
+<section class="learning"><div><strong>首发、后续与双人 PK 地图已分开</strong><p>首发 100 关已保留；后续批次另选 100 张。双人 PK 另有 120 张独立题库。使用“批次”筛选可逐张看图。<a href="../../docs/level-research/future-100-levels.json">后续关卡 JSON</a> · <a href="../../docs/level-research/pk-bank.json">PK 题库 JSON</a>。旧首轮备选池仅作研究记录。</p></div><pre>########
 #@  $ .#
 ########</pre></section>
 <section class="panel">
@@ -134,7 +134,7 @@ pre{margin:0 20px 18px;padding:18px;background:#17303b;color:#f2faf8;border-radi
 <label>结构分类<select id="category"><option value="">全部分类</option></select></label>
 <label>箱子数量<select id="boxes"><option value="">不限箱数</option></select></label>
 <label>手机主线初筛<select id="screening"><option value="">全部结果</option><option value="pass">初筛通过</option><option value="small">整图过小</option><option value="boxes">箱子过多</option><option value="both">两项都触发</option></select></label>
-<label>批次<select id="launch"><option value="">全部地图</option><option value="future">后续上线 100 关</option><option value="pk">双人 PK 题库 24 张</option><option value="old">旧首轮备选池</option></select></label>
+<label>批次<select id="launch"><option value="">全部地图</option><option value="future">后续上线 100 关</option><option value="pk">双人 PK 题库 120 张</option><option value="old">旧首轮备选池</option></select></label>
 <label>预估难度<select id="rating"><option value="">全部星级</option><option value="1">1 星</option><option value="2">2 星</option><option value="3">3 星</option><option value="4">4 星</option><option value="5">5 星</option></select></label>
 <button class="reset" id="reset">清除筛选</button>
 </div>
@@ -146,7 +146,7 @@ pre{margin:0 20px 18px;padding:18px;background:#17303b;color:#f2faf8;border-radi
 </tr></thead><tbody id="rows"></tbody></table></div>
 <div class="pager"><span id="pageLabel"></span><button id="prev">上一页</button><button id="next">下一页</button></div>
 </section>
-<p class="foot">PK 题库 24 张已接入建房抽题；“短局/常规/进阶”按一条已验证解的操作量分组，仍需双人实测。后续关号 101～200 是预排顺序，尚未加入游戏运行关卡。两批外部地图均通过求解和引擎回放，且不与首发原始地图重复。可行解步数不保证最少；预估难度尚未试玩校准。手机初筛按本项目 320×568 小屏棋盘计算：全图单格低于 16 屏幕像素标“整图过小”，超过 8 箱标“箱子过多”。</p>
+<p class="foot">PK 题库 120 张已接入建房抽题；“短局/常规/进阶”各 40 张，按一条已验证解的操作量分组，仍需双人实测。后续关号 101～200 是预排顺序，尚未加入游戏运行关卡。两批外部地图均通过求解和引擎回放，且不与首发原始地图重复。可行解步数不保证最少；预估难度尚未试玩校准。手机初筛按本项目 320×568 小屏棋盘计算：全图单格低于 16 屏幕像素标“整图过小”，超过 8 箱标“箱子过多”。</p>
 </main>
 <dialog id="mapDialog"><div class="modal-head"><h2 id="mapTitle"></h2><button class="close" id="close" aria-label="关闭">×</button></div><div class="meta" id="mapMeta"></div><pre id="mapBoard"></pre><a id="mapSource" class="source-link" target="_blank" rel="noopener noreferrer">查看地图来源</a></dialog>
 <script id="catalog-data" type="application/json">__DATA__</script>

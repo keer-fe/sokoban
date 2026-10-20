@@ -41,8 +41,9 @@ for (const candidate of selected) {
     rows: JSON.parse(original.rows) };
   const board = parseLevel(level);
   const expected = Number(candidate.min_steps) || null;
+  const sourceNo = /^\d+$/.test(candidate.source_no) ? Number(candidate.source_no) : candidate.source_no;
   const result = { candidate_no: Number(candidate.candidate_no), source: candidate.source,
-    source_no: Number(candidate.source_no), id: level.id, boxes: board.boxes.length,
+    source_no: sourceNo, id: level.id, boxes: board.boxes.length,
     size: `${board.width}×${board.height}`, status: '', steps: expected, method: '', ms: 0 };
   const started = Date.now();
   try {

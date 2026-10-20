@@ -262,8 +262,11 @@ test('双人在线 PK 创建房间、同步开局并由服务端返回胜负', a
 });
 
 test('双人 PK 从独立题库抽题，双方用相同题目开局', () => {
-  assert.equal(pkBank.length, 24);
-  assert.equal(new Set(pkBank.map(level => level.id)).size, 24);
+  assert.equal(pkBank.length, 120);
+  assert.equal(new Set(pkBank.map(level => level.id)).size, 120);
+  for (const tier of ['短局', '常规', '进阶']) {
+    assert.equal(pkBank.filter(level => level.tier === tier).length, 40);
+  }
   pkBank.forEach(level => assert.equal(new GameSession(level).board.boxes.length, level.boxCount));
   const p = { ...platform(), pkRooms: { setSharedRoom() {} } };
   const c = new GameController(p, releaseLevels);

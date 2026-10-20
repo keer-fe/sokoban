@@ -47,7 +47,7 @@
 | [ ] | 玩家资料授权（`profile`） | 首次进入的头像昵称用途说明、同意按钮；与首页叠加关系。 |
 | [ ] | 新手引导（`tutorial`） | 操作说明、开始尝试、跳过引导；与棋盘叠加关系。 |
 | [ ] | [首页设置视觉提案 v1](../images/visual-v1/reference/settings-modal-proposal-v1.png)（`settings`） | 待确认：音乐开启、音效与振动禁用、关闭按钮；音乐关闭状态仍待补充。 |
-| [ ] | 游戏暂停（`menu`） | 音乐/音效/振动、重新开始、放弃挑战；与游戏页叠加和底层遮罩。 |
+| [ ] | [游戏菜单视觉提案 v2](../images/visual-v1/reference/game-pause-menu-proposal-v2.png)（`menu`） | 待确认：标题改为“菜单”，弹窗内移除关卡步数并收紧高度；音乐开启、音效/振动暂未开放、重新开始与放弃挑战。当前代码菜单仍允许操作音效/振动，正式接入时需统一行为。 |
 | [ ] | [撤销卡不足视觉提案 v1](../images/visual-v1/reference/undo-cards-modal-proposal-v1.png)（`cards`） | 待确认：卡数不足说明、不可用的广告入口和返回棋盘。 |
 | [ ] | [死锁提示视觉提案 v3](../images/visual-v1/reference/deadlock-modal-proposal-v3.png)（`deadlock`） | 待确认：增加闯关失败氛围和箱子受困场景；不显示撤销卡数量，重新开始加重，撤销一步与返回棋盘并排。零卡状态仍待补充。 |
 | [ ] | [闯关成功三星视觉提案 v3](../images/visual-v1/reference/level-win-modal-proposal-v3.png)／[两星状态提案 v1](../images/visual-v1/reference/level-win-modal-two-stars-proposal-v1.png)（`win`） | 待确认：大星级为视觉中心，两星时第三颗明确未获得；仅保留下一关/返回选关。无步数、榜单、箱子插画、回放和再玩一次。单星、未标星、最后一关和存储失败仍待补充。 |

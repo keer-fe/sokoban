@@ -150,8 +150,8 @@
 
 ## 双人 PK 独立题库
 
-已从 Mas Microban 另选 24 张作为邀请式、双设备 PK 题库，见 [pk-bank.csv](pk-bank.csv) 和完整棋盘 [pk-bank.json](pk-bank.json)。短局、常规、进阶各 8 张；均为 2–4 箱，并通过小屏初筛，不与首发原始地图、后续 100 关或题库内其他地图重复。
-24/24 已通过求解器及游戏引擎逐步回放，见 [pk-bank-verification.json](pk-bank-verification.json)。分组依据一条已验证解的步数、推箱数和移出目标点次数，仍需双人试玩校准实际局长。PK 建房已从该题库抽题，合作模式继续使用原有地图。
+邀请式、双设备 PK 题库已扩为 120 张：Mas Microban 24 张、Microban III 36 张、Boxoban Unfiltered 样本 60 张。见 [pk-bank.csv](pk-bank.csv) 和完整棋盘 [pk-bank.json](pk-bank.json)。短局、常规、进阶各 40 张；均为 3–4 箱，通过小屏初筛，不与首发原始地图、后续 100 关或题库内其他地图重复。
+120/120 已通过求解器及游戏引擎逐步回放，见 [pk-bank-verification.json](pk-bank-verification.json)。分组依据一条已验证解的操作量，仍需双人试玩校准实际局长。PK 建房已从该题库抽题，合作模式继续使用原有地图。
 现有 PK 胜负按步数优先、用时打破同一步数的平局；云端房间记录玩家提交的结果。静态验证不等于两台真机的联机生命周期验证。
 
 ## 旧首轮备选池（研究记录）
