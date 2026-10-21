@@ -1,6 +1,6 @@
 # 首页资产拆分清单
 
-设计依据：[视觉规范 v1](visual-spec.md) 与 [母版原图](../images/visual-v1/reference/首页视觉母版.png)。
+设计依据：[视觉规范 v1](visual-spec.md) 与 [母版原图](../images/visual-v1/reference/首页视觉母版.png)。本文件是[全局素材清单](visual-asset-manifest.md)中 H01–H11 的拆分细则；全局复用、目录及交付状态以总清单为准。
 
 下表是生成与接入计划，除母版外均未生成。新素材保存到 `images/visual-v1/home/`；建议尺寸是导出起点，需按透明边距、显示大小和包体积复核。
 
