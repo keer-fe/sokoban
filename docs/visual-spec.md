@@ -8,9 +8,9 @@
 
 ## 已确认母版
 
-[打开母版原图](../images/visual-v1/reference/home-master-v1.png)
+[打开母版原图](../images/visual-v1/reference/首页视觉母版.png)
 
-![首页视觉母版 v1](../images/visual-v1/reference/home-master-v1.png)
+![首页视觉母版 v1](../images/visual-v1/reference/首页视觉母版.png)
 
 - 原始 PNG：941 × 1672 像素，2,145,484 字节；保留生成原件，未插值放大。
 - SHA-256：`3ff438906be98577e64b9985fbb87c138d19cdf241600250f146a18a8f177c52`。
@@ -84,7 +84,7 @@
 | `home/` | 首页背景、透明 UI 和场景分层 | 待生成 |
 | `shared/` | 后续跨页面共用的组件资产 | 待生成 |
 
-资产拆分详见 [首页资产清单](home-assets.md)。未来云端目录若启用，使用独立的 `images/visual-v1/` 命名空间；本地存在不表示云端已上传。文件名必须带版本号，替换版本需更新引用及包配置。
+资产拆分详见 [首页资产清单](home-assets.md)。未来云端目录若启用，使用独立的 `images/visual-v1/` 命名空间；本地存在不表示云端已上传。`reference/` 中的最终确认稿使用中文名称，旧版直接移除；正式运行时素材仍须带版本号，替换时更新引用及包配置。
 
 ## 旧风格处理与迁移边界
 

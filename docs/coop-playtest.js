@@ -66,10 +66,11 @@
       $('board').append(tile);
     });
     $('stats').textContent = `${history.length} 步 · 1号 ${counts[0]} / 2号 ${counts[1]}`;
+    $('chapter-progress').textContent = `已完成 ${completed.size} / ${maps.length} 关 · 当前第 ${level+1} 关`;
     $('status').textContent = message; $('status').classList.toggle('win',won());
     $('undo').disabled = !history.length; $('next').disabled = level === maps.length-1;
     $('levels').replaceChildren();
-    maps.forEach((m,i) => {const button = document.createElement('button');button.textContent = `${m[0]} ${m[1]}${completed.has(i) ? ' ✓' : ''}`;button.classList.toggle('active',i === level);button.setAttribute('aria-pressed',String(i === level));button.onclick = () => load(i);$('levels').append(button);});
+    maps.forEach((m,i) => {const button = document.createElement('button');button.textContent = `${m[0]} ${m[1]}${completed.has(i) ? ' ✓' : ''}`;button.classList.toggle('active',i === level);button.setAttribute('aria-pressed',String(i === level));button.onclick = () => { load(i); $('title').scrollIntoView({block:'start',behavior:'smooth'}); };$('levels').append(button);});
   }
   document.querySelectorAll('[data-dir]').forEach(button => button.onclick = () => move(Number(button.closest('[data-actor]').dataset.actor),button.dataset.dir));
   $('undo').onclick = undo; $('restart').onclick = () => load(level); $('next').onclick = () => {if(level < maps.length-1) load(level+1);};
