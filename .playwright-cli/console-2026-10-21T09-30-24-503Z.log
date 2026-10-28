@@ -1,0 +1,22 @@
+[      56ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:8876/tools/images/visual-v1/home/background-v1.png:0
+[      56ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:8876/tools/images/visual-v1/home/bottom-master-v1.png:0
+[      56ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:8876/tools/images/visual-v1/home/logo-v1.png:0
+[      56ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:8876/tools/images/visual-v1/home/logo-backing-v1.png:0
+[      56ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:8876/tools/images/visual-v1/home/diorama-base-v2.png:0
+[      56ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:8876/tools/images/visual-v1/home/hero-push-frames-v2.png:0
+[      56ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:8876/tools/images/visual-v1/home/button-start-v1.png:0
+[      56ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:8876/tools/images/visual-v1/home/button-ranking-v1.png:0
+[      56ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:8876/tools/images/visual-v1/home/button-levels-v1.png:0
+[      56ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:8876/tools/images/visual-v1/home/icon-settings-v1.png:0
+[      56ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:8876/tools/images/visual-v1/home/icon-game-club-v1.png:0
+[      57ms] [WARNING] Home v1 asset failed: images/visual-v1/home/background-v1.png @ http://127.0.0.1:8876/src/ui/home-visual-v1.js:43
+[      57ms] [WARNING] Home v1 asset failed: images/visual-v1/home/bottom-master-v1.png @ http://127.0.0.1:8876/src/ui/home-visual-v1.js:43
+[      57ms] [WARNING] Home v1 asset failed: images/visual-v1/home/logo-v1.png @ http://127.0.0.1:8876/src/ui/home-visual-v1.js:43
+[      57ms] [WARNING] Home v1 asset failed: images/visual-v1/home/logo-backing-v1.png @ http://127.0.0.1:8876/src/ui/home-visual-v1.js:43
+[      57ms] [WARNING] Home v1 asset failed: images/visual-v1/home/diorama-base-v2.png @ http://127.0.0.1:8876/src/ui/home-visual-v1.js:43
+[      57ms] [WARNING] Home v1 asset failed: images/visual-v1/home/hero-push-frames-v2.png @ http://127.0.0.1:8876/src/ui/home-visual-v1.js:43
+[      57ms] [WARNING] Home v1 asset failed: images/visual-v1/home/button-start-v1.png @ http://127.0.0.1:8876/src/ui/home-visual-v1.js:43
+[      57ms] [WARNING] Home v1 asset failed: images/visual-v1/home/button-ranking-v1.png @ http://127.0.0.1:8876/src/ui/home-visual-v1.js:43
+[      57ms] [WARNING] Home v1 asset failed: images/visual-v1/home/button-levels-v1.png @ http://127.0.0.1:8876/src/ui/home-visual-v1.js:43
+[      57ms] [WARNING] Home v1 asset failed: images/visual-v1/home/icon-settings-v1.png @ http://127.0.0.1:8876/src/ui/home-visual-v1.js:43
+[      57ms] [WARNING] Home v1 asset failed: images/visual-v1/home/icon-game-club-v1.png @ http://127.0.0.1:8876/src/ui/home-visual-v1.js:43

@@ -1,30 +1,26 @@
 import { homeConfig } from './config.js';
 
 export function getHomeLayout(viewport) {
-  const top = Math.max(48, viewport.safeTop + 16);
+  const top = Math.max(48, viewport.safeTop + 6);
   const bottom = viewport.height - viewport.safeBottom;
-  const shortcutWidth = 74;
-  const shortcutPositions = {
-    friends: [332, 238],
-    settings: [8, 148],
-    gameClub: [8, 238],
-  };
-  // Keep secondary actions at the edges so the animated scene stays unobstructed.
-  const groundHeight = Math.max(312, Math.min(350, bottom * 0.4));
+  const title = { x: 37, y: top, width: 340, height: 150 };
+  const sceneY = title.y + title.height + 2;
+  const startY = bottom - 266;
+  const sceneHeight = Math.max(205, Math.min(335, startY - sceneY - 16));
+  const scene = { x: -15, y: sceneY, width: 445, height: sceneHeight };
+  const toolsY = scene.y + 24;
   return {
     top,
-    title: { x: 18, y: top + 2, width: 378, height: 136 },
-    groundHeight,
-    buttons: [...homeConfig.buttons.map((button, index) => ({ ...button,
-      x: index === 0 ? 52 : 97,
-      y: index === 0 ? bottom - 196 : bottom - 90,
-      width: index === 0 ? 310 : 220,
-      height: index === 0 ? 88 : 56,
+    title,
+    scene,
+    buttons: [...homeConfig.buttons.map((button) => ({ ...button,
+      ...(button.id === 'start' ? { x: 49, y: startY, width: 316, height: 100 }
+        : button.id === 'levels' ? { x: 18, y: bottom - 150, width: 185, height: 78 }
+          : { x: 211, y: bottom - 150, width: 185, height: 78 }),
     })), ...homeConfig.shortcuts.map((shortcut) => ({ ...shortcut,
-      x: shortcutPositions[shortcut.id][0], y: top + shortcutPositions[shortcut.id][1],
-      width: shortcutWidth, height: 88, fontSize: 14,
-      labelOffset: 61,
-      nativeIconSize: shortcut.native ? 48 : undefined,
+      x: shortcut.id === 'settings' ? 12 : 346,
+      y: toolsY, width: 56, height: 56,
+      nativeIconSize: shortcut.native ? 56 : undefined,
     }))],
   };
 }

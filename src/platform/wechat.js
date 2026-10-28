@@ -80,6 +80,11 @@ export function createWechatPlatform(api) {
     friendBoard: createFriendBoard(api),
     worldLeaderboard: createWorldLeaderboard(api.cloud),
     pkRooms: createPkRooms(api),
+    inviteLeaderboardFriends() {
+      if (typeof api.shareAppMessage !== 'function') return false;
+      api.shareAppMessage({ title: '来一起玩欢乐推箱子，看看谁通关更多！' });
+      return true;
+    },
     initialPkRoom: String(api.getLaunchOptionsSync?.().query?.pkRoom || '').trim().toUpperCase(),
     initialCoopRoom: String(api.getLaunchOptionsSync?.().query?.coopRoom || '').trim().toUpperCase(),
     canRequestPlayerProfile: typeof api.getUserProfile === 'function',
@@ -105,7 +110,11 @@ export function createWechatPlatform(api) {
     gameClubButton: typeof api.createGameClubButton === 'function' ? {
       update(style) {
         if (!gameClubButton) {
-          gameClubButton = api.createGameClubButton({ icon: 'green', style: { ...style } });
+          gameClubButton = api.createGameClubButton({
+            type: 'text', text: '',
+            style: { ...style, color: 'rgba(0,0,0,0)', backgroundColor: 'rgba(0,0,0,0)',
+              borderColor: 'rgba(0,0,0,0)' },
+          });
         } else if (gameClubButton.style) {
           Object.assign(gameClubButton.style, style);
         }
@@ -126,6 +135,9 @@ export function createWechatPlatform(api) {
       },
     } : null,
     createImage: () => api.createImage(),
+    loadHomeSubpackage: typeof api.loadSubpackage === 'function' ? () => new Promise((resolve, reject) => {
+      api.loadSubpackage({ name: 'visualHome', success: resolve, fail: reject });
+    }) : null,
     vibrate: () => {
       if (typeof api.vibrateShort === 'function') api.vibrateShort({ type: 'light' });
     },

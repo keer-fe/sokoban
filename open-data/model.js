@@ -1,5 +1,5 @@
 // Changing the map catalog/order requires a new key. Keep this inside the subdomain.
-export const PROGRESS_KEY = 'sokoban.selfboot100.completed.v1';
+export const PROGRESS_KEY = 'sokoban.classic.completed.v2';
 export const PAGE_SIZE = 6;
 export function validProgress(value) {
   return Number.isInteger(value) && value >= 0 && value <= 100;

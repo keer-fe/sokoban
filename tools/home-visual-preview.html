@@ -1,0 +1,42 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><base href="/">
+<title>首页 · 连续推箱预览</title><link rel="icon" href="data:,">
+<style>
+*{box-sizing:border-box}body{background:#14291f;color:#e5efde;font:14px system-ui;margin:0;padding:28px}
+header{max-width:1100px;margin:auto auto 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+h1{font-size:22px;margin:0 0 8px}p{opacity:.8;margin:6px 0}main{display:flex;justify-content:center;gap:28px;align-items:flex-start;flex-wrap:wrap}
+.case{text-align:center}canvas{display:block;border-radius:18px;box-shadow:0 10px 40px #0005;max-height:80vh;width:auto;touch-action:none;cursor:pointer}
+button{border:1px solid #6b947c;border-radius:9px;background:#234b36;color:white;padding:10px 16px;cursor:pointer}button:hover{background:#356748}
+#status{min-height:20px;color:#ffe69a}nav{display:flex;gap:8px;flex-wrap:wrap}
+</style>
+<header><div><h1>花园里的小小努力</h1><p>花园、石路和近景持续左移；人物在中间推箱前进。</p><p id="status" role="status">真实首页 Canvas · 浏览器交互预览</p></div>
+<nav><button data-time="0">初始</button><button data-time="0.24">迈步</button><button data-time="0.48">换脚</button><button data-time="0.96">步态衔接</button><button data-time="12">道路接缝</button><button data-time="24">两轮循环</button><button id="play">连续播放</button><button id="grid">基线核对</button></nav></header>
+<main><div class="case"><p>414 × 896 · 全面屏</p><canvas id="normal" width="414" height="896" aria-label="全面屏首页"></canvas></div><div class="case"><p>320 × 568 · 短屏</p><canvas id="short" width="320" height="568" aria-label="短屏首页"></canvas></div></main>
+<script type="module">
+import {createViewport,toLogicalPoint} from '/src/core/viewport.js';
+import {HomePage} from '/src/pages/home/index.js';
+import {scrollStateAt} from '/src/pages/home/scrolling-scene.js';
+import {loadHomeVisuals,homeMotionReady} from '/src/ui/home-visual-v1.js';
+window.previews={};window.actions=[];window.fixedTime=null;
+for(const [id,info] of Object.entries({normal:{width:414,height:896,safeTop:88,safeBottom:34,pixelRatio:1},short:{width:320,height:568,safeTop:0,safeBottom:0,pixelRatio:1}})){
+ const canvas=document.getElementById(id),ctx=canvas.getContext('2d'),viewport=createViewport(info);
+ const page=new HomePage({controller:{},onAction:action=>{window.actions.push({id,action});document.getElementById('status').textContent=`${id}：${action} 已触发（预览不跳转）`;}});
+ page.resize(viewport);await loadHomeVisuals(ctx,{createImage:()=>new Image()});
+ window.previews[id]={page,viewport,canvas};
+ for(const [event,type] of [['pointerdown','start'],['pointermove','move'],['pointerup','end'],['pointercancel','cancel']]) canvas.addEventListener(event,e=>{
+  if(type==='start')canvas.setPointerCapture(e.pointerId);
+  const r=canvas.getBoundingClientRect();page.handlePointer(type,toLogicalPoint(viewport,{id:e.pointerId,x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}));
+ });
+ let origin=null;
+ function tick(ms){origin??=ms;const elapsed=window.fixedTime??(ms-origin)/1000;
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.setTransform(viewport.scale,0,0,viewport.scale,viewport.offsetX,0);
+  page.render(ctx,elapsed);
+  if(window.showGrid){const s=scrollStateAt(elapsed,viewport,page.layout.scene);ctx.save();ctx.strokeStyle='#FF5AA5';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,s.baseline);ctx.lineTo(viewport.width,s.baseline);ctx.stroke();ctx.strokeStyle='#12F4FF';ctx.strokeRect(0,s.roadY,viewport.width,s.roadHeight);ctx.restore();}
+  canvas.dataset.ready=String(homeMotionReady(ctx));requestAnimationFrame(tick);
+ }requestAnimationFrame(tick);
+}
+window.setPhase=t=>{window.fixedTime=t;for(const {page} of Object.values(window.previews)){page.sceneOrigin=0;page.elapsed=t-.016;}};
+document.querySelectorAll('[data-time]').forEach(b=>b.onclick=()=>window.setPhase(Number(b.dataset.time)));
+document.getElementById('play').onclick=()=>{window.fixedTime=null;for(const {page} of Object.values(window.previews))page.sceneOrigin=null;};
+document.getElementById('grid').onclick=()=>window.showGrid=!window.showGrid;
+window.__previewReady=true;
+</script></html>

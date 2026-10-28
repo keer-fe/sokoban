@@ -8,7 +8,7 @@ import { createWechatPlatform, normalizeWechatWindowInfo } from '../src/platform
 import { drawHomeBackground, drawHomeIcon, drawHomeSpriteFrame, drawLevelsBackground,
   homeBackgroundSource, homeIconFileIDs, homeIconSources, localPushAnimationSources,
   loadHomeIcons } from '../src/ui/home-icons.js';
-import { HOME_FONT_FILE_ID, loadHomeFont } from '../src/ui/home-font.js';
+import { HOME_FONT_PATH, loadHomeFont } from '../src/ui/home-font.js';
 import { drawPushAnimation } from '../src/pages/home/push-animation.js';
 
 test('微信模拟器胶囊返回空对象时使用安全区域回退，所有绘制坐标保持有效', () => {
@@ -44,33 +44,33 @@ test('首页在短屏、全面屏及横屏中不遮挡按钮，坐标转换不�
       const layout = getHomeLayout(viewport);
       assert.ok(layout.top * viewport.scale >= safeTop);
       const bottom = viewport.height - viewport.safeBottom;
-      const groundTop = bottom - layout.groundHeight;
-      assert.ok(layout.title.y + layout.title.height < groundTop - 36);
+      assert.ok(layout.title.y >= viewport.safeTop);
+      assert.ok(layout.title.y + layout.title.height < layout.scene.y);
+      assert.ok(layout.scene.y + layout.scene.height < bottom - 250);
       const shortcuts = layout.buttons.filter(button => button.icon);
       shortcuts.forEach(button => {
         assert.ok(button.y > layout.title.y + layout.title.height);
-        assert.ok(button.y + button.height < groundTop - 36);
+        assert.ok(button.y + button.height < layout.scene.y + layout.scene.height);
       });
-      assert.deepEqual(shortcuts.map(button => button.x), [332, 8]);
-      assert.deepEqual(shortcuts.map(button => button.y),
-        [layout.top + 238, layout.top + 148]);
+      assert.deepEqual(shortcuts.map(button => button.x), [12]);
+      assert.deepEqual(shortcuts.map(button => button.y), [layout.scene.y + 24]);
       const gameClub = layout.buttons.find(button => button.id === 'gameClub');
       assert.deepEqual({ x: gameClub.x, y: gameClub.y, native: gameClub.native,
-        labelOffset: gameClub.labelOffset, nativeIconSize: gameClub.nativeIconSize },
-      { x: 8, y: layout.top + 238, native: true, labelOffset: 61, nativeIconSize: 48 });
-      assert.equal(gameClub.labelOffset, shortcuts[0].labelOffset);
-      assert.ok(gameClub.nativeIconSize < gameClub.labelOffset);
-      const mainButtons = layout.buttons.filter(button => ['start', 'levels'].includes(button.id));
+        nativeIconSize: gameClub.nativeIconSize },
+      { x: 346, y: layout.scene.y + 24, native: true, nativeIconSize: 56 });
+      const mainButtons = layout.buttons.filter(button => ['start', 'levels', 'friends'].includes(button.id));
       mainButtons.forEach(button => {
-        assert.ok(button.y > groundTop);
+        assert.ok(button.y > layout.scene.y + layout.scene.height);
         assert.ok(button.y + button.height < bottom);
       });
       assert.deepEqual(mainButtons.map(({ x, width, height }) => ({ x, width, height })), [
-        { x: 52, width: 310, height: 88 },
-        { x: 97, width: 220, height: 56 },
+        { x: 49, width: 316, height: 100 },
+        { x: 18, width: 185, height: 78 },
+        { x: 211, width: 185, height: 78 },
       ]);
-      assert.equal(mainButtons[1].y + mainButtons[1].height, bottom - 34);
-      assert.equal(mainButtons[1].y - (mainButtons[0].y + mainButtons[0].height), 18);
+      assert.equal(mainButtons[1].y + mainButtons[1].height, bottom - 72);
+      assert.equal(mainButtons[1].y, mainButtons[2].y);
+      assert.equal(mainButtons[1].y - (mainButtons[0].y + mainButtons[0].height), 16);
       assert.ok(mainButtons[0].width > mainButtons[1].width);
       assert.ok(mainButtons[0].height > mainButtons[1].height);
       layout.buttons.forEach((button) => {
@@ -80,7 +80,7 @@ test('首页在短屏、全面屏及横屏中不遮挡按钮，坐标转换不�
         assert.ok(Math.abs(point.x - center.x) < 0.001 && Math.abs(point.y - center.y) < 0.001);
       });
       assert.deepEqual(layout.buttons.filter(button => button.icon).map(button => button.id),
-        ['friends', 'settings']);
+        ['settings']);
     }
   }
 });
@@ -265,15 +265,14 @@ test('微信平台缺少云下载接口时兼容签名地址解析', async () =>
   assert.equal(urls.title, 'https://signed.example/title-xiangbudao8-text-v2.png?token=test');
 });
 
-test('首页艺术字体通过 fileID 获取临时地址，平台不支持时安全回退', async () => {
+test('首页艺术字体从本地文件加载，平台不支持时安全回退', async () => {
   let requested;
   let settled = 0;
   loadHomeFont({
     loadFont(url) { requested = url; return 'loaded-font'; },
-    resolveCloudFiles: ({ homeFont }) => Promise.resolve({ homeFont: `signed:${homeFont}` }),
   }, () => { settled += 1; });
   await new Promise((resolve) => setTimeout(resolve, 0));
-  assert.equal(requested, `signed:${HOME_FONT_FILE_ID}`);
+  assert.equal(requested, HOME_FONT_PATH);
   assert.equal(settled, 1);
   assert.ok(loadHomeFont({}));
 });
@@ -296,25 +295,15 @@ test('微信平台先下载远程字体，再通过临时文件路径加载', as
   assert.equal(loaded, 'wxfile://tmp/font.ttf');
 });
 
-test('微信平台通过云文件 ID 下载字体，不依赖 downloadFile 域名白名单', async () => {
-  let downloaded;
+test('微信平台直接加载包内字体', () => {
   let loaded;
   const api = {
     createCanvas: () => ({}),
     getOpenDataContext: () => null,
-    cloud: {
-      init() {},
-      downloadFile({ fileID, success }) {
-        downloaded = fileID;
-        success({ tempFilePath: 'wxfile://cloud/font.ttf' });
-      },
-    },
-    loadFont(path) { loaded = path; return 'cloud-font'; },
+    loadFont(path) { loaded = path; return 'local-font'; },
   };
-  const platform = createWechatPlatform(api);
-  assert.equal(await platform.loadCloudFont(HOME_FONT_FILE_ID), 'cloud-font');
-  assert.equal(downloaded, HOME_FONT_FILE_ID);
-  assert.equal(loaded, 'wxfile://cloud/font.ttf');
+  assert.equal(createWechatPlatform(api).loadFont(HOME_FONT_PATH), 'local-font');
+  assert.equal(loaded, HOME_FONT_PATH);
 });
 
 test('微信原生游戏圈按钮按首页布局创建、显隐并销毁', () => {
@@ -333,7 +322,8 @@ test('微信原生游戏圈按钮按首页布局创建、显隐并销毁', () =>
   });
   platform.gameClubButton.update({ left: 320, top: 240, width: 52, height: 52 });
   assert.deepEqual(options, {
-    icon: 'green', style: { left: 320, top: 240, width: 52, height: 52 },
+    type: 'text', text: '', style: { left: 320, top: 240, width: 52, height: 52,
+      color: 'rgba(0,0,0,0)', backgroundColor: 'rgba(0,0,0,0)', borderColor: 'rgba(0,0,0,0)' },
   });
   platform.gameClubButton.show();
   platform.gameClubButton.update({ left: 300, top: 220, width: 48, height: 48 });

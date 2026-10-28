@@ -1,0 +1,12 @@
+- generic [active] [ref=f5e1]:
+  - banner [ref=f5e2]:
+    - heading "首页中央动画 · 原稿对照" [level=2] [ref=f5e3]
+    - paragraph [ref=f5e4]: 左侧为母版，右侧调用正式素材和动画逻辑。人物 16 帧 / 1.6 秒循环，手掌与脚底固定；目标底格静止，光效独立。拖动时间轴可逐帧检查。
+    - button "暂停" [ref=f5e5]
+    - generic [ref=f5e6]:
+      - text: 时间
+      - slider "时间" [ref=f5e7]: "0"
+      - status [ref=f5e8]: 0.00 s
+  - main [ref=f5e9]:
+    - figure "原始母版" [ref=f5e10]
+    - figure "运行时动画" [ref=f5e13]

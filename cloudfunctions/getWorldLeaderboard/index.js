@@ -4,7 +4,7 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
 const db = cloud.database();
 const PLAYERS = 'leaderboard_players';
-const SCORE_VERSION = 1;
+const SCORE_VERSION = 2;
 
 function anonymousName(openid) {
   let hash = 2166136261;
@@ -24,7 +24,6 @@ exports.main = async (event = {}) => {
   const result = await db.collection(PLAYERS)
     .where({ scoreVersion })
     .orderBy('completed', 'desc')
-    .orderBy('totalStars', 'desc')
     .orderBy('updatedAt', 'asc')
     .limit(limit)
     .get();
@@ -32,13 +31,12 @@ exports.main = async (event = {}) => {
   let rank = 0;
   let previousScore = null;
   const rows = result.data.map((player, index) => {
-    const score = `${player.completed}:${player.totalStars}`;
+    const score = player.completed;
     if (score !== previousScore) rank = index + 1;
     previousScore = score;
     return {
       rank,
       completed: player.completed,
-      totalStars: player.totalStars,
       nickname: typeof player.nickname === 'string' && player.nickname.trim()
         ? player.nickname.trim().slice(0, 16) : anonymousName(player._id),
       avatarUrl: typeof player.avatarUrl === 'string' ? player.avatarUrl.trim().slice(0, 1024) : '',

@@ -63,6 +63,10 @@ export class ProgressStore {
   }
   get allComplete() { return this.catalog.every(({ id }) => this.state.records[id]); }
   get completedLevels() { return this.catalog.filter(level => this.state.records[level.id]).length; }
+  get classicCompletedLevels() {
+    return this.catalog.filter(level => (level.campaign || 'classic') === 'classic'
+      && this.state.records[level.id]).length;
+  }
   get totalStars() {
     return this.catalog.reduce((total, level) => total + (this.state.records[level.id]?.stars || 0), 0);
   }

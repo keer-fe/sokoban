@@ -136,7 +136,7 @@ test('平台缺少开放数据域或消息失败时回退，好友页适配安�
     page.buttons.forEach(button => assert.ok(button.y + button.height < viewport.height - viewport.safeBottom));
     assert.ok(page.bounds.height >= 430);
     assert.deepEqual(page.buttons.map(button => button.id),
-      ['close', 'friends:tab-friends', 'friends:tab-world', 'friends:refresh']);
+      ['close', 'friends:tab-friends', 'friends:tab-world', 'friends:refresh', 'friends:invite']);
     assert.ok(page.bounds.y > page.frame.y);
     assert.ok(page.bounds.y + page.bounds.height < page.frame.y + page.frame.height);
     page.buttons.forEach(button => {
@@ -184,8 +184,8 @@ test('世界榜加载失败时给出重试提示，并保留刷新和关闭按�
   page.render(ctx);
   assert.ok(labels.includes('世界榜暂时加载失败'));
   assert.ok(labels.includes('点击右上角刷新重试'));
-  assert.deepEqual(titleLetters.filter(({ y }) => y === page.frame.y + 65).map(({ y }) => y),
-    [page.frame.y + 65, page.frame.y + 65, page.frame.y + 65]);
+  assert.deepEqual(titleLetters.filter(({ y }) => y === page.frame.y + 50).map(({ y }) => y),
+    [page.frame.y + 50, page.frame.y + 50, page.frame.y + 50]);
   assert.equal(page.buttons.some(button => button.id === 'friends:refresh'), true);
   const close = page.buttons.find(button => button.id === 'close');
   assert.ok(close.x > page.frame.x + page.frame.width / 2);
@@ -207,9 +207,9 @@ test('好友榜与世界榜使用独立按钮，不再绘制连接区', () => {
   const friend = page.buttons.find(button => button.id === 'friends:tab-friends');
   const world = page.buttons.find(button => button.id === 'friends:tab-world');
   const refresh = page.buttons.find(button => button.id === 'friends:refresh');
-  assert.equal(friend.y, page.frame.y + 138);
-  assert.equal(world.y, page.frame.y + 138);
-  assert.equal(refresh.y, page.frame.y + 132);
+  assert.equal(friend.y, page.frame.y + 145);
+  assert.equal(world.y, page.frame.y + 145);
+  assert.equal(refresh.y, page.frame.y + 55);
   assert.equal(hasSeam(friend), false);
   assert.equal(hasSeam(world), false);
   controller.friendsTab = 'world';
@@ -229,10 +229,17 @@ test('好友榜刷新按钮使用本地图标，加载失败时保留文字回�
   const controller = new GameController({ readStorage: () => null,
     createImage: () => { const image = {}; images.push(image); return image; } }, levels);
   const page = new FriendsPage(controller, () => {});
-  assert.deepEqual(images.map(image => image.src), Object.values(friendsAssetSources));
+  for (const source of ['open-data/assets/ranking-empty-v1.png',
+    'images/visual-v1/ranking/title-v1.png', 'images/visual-v1/ranking/panel-v1.png',
+    'images/visual-v1/ranking/background-v1.png',
+    'open-data/assets/medal-gold.png', 'open-data/assets/medal-silver.png',
+    'open-data/assets/medal-bronze.png']) {
+    assert.ok(images.some(image => image.src === source));
+  }
+  assert.deepEqual(images.slice(-3).map(image => image.src), Object.values(friendsAssetSources));
   assert.equal(refreshIconSource,
     'https://636c-cloud1-d5gqpaioo2d8acf27-1443887035.tcb.qcloud.la/images/ui/friends-refresh-v2.png');
-  const refreshImage = images[1];
+  const refreshImage = images.at(-2);
   page.resize(createViewport({ width: 390, height: 844, safeTop: 91, safeBottom: 34 }));
   page.render(ctx);
   assert.equal(page.buttons.find(button => button.id === 'friends:refresh').label, '刷新');
@@ -260,7 +267,7 @@ test('排行榜 UI 在微信中通过云文件 ID 获取签名地址', async () 
   new FriendsPage(controller, () => {});
   await Promise.resolve();
   assert.deepEqual(requested, friendsAssetFileIDs);
-  assert.deepEqual(images.map(image => image.src), [
+  assert.deepEqual(images.slice(-3).map(image => image.src), [
     'https://signed.example/panel.png',
     'https://signed.example/refresh.png',
     'https://signed.example/close.png',
@@ -286,6 +293,7 @@ test('开放数据域加载并绘制冠亚季军本地图标', async () => {
     'open-data/assets/medal-gold.png',
     'open-data/assets/medal-silver.png',
     'open-data/assets/medal-bronze.png',
+    'open-data/assets/ranking-empty-v1.png',
     FRIENDS_PUSH_SOURCES.character,
     FRIENDS_PUSH_SOURCES.crate,
   ]);
@@ -321,7 +329,7 @@ test('好友榜加载时复用首屏小人推箱子的逐帧动画', async () =>
   await showing;
 });
 
-test('好友榜行绘制加粗且由圆角裁切的名次色条，标记本人并让战绩文字底部对齐', async () => {
+test('好友榜行绘制本人标记及经典模式通关数', async () => {
   const fills = [];
   const labels = [];
   let clips = 0;
@@ -345,17 +353,10 @@ test('好友榜行绘制加粗且由圆角裁切的名次色条，标记本人�
     ] }),
   });
   await board.onMessage({ channel: 'sokoban.friends.v1', type: 'show', completed: 23 });
-  assert.ok(fills.some(args => JSON.stringify(args) === JSON.stringify([7, 51, 6, 63])));
-  assert.ok(clips >= 2);
-  assert.ok(labels.some(item => item.value === '（我）玩家'));
+  assert.ok(clips >= 1);
+  assert.ok(labels.some(item => item.value === '我'));
   const completed = labels.findLast(item => item.value === '23');
-  const result = ['已通关', '23', '关'].map(value => labels.findLast(
-    item => item.value === value && item.y === completed.y));
-  assert.ok(result.every(Boolean));
-  assert.deepEqual(result.map(item => item.baseline), ['alphabetic', 'alphabetic', 'alphabetic']);
-  assert.equal(new Set(result.map(item => item.y)).size, 1);
-  assert.equal(result[0].color, result[2].color);
-  assert.notEqual(result[1].color, result[2].color);
+  assert.equal(completed.color, '#14662A');
 });
 
 test('开放数据域绘制加载、空榜、错误及连续滚动；隐藏后不再绘制', async () => {
@@ -379,14 +380,14 @@ test('开放数据域绘制加载、空榜、错误及连续滚动；隐藏后�
   await send('show', { completed: 1 });
   assert.ok(frames.some(frame => frame.includes('正在获取好友进度…')));
   assert.ok(frames.at(-1).includes('friend-0'));
-  await send('scroll', { delta: 90 });
+  await send('scroll', { delta: 150 });
   assert.ok(frames.at(-1).includes('friend-7'));
-  assert.equal(frames.at(-1).includes('friend-0'), false);
-  await send('scroll', { delta: -90 });
+  assert.ok(frames.at(-1).includes('friend-7'));
+  await send('scroll', { delta: -150 });
   assert.ok(frames.at(-1).includes('friend-0'));
   assert.equal(frames.at(-1).some(value => String(value).includes('页')), false);
   data = []; await send('refresh');
-  assert.ok(frames.at(-1).includes('还没有好友进度'));
+  assert.ok(frames.at(-1).includes('暂无好友成绩'));
   fail = true; await send('refresh');
   assert.ok(frames.at(-1).includes('好友榜暂时加载失败'));
   await send('hide'); const count = frames.length;

@@ -1,5 +1,8 @@
 {
   "deviceOrientation": "portrait",
   "openDataContext": "open-data",
+  "subPackages": [
+    { "name": "visualHome", "root": "images/visual-v1/home/" }
+  ],
   "showStatusBar": false
 }

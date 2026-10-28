@@ -1,0 +1,29 @@
+{
+  "scale": 0.42,
+  "palm": [
+    456.0,
+    739.0
+  ],
+  "results": [
+    {
+      "pose": 0,
+      "lowerSilhouetteSamples": 222,
+      "minimumClearanceMasterPixels": 16.845
+    },
+    {
+      "pose": 1,
+      "lowerSilhouetteSamples": 236,
+      "minimumClearanceMasterPixels": 15.627
+    },
+    {
+      "pose": 2,
+      "lowerSilhouetteSamples": 235,
+      "minimumClearanceMasterPixels": 15.427
+    },
+    {
+      "pose": 3,
+      "lowerSilhouetteSamples": 248,
+      "minimumClearanceMasterPixels": 5.285
+    }
+  ]
+}

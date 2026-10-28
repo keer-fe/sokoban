@@ -8,6 +8,23 @@ import { cloudUIFileID, publicUISource } from '../../ui/cloud-assets.js';
 const WOOD = '#A85E2E';
 const DARK_WOOD = '#4A2716';
 const GOLD = '#FFD15E';
+const INK = '#753015';
+function fitName(ctx, value, maxWidth) {
+  const chars = Array.from(String(value || '玩家'));
+  while (chars.length && ctx.measureText(`${chars.join('')}…`).width > maxWidth) chars.pop();
+  return chars.length === Array.from(String(value || '玩家')).length ? chars.join('') : `${chars.join('')}…`;
+}
+function star(ctx, x, y, radius = 11) {
+  ctx.save(); ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5;
+    const r = i % 2 ? radius * .48 : radius;
+    const px = x + Math.cos(a) * r, py = y + Math.sin(a) * r;
+    if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+  }
+  ctx.closePath(); ctx.fillStyle = '#FFD13D'; ctx.strokeStyle = '#A94A12';
+  ctx.lineWidth = 2; ctx.fill(); ctx.stroke(); ctx.restore();
+}
 export const friendsAssetSources = {
   panel: publicUISource('friends-panel-v4.png'),
   refresh: publicUISource('friends-refresh-v2.png'),
@@ -27,6 +44,40 @@ export class FriendsPage extends Screen {
     this.worldScrollY = 0;
     this.worldAvatars = new Map();
     this.assets = {};
+    this.rankingEmpty = null;
+    this.rankingTitle = null;
+    this.rankingPanel = null;
+    this.rankingBackground = null;
+    this.medals = [];
+    if (controller.platform.createImage) {
+      this.medals = ['gold', 'silver', 'bronze'].map((color) => {
+        const entry = { image: controller.platform.createImage(), ready: false };
+        entry.image.onload = () => { entry.ready = true; };
+        entry.image.onerror = () => { entry.ready = false; };
+        entry.image.src = `open-data/assets/medal-${color}.png`;
+        return entry;
+      });
+      const entry = { image: controller.platform.createImage(), ready: false };
+      entry.image.onload = () => { entry.ready = true; };
+      entry.image.onerror = () => { entry.ready = false; };
+      entry.image.src = 'open-data/assets/ranking-empty-v1.png';
+      this.rankingEmpty = entry;
+      const title = { image: controller.platform.createImage(), ready: false };
+      title.image.onload = () => { title.ready = true; };
+      title.image.onerror = () => { title.ready = false; };
+      title.image.src = 'images/visual-v1/ranking/title-v1.png';
+      this.rankingTitle = title;
+      const panelArt = { image: controller.platform.createImage(), ready: false };
+      panelArt.image.onload = () => { panelArt.ready = true; };
+      panelArt.image.onerror = () => { panelArt.ready = false; };
+      panelArt.image.src = 'images/visual-v1/ranking/panel-v1.png';
+      this.rankingPanel = panelArt;
+      const background = { image: controller.platform.createImage(), ready: false };
+      background.image.onload = () => { background.ready = true; };
+      background.image.onerror = () => { background.ready = false; };
+      background.image.src = 'images/visual-v1/ranking/background-v1.png';
+      this.rankingBackground = background;
+    }
     if (controller.platform.createImage) Object.entries(friendsAssetSources).forEach(([name, fallback]) => {
       const entry = { image: controller.platform.createImage(), ready: false };
       entry.image.onload = () => { entry.ready = true; };
@@ -51,46 +102,61 @@ export class FriendsPage extends Screen {
 
   layout() {
     this.swipe = null;
-    const safeTop = this.viewport.safeTop + 12;
+    const safeTop = this.viewport.safeTop + 4;
     const bottom = this.viewport.height - this.viewport.safeBottom;
-    const frameHeight = Math.min(842, bottom - safeTop - 12);
-    const top = safeTop + Math.max(0, (bottom - safeTop - 12 - frameHeight) / 2);
+    const frameHeight = Math.min(720, bottom - safeTop - 8);
+    const top = safeTop;
     this.frame = { x: 18, y: top, width: 378, height: frameHeight };
-    this.bounds = { x: 55, y: top + 184, width: 304, height: frameHeight - 288 };
+    this.bounds = { x: 42, y: top + 200, width: 330, height: frameHeight - 228 };
     this.buttons = [
-      { id: 'close', label: '×', x: 337, y: top + 18, width: 48, height: 48,
+      { id: 'close', label: '×', x: 349, y: top + 37, width: 46, height: 46,
         fontSize: 29, fill: GOLD, color: DARK_WOOD },
-      { id: 'friends:tab-friends', label: '好友榜', x: 58, y: top + 138, width: 88, height: 38 },
-      { id: 'friends:tab-world', label: '世界榜', x: 152, y: top + 138, width: 88, height: 38 },
+      { id: 'friends:tab-friends', label: '好友榜', x: 68, y: top + 145, width: 139, height: 52 },
+      { id: 'friends:tab-world', label: '世界榜', x: 207, y: top + 145, width: 139, height: 52 },
     ];
     this.buttons.push(
-      { id: 'friends:refresh', label: '刷新', x: 303, y: top + 132, width: 52, height: 52,
+      { id: 'friends:refresh', label: '刷新', x: 36, y: top + 55, width: 49, height: 49,
         fontSize: 12, fill: '#FFE7A1', color: DARK_WOOD });
+    this.buttons.push({ id: 'friends:invite', label: '邀请好友', x: 116,
+      y: top + frameHeight - 77, width: 182, height: 48 });
     const bridge = this.controller.platform.friendBoard;
     if (bridge) bridge.send('resize', { width: this.bounds.width, height: this.bounds.height,
       pixelRatio: Math.min(3, this.viewport.pixelRatio), fontFamily: getHomeFont() });
   }
   render(ctx, elapsed = 0) {
     const { width, height } = this.viewport;
-    ctx.fillStyle = 'rgba(18, 43, 43, 0.52)';
-    ctx.fillRect(0, 0, width, height);
+    if (this.rankingBackground?.ready) {
+      const source = this.rankingBackground.image;
+      const iw = source.width || 941, ih = source.height || 1672;
+      const cropWidth = Math.min(iw, ih * width / height);
+      ctx.drawImage(source, (iw - cropWidth) / 2, 0, cropWidth, ih, -50, 0, width + 100, height);
+    } else {
+      ctx.fillStyle = 'rgba(18, 43, 43, 0.15)';
+      ctx.fillRect(0, 0, width, height);
+    }
 
     const { y: top, height: frameHeight } = this.frame;
-    if (this.assets.panel?.ready) {
-      ctx.drawImage(this.assets.panel.image, -2, top - 18, 418, frameHeight + 42);
-    }
+    if (this.rankingPanel?.ready) ctx.drawImage(this.rankingPanel.image,
+      18, top + 70, 378, frameHeight - 70);
     else {
-      panel(ctx, 18, top, 378, frameHeight,
-        { fill: WOOD, stroke: DARK_WOOD, lineWidth: 5, radius: 22, shadow: DARK_WOOD, offset: 7 });
-      panel(ctx, 89, top + 17, 236, 70,
-        { fill: '#C97828', stroke: DARK_WOOD, lineWidth: 4, radius: 18 });
+      panel(ctx, 18, top + 70, 378, frameHeight - 70,
+        { fill: '#FFF2D2', stroke: '#24A829', lineWidth: 7, radius: 30, shadow: '#8A390F', offset: 5 });
+      panel(ctx, 21, top + 72, 372, frameHeight - 76,
+        { fill: '#FFF4DC', stroke: '#DDA052', lineWidth: 2, radius: 28 });
     }
-    text(ctx, '排行榜', 207, top + 65,
-      { size: 34, color: '#FFF2B5', outline: 5, font: getHomeFont(), spacing: 2 });
+    panel(ctx, 80, top + 4, 254, 90,
+      { fill: '#A9571D', stroke: '#713016', lineWidth: 5, radius: 34, shadow: '#7E421E', offset: 5 });
+    if (this.rankingTitle?.ready) ctx.drawImage(this.rankingTitle.image, 65, top - 4, 284, 112);
+    else text(ctx, '排行榜', 207, top + 50,
+      { size: 42, color: '#FFF7E7', outline: 5, font: getHomeFont(), spacing: 2 });
     const isWorld = this.controller.friendsTab === 'world';
 
     const { x, y, width: boardWidth, height: boardHeight } = this.bounds;
     this.drawTabs(ctx);
+    panel(ctx, x, y, boardWidth, 29, { fill: '#F8D9A6', lineWidth: 0, radius: 9 });
+    text(ctx, '排名', x + 31, y + 15, { size: 16, color: INK, font: getHomeFont() });
+    text(ctx, '玩家', x + 143, y + 15, { size: 16, color: INK, font: getHomeFont() });
+    text(ctx, '战绩', x + 291, y + 15, { size: 16, color: INK, font: getHomeFont() });
     const bridge = this.controller.platform.friendBoard;
     if (isWorld) {
       this.drawWorldBoard(ctx, x, y, boardWidth, boardHeight);
@@ -100,6 +166,10 @@ export class FriendsPage extends Screen {
         { size: 17, color: DARK_WOOD });
       text(ctx, '请稍后刷新重试', 207, y + boardHeight / 2 + 18,
         { size: 13, color: '#8C674C' });
+    }
+    const invite = this.buttons.find(button => button.id === 'friends:invite');
+    if (invite) {
+      invite.disabled = isWorld;
     }
     const refreshButton = this.buttons.find((button) => button.id === 'friends:refresh');
     if (refreshButton) refreshButton.label = this.assets.refresh?.ready ? '' : '刷新';
@@ -124,8 +194,18 @@ export class FriendsPage extends Screen {
         refreshButton.y + refreshButton.height / 2,
         { size: 14, color: '#FFF5CE', outline: 2 });
     }
-    text(ctx, '上下滑动 · 查看完整榜单', 207, top + frameHeight - 69,
-      { size: 12, color: '#FFECC0', outline: 2, spacing: 1 });
+    if (isWorld && this.controller.worldBoard.state === 'loading' && this.controller.worldBoard.rows.length) {
+      panel(ctx, x, y + 30, boardWidth, boardHeight - 31,
+        { fill: 'rgba(73, 47, 32, 0.42)', lineWidth: 0, radius: 10 });
+      text(ctx, '正在刷新…', 207, y + boardHeight / 2,
+        { size: 24, color: '#FFFFFF', outline: 3, font: getHomeFont() });
+    }
+    if (isWorld && this.controller.worldBoard.state === 'error' && this.controller.worldBoard.rows.length) {
+      panel(ctx, x + 30, y + boardHeight - 66, boardWidth - 60, 42,
+        { fill: '#FFF2CE', stroke: '#B85E2A', lineWidth: 2, radius: 13 });
+      text(ctx, '刷新失败，请重试', 207, y + boardHeight - 45,
+        { size: 16, color: INK, font: getHomeFont() });
+    }
   }
 
   drawWorldBoard(ctx, x, y, width, height) {
@@ -134,12 +214,12 @@ export class FriendsPage extends Screen {
       this.controller.loadWorldLeaderboard();
       board = this.controller.worldBoard;
     }
-    if (board.state === 'idle' || board.state === 'loading') {
+    if ((board.state === 'idle' || board.state === 'loading') && !board.rows.length) {
       text(ctx, '正在获取世界排名…', x + width / 2, y + height / 2,
         { size: 17, color: DARK_WOOD, font: getHomeFont() });
       return;
     }
-    if (board.state === 'error') {
+    if (board.state === 'error' && !board.rows.length) {
       text(ctx, '世界榜暂时加载失败', x + width / 2, y + height / 2 - 13,
         { size: 17, color: DARK_WOOD, font: getHomeFont() });
       text(ctx, '点击右上角刷新重试', x + width / 2, y + height / 2 + 20,
@@ -147,6 +227,8 @@ export class FriendsPage extends Screen {
       return;
     }
     if (!board.rows.length) {
+      if (this.rankingEmpty?.ready) ctx.drawImage(this.rankingEmpty.image,
+        x + 22, y + 54, width - 44, Math.min(220, height - 125));
       text(ctx, '还没有世界榜成绩', x + width / 2, y + height / 2 - 13,
         { size: 17, color: DARK_WOOD, font: getHomeFont() });
       text(ctx, '完成一关后就会出现在这里', x + width / 2, y + height / 2 + 20,
@@ -154,14 +236,11 @@ export class FriendsPage extends Screen {
       return;
     }
 
-    const headerHeight = 30;
-    const rowHeight = 62;
+    const headerHeight = 36;
+    const rowHeight = 75;
     const viewHeight = height - headerHeight;
     const maxScroll = Math.max(0, board.rows.length * rowHeight - viewHeight);
     this.worldScrollY = Math.max(0, Math.min(maxScroll, this.worldScrollY));
-    text(ctx, '排名', x + 18, y + 14, { size: 11, color: '#8C674C' });
-    text(ctx, '玩家', x + 96, y + 14, { size: 11, color: '#8C674C' });
-    text(ctx, '战绩', x + width - 20, y + 14, { size: 11, color: '#8C674C', align: 'right' });
     ctx.save();
     ctx.beginPath();
     ctx.rect(x, y + headerHeight, width, viewHeight);
@@ -169,22 +248,27 @@ export class FriendsPage extends Screen {
     board.rows.forEach((row, index) => {
       const rowY = y + headerHeight + index * rowHeight - this.worldScrollY;
       if (rowY + rowHeight < y + headerHeight || rowY > y + height) return;
-      panel(ctx, x + 2, rowY + 3, width - 7, rowHeight - 7, {
-        fill: row.isMe ? '#E5F6D8' : index % 2 ? '#FFFDF6' : '#FFF7E7',
-        stroke: row.rank <= 3 ? ['#E9B640', '#AAB5A1', '#D69B67'][row.rank - 1] : '#E8D7B5',
+      panel(ctx, x + 1, rowY + 2, width - 4, rowHeight - 5, {
+        fill: row.isMe ? '#E0F9D7' : row.rank === 1 ? '#FFF0BC' : '#FFF8E9',
+        stroke: row.isMe ? '#5ED866' : '#EEC997',
         lineWidth: row.isMe ? 2 : 1,
         radius: 13,
       });
-      const rankLabel = row.rank <= 3 ? ['🥇', '🥈', '🥉'][row.rank - 1] : `#${row.rank}`;
-      text(ctx, rankLabel, x + 25, rowY + rowHeight / 2,
-        { size: row.rank <= 3 ? 19 : 15, color: '#985322' });
-      this.drawWorldAvatar(ctx, row, x + 65, rowY + rowHeight / 2, 18);
-      text(ctx, row.isMe ? `（我）${row.nickname}` : row.nickname, x + 89, rowY + rowHeight / 2 - 8,
-        { size: 13, color: DARK_WOOD, align: 'left' });
-      text(ctx, `${row.totalStars} 星`, x + 89, rowY + rowHeight / 2 + 13,
-        { size: 10, color: '#9A795C', align: 'left' });
-      text(ctx, `${row.completed} 关`, x + width - 14, rowY + rowHeight / 2,
-        { size: 17, color: '#2F8A3B', align: 'right', font: getHomeFont() });
+      const cy = rowY + rowHeight / 2;
+      if (row.rank <= 3) {
+        const medal = this.medals[row.rank - 1];
+        if (medal?.ready) ctx.drawImage(medal.image, x + 9, cy - 24, 48, 48);
+        else circle(ctx, x + 33, cy, 24, ['#FFC832', '#BDD7EA', '#DCA06E'][row.rank - 1], 3, '#934716');
+      }
+      if (row.rank > 3 || !this.medals[row.rank - 1]?.ready) text(ctx, String(row.rank), x + 33, cy,
+        { size: row.rank <= 3 ? 22 : 23, color: row.isMe ? '#14662A' : INK, font: getHomeFont() });
+      this.drawWorldAvatar(ctx, row, x + 91, cy, 24);
+      ctx.font = `bold 16px ${getHomeFont()}`;
+      text(ctx, fitName(ctx, row.isMe ? '我' : row.nickname, 104), x + 130, cy,
+        { size: 16, color: row.isMe ? '#14662A' : INK, align: 'left', font: getHomeFont() });
+      star(ctx, x + width - 79, cy, 12);
+      text(ctx, String(row.completed), x + width - 15, cy,
+        { size: 22, color: row.isMe ? '#14662A' : INK, align: 'right', font: getHomeFont() });
     });
     ctx.restore();
   }
@@ -199,8 +283,11 @@ export class FriendsPage extends Screen {
       this.worldAvatars.set(row.avatarUrl, entry);
     }
     ctx.save();
+    panel(ctx, centerX - radius, centerY - radius, radius * 2, radius * 2,
+      { fill: '#E2C899', stroke: '#FFFFFF', lineWidth: 2, radius: 11 });
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.roundRect(centerX - radius + 2, centerY - radius + 2,
+      radius * 2 - 4, radius * 2 - 4, 9);
     ctx.clip();
     if (entry?.ready) ctx.drawImage(entry.image, centerX - radius, centerY - radius, radius * 2, radius * 2);
     else {
@@ -217,12 +304,11 @@ export class FriendsPage extends Screen {
       const active = button.id === `friends:tab-${this.controller.friendsTab}`;
       const { x, y, width, height } = button;
       panel(ctx, x, y, width, height, {
-        fill: active ? '#55B941' : '#FFE6A5', stroke: DARK_WOOD,
-        lineWidth: 3, radius: 12, shadow: active ? '#2F7E31' : '#C68B45', offset: 3,
+        fill: active ? '#FFD43B' : '#FFE6BF', stroke: '#A34B18',
+        lineWidth: 2, radius: 15, shadow: '#C68B45', offset: 2,
       });
       text(ctx, button.label, x + width / 2, y + height / 2,
-        { size: 17, color: active ? '#FFF8D5' : DARK_WOOD,
-          outline: active ? 2 : 0, font: getHomeFont() });
+        { size: 21, color: INK, outline: 1, font: getHomeFont() });
     }
   }
 

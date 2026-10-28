@@ -7,6 +7,7 @@ import { GamePage } from './pages/game/index.js';
 import { Modal } from './ui/modal.js';
 import { loadArt } from './ui/art.js';
 import { homeIconFileIDs, loadHomeIcons } from './ui/home-icons.js';
+import { loadHomeVisuals } from './ui/home-visual-v1.js';
 import { loadHomeFont } from './ui/home-font.js';
 import { FriendsPage } from './pages/friends/index.js';
 import { drawLoading } from './ui/loading.js';
@@ -15,8 +16,9 @@ import { audioSnapshot, createSoundBank, musicSource, soundForAction } from './a
 export function createApp(platform, actions = {}) {
   const ctx = platform.canvas.getContext('2d');
   loadArt(ctx, platform);
-  const cloudTotal = platform.resolveCloudFiles
-    ? (platform.createImage ? Object.keys(homeIconFileIDs).length : 0) + (platform.loadFont ? 1 : 0) : 0;
+  const cloudTotal = (platform.loadHomeSubpackage ? 1 : 0)
+    + (platform.resolveCloudFiles && platform.createImage ? Object.keys(homeIconFileIDs).length : 0)
+    + (platform.loadFont ? 1 : 0);
   let cloudLoaded = 0;
   let loading = cloudTotal > 0;
   const cloudSettled = () => {
@@ -24,6 +26,12 @@ export function createApp(platform, actions = {}) {
     loading = cloudLoaded < cloudTotal;
   };
   loadHomeIcons(ctx, platform, cloudSettled);
+  if (platform.loadHomeSubpackage) {
+    platform.loadHomeSubpackage()
+      .then(() => loadHomeVisuals(ctx, platform))
+      .catch((error) => console.warn('Home visual subpackage failed to load; using legacy fallback.', error))
+      .finally(cloudSettled);
+  } else loadHomeVisuals(ctx, platform);
   loadHomeFont(platform, cloudSettled);
   const controller = new GameController(platform);
   const bgMusic = platform.createAudio
@@ -92,7 +100,7 @@ export function createApp(platform, actions = {}) {
     const showFriends = controller.modal === 'friends';
     if (platform.friendBoard && showFriends !== friendsVisible) {
       platform.friendBoard.send(showFriends ? 'show' : 'hide', showFriends
-        ? { completed: controller.progress.completedLevels } : {});
+        ? { completed: controller.progress.classicCompletedLevels } : {});
     }
     friendsVisible = showFriends;
     const board = controller.modal === 'win' ? `level:${controller.game.level.id}` : null;

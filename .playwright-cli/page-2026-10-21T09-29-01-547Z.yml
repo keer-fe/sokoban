@@ -1,0 +1,4 @@
+- generic [active] [ref=f2e1]:
+  - paragraph [ref=f2e3]: 414 × 896，顶部安全区 88，底部 34
+  - paragraph [ref=f2e6]: 320 × 568 短屏
+  - paragraph [ref=f2e8]: 预览调用 src/pages/home 的真实绘制代码，使用浏览器 Image 作为资源加载器。未模拟微信原生游戏圈按钮。

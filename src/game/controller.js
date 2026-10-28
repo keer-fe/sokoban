@@ -227,15 +227,14 @@ export class GameController {
     } finally { if (this.pk) this.pk.submitting = false; }
   }
   syncFriends() {
-    if (this.platform.friendBoard) this.platform.friendBoard.send('sync', { completed: this.progress.completedLevels });
+    if (this.platform.friendBoard) this.platform.friendBoard.send('sync', { completed: this.progress.classicCompletedLevels });
   }
   async syncWorldLeaderboard() {
     if (!this.platform.worldLeaderboard?.available) return null;
     try {
       const profile = this.platform.readPlayerProfile?.() || {};
       return await this.platform.worldLeaderboard.submit({
-        completed: this.progress.completedLevels,
-        totalStars: this.progress.totalStars,
+        completed: this.progress.classicCompletedLevels,
         nickname: profile.nickname || '',
         avatarUrl: profile.avatarUrl || '',
       });
@@ -270,7 +269,7 @@ export class GameController {
       this.worldBoard = { state: 'ready', rows, error: null };
       return rows;
     } catch (error) {
-      this.worldBoard = { state: 'error', rows: [], error };
+      this.worldBoard = { ...this.worldBoard, state: 'error', error };
       console.warn('World leaderboard load failed.', error);
       return [];
     }
@@ -437,10 +436,12 @@ export class GameController {
       if (this.friendsTab === 'world') this.loadWorldLeaderboard();
     } else if (this.modal === 'friends' && action === 'friends:refresh' && this.friendsTab === 'friends') {
       if (this.platform.friendBoard) this.platform.friendBoard.send(action.slice(8), {
-        completed: this.progress.completedLevels,
+        completed: this.progress.classicCompletedLevels,
       });
     } else if (this.modal === 'friends' && action === 'friends:refresh' && this.friendsTab === 'world') {
       this.loadWorldLeaderboard(true);
+    } else if (this.modal === 'friends' && action === 'friends:invite' && this.friendsTab === 'friends') {
+      if (!this.platform.inviteLeaderboardFriends?.()) this.platform.notify?.('当前环境暂不支持邀请好友');
     } else if (this.modal === 'profile' && action === 'authorize-profile') {
       this.authorizePlayerProfile();
     } else if (this.modal === 'tutorial' && (action === 'understood' || action === 'skip')) {

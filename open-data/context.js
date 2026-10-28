@@ -9,7 +9,7 @@ export function createOpenDataBoard(api, timers = {
 }) {
   const canvas = api.getSharedCanvas();
   const ctx = canvas.getContext('2d');
-  let width = 366, height = 520, ratio = 1, visible = false;
+  let width = 330, height = 468, ratio = 1, visible = false;
   let scrollY = 0, rows = [], loadState = 'loading', syncState = 'idle';
   let loadError = null;
   let generation = 0, retryTimer = null, retries = 0, paused = false;
@@ -28,6 +28,13 @@ export function createOpenDataBoard(api, timers = {
     entry.image.src = source;
     return entry;
   });
+  const emptyArt = typeof api.createImage === 'function' ? api.createImage() : null;
+  let emptyArtReady = false;
+  if (emptyArt) {
+    emptyArt.onload = () => { emptyArtReady = true; draw(); };
+    emptyArt.onerror = () => { emptyArtReady = false; };
+    emptyArt.src = 'open-data/assets/ranking-empty-v1.png';
+  }
   const loadingPush = createFriendsPushAnimation(api, draw);
   function request(name, options) {
     return new Promise((resolve, reject) => {
@@ -128,14 +135,9 @@ export function createOpenDataBoard(api, timers = {
     if (!visible) return;
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#D3B77F';
-    ctx.fillRect(12, 40, width - 24, 2);
-    label('排名', 18, 21, 11, '#8C674C');
-    label('闯关好友', 106, 21, 11, '#8C674C');
-    label('战绩', width - 18, 21, 11, '#8C674C', 'right');
-    const rowHeight = 70;
-    const viewTop = 48;
-    const viewHeight = height - 54;
+    const rowHeight = 75;
+    const viewTop = 36;
+    const viewHeight = height - viewTop - 58;
     const maxScroll = Math.max(0, rows.length * rowHeight - viewHeight);
     scrollY = Math.max(0, Math.min(maxScroll, scrollY));
     if (loadState === 'loading') drawLoading();
@@ -145,8 +147,12 @@ export function createOpenDataBoard(api, timers = {
       label(hint, width / 2, height / 2 - 13, 12, '#8D6540', 'center');
       detailLines(detail);
     } else if (!rows.length) {
-      label('还没有好友进度', width / 2, height / 2 - 45, 18, '#5A321C', 'center');
-      label('好友玩过本游戏并上传后会出现在这里', width / 2, height / 2 - 12, 12, '#8D6540', 'center');
+      if (emptyArtReady) ctx.drawImage(emptyArt, 20, 70, width - 40, Math.min(220, height - 150));
+      label('暂无好友成绩', width / 2, Math.min(height - 92, 308), 25, '#8B3618', 'center', fontFamily);
+      ctx.fillStyle = '#35CC19'; ctx.strokeStyle = '#167922'; ctx.lineWidth = 3;
+      roundedRect((width - 182) / 2, height - 50, 182, 47, 17);
+      ctx.fill(); ctx.stroke();
+      label('邀请好友', width / 2, height - 26, 21, '#FFFFFF', 'center', fontFamily);
     } else {
       ctx.save();
       ctx.beginPath();
@@ -155,48 +161,41 @@ export function createOpenDataBoard(api, timers = {
       rows.forEach((row, index) => {
       const y = viewTop + index * rowHeight - scrollY;
       if (y + rowHeight < viewTop || y > viewTop + viewHeight) return;
-      const centerY = y + (rowHeight - 6) / 2;
-      const colors = ['#FFF0B8', '#F2F4E9', '#F9E5CC'];
-      ctx.fillStyle = row.rank <= 3 ? colors[row.rank - 1]
-        : index % 2 ? '#FFFDF6' : '#FFF7E7';
-      ctx.strokeStyle = row.rank <= 3 ? ['#E9B640', '#AAB5A1', '#D69B67'][row.rank - 1] : '#E8D7B5';
-      ctx.lineWidth = 1;
-      roundedRect(7, y + 3, width - 15, rowHeight - 7, 15);
+      const centerY = y + rowHeight / 2;
+      ctx.fillStyle = row.isMe ? '#E0F9D7' : row.rank === 1 ? '#FFF0BC' : '#FFF8E9';
+      ctx.strokeStyle = row.isMe ? '#5ED866' : '#EEC997';
+      ctx.lineWidth = row.isMe ? 2 : 1;
+      roundedRect(1, y + 2, width - 4, rowHeight - 5, 13);
       ctx.fill();
-      if (row.rank <= 3) {
-        ctx.save();
-        roundedRect(7, y + 3, width - 15, rowHeight - 7, 15);
-        ctx.clip();
-        ctx.fillStyle = ['#F4B93D', '#8BB881', '#D59A5C'][row.rank - 1];
-        ctx.fillRect(7, y + 3, 6, rowHeight - 7);
-        ctx.restore();
-      }
-      roundedRect(7, y + 3, width - 15, rowHeight - 7, 15);
+      roundedRect(1, y + 2, width - 4, rowHeight - 5, 13);
       ctx.stroke();
       const medal = medals[row.rank - 1];
-      if (medal?.ready) ctx.drawImage(medal.image, 14, centerY - 19, 38, 38);
-      else label(row.rank <= 3 ? row.rank : `#${row.rank}`,
-        33, centerY, 17, '#985322', 'center');
+      if (medal?.ready) ctx.drawImage(medal.image, 9, centerY - 24, 48, 48);
+      else label(row.rank, 32, centerY, 23, row.isMe ? '#14662A' : '#8B3618', 'center', fontFamily);
       ctx.fillStyle = '#E2C899';
-      ctx.beginPath();
-      ctx.arc(78, centerY, 21, 0, Math.PI * 2);
-      ctx.fill();
+      roundedRect(67, centerY - 24, 48, 48, 11); ctx.fill();
       const img = avatar(row.avatarUrl);
       if (img) {
         ctx.save();
-        ctx.beginPath();
-        ctx.arc(78, centerY, 18, 0, Math.PI * 2);
+        roundedRect(69, centerY - 22, 44, 44, 9);
         ctx.clip();
-        ctx.drawImage(img, 60, centerY - 18, 36, 36);
+        ctx.drawImage(img, 69, centerY - 22, 44, 44);
         ctx.restore();
-      } else label(Array.from(row.nickname)[0] || '友', 78, centerY, 18, '#517E39', 'center');
-      ctx.font = 'bold 15px sans-serif';
-      const displayName = row.isMe ? `（我）${row.nickname}` : row.nickname;
-      label(truncate(displayName, width - 222), 106, centerY, 15);
-      const resultBaseline = centerY + 9;
-      bottomLabel('已通关', width - 66, resultBaseline, 10, '#9A795C', 'right');
-      bottomLabel(row.completed, width - 43, resultBaseline, 24, '#2F8A3B', 'center');
-      bottomLabel('关', width - 14, resultBaseline, 11, '#9A795C', 'right');
+      } else label(Array.from(row.nickname)[0] || '友', 91, centerY, 18, '#517E39', 'center');
+      ctx.font = `bold 16px ${fontFamily}`;
+      label(truncate(row.isMe ? '我' : row.nickname, 104), 130, centerY, 16,
+        row.isMe ? '#14662A' : '#753015', 'left', fontFamily);
+      ctx.beginPath();
+      for (let point = 0; point < 10; point++) {
+        const angle = -Math.PI / 2 + point * Math.PI / 5;
+        const radius = point % 2 ? 6 : 12;
+        const px = width - 79 + Math.cos(angle) * radius;
+        const py = centerY + Math.sin(angle) * radius;
+        if (point) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+      }
+      ctx.closePath(); ctx.fillStyle = '#FFD13D'; ctx.strokeStyle = '#A94A12';
+      ctx.lineWidth = 2; ctx.fill(); ctx.stroke();
+      label(row.completed, width - 15, centerY, 22, row.isMe ? '#14662A' : '#753015', 'right', fontFamily);
       });
       ctx.restore();
       if (maxScroll > 0) {
@@ -226,7 +225,7 @@ export function createOpenDataBoard(api, timers = {
         (selfId && row.id === selfId)
         || (!selfId && row.nickname === self.nickName && row.avatarUrl === self.avatarUrl)
       )) }));
-      scrollY = Math.min(scrollY, Math.max(0, rows.length * 70 - (height - 54)));
+      scrollY = Math.min(scrollY, Math.max(0, rows.length * 75 - (height - 94)));
       loadState = 'ready';
     } catch (error) {
       if (current !== generation) return;
@@ -278,8 +277,8 @@ export function createOpenDataBoard(api, timers = {
       levelBoard.hide(); levelMode = false;
     }
     if (message.type === 'resize') {
-      width = Math.max(300, Math.min(414, Number(message.width) || 366));
-      height = Math.max(430, Math.min(700, Number(message.height) || 520));
+      width = Math.max(300, Math.min(414, Number(message.width) || 330));
+      height = Math.max(300, Math.min(700, Number(message.height) || 468));
       ratio = Math.max(1, Math.min(3, Number(message.pixelRatio) || 1));
       if (typeof message.fontFamily === 'string' && message.fontFamily) fontFamily = message.fontFamily;
       // Physical dimensions are set by the main domain before this message arrives.
@@ -301,7 +300,7 @@ export function createOpenDataBoard(api, timers = {
     } else if (message.type === 'scroll' && visible) {
       const delta = Number(message.delta);
       if (!Number.isFinite(delta)) return;
-      scrollY = Math.max(0, Math.min(Math.max(0, rows.length * 70 - (height - 54)), scrollY + delta));
+      scrollY = Math.max(0, Math.min(Math.max(0, rows.length * 66 - (height - 94)), scrollY + delta));
       draw();
     }
   }

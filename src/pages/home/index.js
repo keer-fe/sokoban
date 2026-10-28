@@ -7,11 +7,16 @@ import { ButtonInput, drawButton } from '../../ui/button.js';
 import { drawHomeBackground, drawHomeIcon, getHomeGroundBaseline } from '../../ui/home-icons.js';
 import { getHomeFont } from '../../ui/home-font.js';
 import { drawPushAnimation } from './push-animation.js';
+import { drawHomeVisual, drawHomeWalkFrame, homeMotionReady } from '../../ui/home-visual-v1.js';
+import { drawScrollingHome } from './scrolling-scene.js';
 
 export class HomePage {
   constructor({ onAction, controller }) {
     this.controller = controller;
     this.layout = null;
+    this.elapsed = 0;
+    this.sceneOrigin = null;
+    this.buttonScales = new Map();
     this.input = new ButtonInput(() => this.layout
       ? this.layout.buttons.filter(({ native }) => !native) : [], onAction);
   }
@@ -19,10 +24,23 @@ export class HomePage {
   resize(viewport) {
     this.viewport = viewport;
     this.layout = getHomeLayout(viewport);
+    // Keep small utility controls comfortable to tap after short-screen scaling.
+    for (const button of this.layout.buttons.filter(b => b.id === 'settings' || b.native)) {
+      const size = Math.max(button.width, 44 / viewport.scale);
+      button.hitArea = { x: button.x + (button.width - size) / 2,
+        y: button.y + (button.height - size) / 2, width: size, height: size };
+    }
     this.input.reset();
   }
 
   render(ctx, elapsed) {
+    this.delta = Math.max(0, Math.min(.05, elapsed - this.elapsed));
+    this.elapsed = elapsed;
+    if (this.sceneOrigin === null) this.sceneOrigin = elapsed;
+    if (homeMotionReady(ctx)) {
+      this.renderMotion(ctx, elapsed);
+      return;
+    }
     const { width, height } = this.viewport;
     const { buttons, title } = this.layout;
     if (!drawHomeBackground(ctx, 0, 0, width, height, elapsed)) {
@@ -81,14 +99,72 @@ export class HomePage {
     });
   }
 
+  renderMotion(ctx, elapsed) {
+    const { title, scene, buttons } = this.layout;
+    const art = (name, rect) => drawHomeVisual(ctx, name,
+      rect.x, rect.y, rect.width, rect.height);
+    const sceneTime = elapsed - this.sceneOrigin;
+    drawScrollingHome(ctx, this.viewport, scene, sceneTime, art,
+      (frame, x, y, width, height, progress) =>
+        drawHomeWalkFrame(ctx, frame, x, y, width, height, progress));
+    art('logo', title);
+    this.drawVisualControls(ctx, sceneTime, art, buttons);
+  }
+
+  drawVisualControls(ctx, sceneTime, art, buttons) {
+    // Transparent button art and its label share the same press transform and hit bounds.
+    for (const button of buttons) {
+      const pressed = this.input.activeId === button.id;
+      const target = pressed ? .955 : button.id === 'start'
+        ? 1 + .006 * Math.sin(sceneTime * Math.PI * 2 / 4.8) : 1;
+      const previous = this.buttonScales.get(button.id) ?? 1;
+      const scale = previous + (target - previous) * (1 - Math.exp(-this.delta * 24));
+      this.buttonScales.set(button.id, scale);
+      ctx.save();
+      ctx.translate(button.x + button.width / 2, button.y + button.height / 2 + (1-scale)*50);
+      ctx.scale(scale, scale);
+      const destination = { x: -button.width / 2, y: -button.height / 2,
+        width: button.width, height: button.height };
+      art(button.id === 'friends' ? 'ranking' : button.id, destination);
+      if (['start', 'levels', 'friends'].includes(button.id)) {
+        const primary = button.id === 'start';
+        this.drawVisualText(ctx, button.label, primary ? 0 : button.width * .20,
+          primary ? 3 : 7, primary ? 42 : 23,
+          primary ? '#FFF9E9' : button.id === 'friends' ? '#174E7A' : '#245A36',
+          primary ? '#954323' : '#FFF8DA', primary ? 5 : 2);
+      }
+      ctx.restore();
+    }
+  }
+
+  drawVisualText(ctx, value, x, y, size, fill, stroke, lineWidth) {
+    ctx.save();
+    ctx.font = `900 ${size}px ${getHomeFont()}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = lineWidth;
+    ctx.strokeText(value, x, y);
+    ctx.fillStyle = fill;
+    ctx.fillText(value, x, y);
+    ctx.restore();
+  }
+
   getGameClubButtonBounds() {
     const button = this.layout && this.layout.buttons.find(({ id }) => id === 'gameClub');
     if (!button) return null;
+    if (button.hitArea) return { ...button.hitArea };
     const size = button.nativeIconSize;
     return { x: button.x + (button.width - size) / 2, y: button.y,
       width: size, height: size };
   }
 
-  handlePointer(type, point) { this.input.handle(type, point); }
-  pause() { this.input.reset(); }
+  handlePointer(type, point) {
+    this.input.handle(type, point);
+  }
+  pause() {
+    this.input.reset(); this.buttonScales.clear();
+    this.sceneOrigin = null;
+  }
 }

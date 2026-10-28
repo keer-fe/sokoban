@@ -21,17 +21,17 @@ test('世界榜云函数提交版本化成绩并清洗返回行', async () => {
   await board.submit({ completed: 8, totalStars: 21, nickname: '玩家甲', avatarUrl: 'https://a.test/1.png' });
   const rows = await board.load(50);
   assert.deepEqual(calls, [
-    { name: 'submitLeaderboard', data: { completed: 8, totalStars: 21, nickname: '玩家甲', avatarUrl: 'https://a.test/1.png', scoreVersion: 1 } },
-    { name: 'getWorldLeaderboard', data: { limit: 50, scoreVersion: 1 } },
+    { name: 'submitLeaderboard', data: { completed: 8, nickname: '玩家甲', avatarUrl: 'https://a.test/1.png', scoreVersion: 2 } },
+    { name: 'getWorldLeaderboard', data: { limit: 50, scoreVersion: 2 } },
   ]);
   assert.deepEqual(rows, [
-    { rank: 1, completed: 8, totalStars: 21, nickname: '玩家甲', avatarUrl: 'https://a.test/1.png', isMe: true },
-    { rank: 2, completed: 5, totalStars: 12, nickname: '玩家2', avatarUrl: '', isMe: false },
+    { rank: 1, completed: 8, nickname: '玩家甲', avatarUrl: 'https://a.test/1.png', isMe: true },
+    { rank: 2, completed: 5, nickname: '玩家2', avatarUrl: '', isMe: false },
   ]);
   assert.deepEqual(normalizeWorldRows(null), []);
 });
 
-test('控制器加载、刷新世界榜并在通关统计中提交总星数', async () => {
+test('控制器加载、刷新世界榜并提交经典模式通关数', async () => {
   let loads = 0;
   const submissions = [];
   const platform = {
@@ -57,8 +57,24 @@ test('控制器加载、刷新世界榜并在通关统计中提交总星数', as
   await Promise.resolve();
   assert.equal(loads, 2);
   await controller.syncWorldLeaderboard();
-  assert.deepEqual(submissions.at(-1), { completed: 0, totalStars: 0,
+  assert.deepEqual(submissions.at(-1), { completed: 0,
     nickname: '测试玩家', avatarUrl: 'https://a.test/me.png' });
+});
+
+test('经典模式榜单不计入其他模式已通关关卡', async () => {
+  const submissions = [];
+  const mixedLevels = [...levels, { ...levels[0], id: 'adventure-test', campaign: 'adventure' }];
+  const controller = new GameController({ readStorage: () => null,
+    worldLeaderboard: { available: true, submit: async score => { submissions.push(score); } },
+    friendBoard: { send() {} } }, mixedLevels);
+  const classic = levels.find(level => (level.campaign || 'classic') === 'classic');
+  const other = mixedLevels.at(-1);
+  controller.progress.state.records[classic.id] = { stars: 1 };
+  controller.progress.state.records[other.id] = { stars: 3 };
+  assert.equal(controller.progress.completedLevels, 2);
+  assert.equal(controller.progress.classicCompletedLevels, 1);
+  await controller.syncWorldLeaderboard();
+  assert.equal(submissions.at(-1).completed, 1);
 });
 
 test('首次启动先统一获取玩家资料，世界榜入口不再重复授权', async () => {
@@ -111,8 +127,7 @@ test('世界榜绘制真实排名、本人标记和成绩', () => {
   const page = new FriendsPage(controller, () => {});
   page.resize(createViewport({ width: 390, height: 844, safeTop: 91, safeBottom: 34 }));
   page.render(ctx);
-  assert.ok(labels.includes('🥇'));
-  assert.ok(labels.includes('（我）玩家ABCD'));
-  assert.ok(labels.includes('31 星'));
-  assert.ok(labels.includes('12 关'));
+  assert.ok(labels.includes('1'));
+  assert.ok(labels.includes('我'));
+  assert.ok(labels.includes('12'));
 });

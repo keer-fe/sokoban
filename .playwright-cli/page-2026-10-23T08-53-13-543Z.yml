@@ -1,0 +1,19 @@
+- generic [active] [ref=f7e1]:
+  - banner [ref=f7e2]:
+    - generic [ref=f7e3]:
+      - heading "花园里的小小努力" [level=1] [ref=f7e4]
+      - paragraph [ref=f7e5]: 人物原地努力推箱、流汗；轻点场景，目标光效会回应。
+      - status [ref=f7e6]: 真实首页 Canvas · 浏览器交互预览
+    - navigation [ref=f7e7]:
+      - button "初始" [ref=f7e8] [cursor=pointer]
+      - button "发力 / 汗滴" [ref=f7e9] [cursor=pointer]
+      - button "循环衔接" [ref=f7e10] [cursor=pointer]
+      - button "连续播放" [ref=f7e11] [cursor=pointer]
+      - button "格线核对" [ref=f7e12] [cursor=pointer]
+  - main [ref=f7e13]:
+    - generic [ref=f7e14]:
+      - paragraph [ref=f7e15]: 414 × 896 · 全面屏
+      - generic "全面屏首页" [ref=f7e16] [cursor=pointer]
+    - generic [ref=f7e17]:
+      - paragraph [ref=f7e18]: 320 × 568 · 短屏
+      - generic "短屏首页" [ref=f7e19] [cursor=pointer]
