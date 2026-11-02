@@ -1,1 +1,22 @@
-node_modules/
+# Cocos Creator generated files
+/build/
+/library/
+/temp/
+/local/
+/profiles/
+/.creator/
+/native/engine/android/**/assets/
+
+# Local tools and generated previews
+/node_modules/
+/.playwright-cli/
+/.cloudbase/
+/output/
+/outputs/
+/preview/
+
+# Editor and operating system files
+/.vscode/
+/.idea/
+.DS_Store
+*.log

@@ -1,50 +1,25 @@
-# 推箱子微信小游戏
+# 箱不到八 · Cocos 首页
 
-原生 Canvas 2D + ES Modules，无运行时第三方依赖，不需要 npm 构建即可在微信开发者工具中编译。模块文档见 [docs/README.md](docs/README.md)。
+这是 Cocos Creator 3.8.8 工程。使用 Cocos Creator 打开仓库根目录即可编辑和预览首页。
 
-## 启动
+## 目录
 
-- 微信：开发者工具导入项目根目录，使用已有 AppID，点击编译。
-- 检查：`npm run check`；行为测试：`npm test`。无需安装依赖。
+- `assets/HomeStatic.ts`：首页画面布局、按格子绘制的地图和随地图生成的光影。
+- `assets/home-static.scene`：首页场景，显式绑定当前使用的图片资源。
+- `assets/images/home/background/`：底色。
+- `assets/images/home/lighting/`：环境光和接触阴影。
+- `assets/images/home/tiles/`：地图方砖。
+- `assets/images/home/characters/`、`assets/images/home/objects/`：人物、箱子和目标。
+- `assets/images/home/ui/`：标题与按钮。
+- `assets/data/levels/`：保留的地图数据集。`classic.json`、`adventure.json`、`coop.json`、`pk.json` 和 `future.json` 是关卡数据；`source/` 保存原始地图与来源索引，`research/` 保存关卡筛选和验证数据。
+- `settings/`：Cocos 项目设置。
 
-## 目录与扩展约定
+图片只保留当前首页使用的 32 张，文件名不带版本号。场景按 `HomeStatic.ts` 中 `IMAGE_NAMES` 的顺序绑定图片；新增或调整图片时应同步更新场景绑定。
 
-```text
-game.js                 微信入口，仅组装并启动应用
-src/app.js              画布、渲染循环、生命周期、页面动作接入
-src/platform/wechat.js   微信 API、触摸、胶囊和安全区域适配
-src/core/viewport.js     逻辑坐标 / 屏幕坐标转换与缩放
-src/ui/                 主题、绘制基础函数、插画、按钮及命中交互
-src/pages/              首页、选关页、游戏页、好友榜
-open-data/              微信好友数据与排行榜共享画布
-src/game/               关卡目录、规则引擎、流程控制、本地存档
-tools/                  零依赖本地开发与检查命令
-tests/                  布局、交互和生命周期的 Node 测试
-```
+地图数据集留在工程内供后续玩法开发使用；旧地图图片、旧版首页图片和旧微信小游戏代码均未保留。
 
-- 页面仅通过注入的动作回调调用业务，不直接访问 `wx`；后续选关、游戏页复用 `ui` 和 `core`。
-- 新视觉唯一标准为 [视觉规范 v1](docs/visual-spec.md)，母版原件归档在 `images/visual-v1/reference/`；新素材放在 `images/visual-v1/`。`src/ui/theme.js` 仍为待迁移旧主题，不能作为新设计配色依据。
-- 当前资源包含本地资源和 CloudBase 图片，实际加载来源以 `src/ui/home-icons.js`、`src/ui/art.js` 为准。规范已确认，首页资源和布局尚待迁移，实施清单见 [首页资产拆分](docs/home-assets.md)。
-- 输入与绘制共享逻辑坐标，DPR 只影响画布清晰度；应用进入后台停止动画，销毁时解绑事件。
-- 页面统一通过 `GameController` 分发动作；弹窗打开时只处理弹窗输入，阻断底层方向键和页面导航。
-- `GameSession` 是纯规则引擎：成功移动计步、禁止拉箱/连推、撤销恢复状态、重开清空历史，供棋盘与求解测试共用。
-- `ProgressStore` 保存每关最高星级、最少步数、撤销卡、引导标记及声音开关偏好；不保存未完成的棋盘状态。
+当前首页是静态视觉场景，地图由 `HOME_MAP` 中的格子数据绘制。点击地图不会切换画面。
 
-## 已接通的界面与流程
+## 构建
 
-- 首页 → 最新未完成关卡 / 选关 / 好友榜。
-- 好友榜使用微信托管数据和开放数据域；世界榜使用 CloudBase。数据边界与真机联调见 [排行榜模块](docs/modules/leaderboards.md)。
-- 选关页：按原编号分为 1–30、31–60、61–100 关，每页 12 关，支持关卡锁定、历史成绩、总进度。
-- 游戏页：棋盘、实时步数、历史最佳、十字方向键、撤销与剩余卡数。
-- 暂停菜单：继续、重开、返回选关、独立声音偏好开关。
-- 通关面板：星级、本次与最佳步数、下一关 / 最后关返回首页、重玩、返回选关。
-- 新手引导、撤销卡不足弹窗；撤销一次扣 1 张。
-
-## 当前边界
-
-- 已接入 `docs/levels-original.json` 的全部 100 关，原编号与每个格子保持一致。运行时数据在 `src/game/maps.js`，地图之外的空洞不可行走。大地图可切换全图与放大跟随视角。
-- 已通过逐步 BFS 标定 34 关最少移动步数，评分按 1.5 倍 / 2 倍门槛计算。其余关卡正常计步、保存最佳成绩并解锁下一关，暂显示“已通关”而不估算星级；尚未逐关验证全部地图可解。`node tools/solve-levels.js` 对最多 4 个箱子的关卡限时求解，超预算返回 pending。
-- 原 6 个体验关卡仅保留为测试夹具；它们的旧通关记录不会套用到新地图，撤销卡和设置继续保留。地图来源说明见 [关卡数据模块](docs/modules/level-data.md)。
-- 广告入口暂不可用，不模拟广告、不发放广告奖励；音频资源尚未接入，菜单开关仅保存偏好。
-- 本地存储失败会提示且不扣卡、不发卡；通关记录保存失败时，点击下一关会重试保存。
-- 自动化测试覆盖移动、撤销、计步、最优解、评分、解锁、最后一关、存储异常、弹窗阻断和短屏安全区域。
+可在 Cocos Creator 中选择 Web Desktop 平台构建，起始场景为 `assets/home-static.scene`。构建产物与编辑器缓存由 `.gitignore` 排除。
