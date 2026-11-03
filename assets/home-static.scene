@@ -412,6 +412,10 @@
       {
         "__uuid__": "bcb36515-7ead-441b-b484-e1e1f73d2b3c@f9941",
         "__expectedType__": "cc.SpriteFrame"
+      },
+      {
+        "__uuid__": "fdd5cf7c-d62c-42cd-99ff-e892e9b45679@f9941",
+        "__expectedType__": "cc.SpriteFrame"
       }
     ]
   },
