@@ -1,0 +1,14 @@
+{
+  "name": "xiangbudao8",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "test": "node --test",
+    "check:levels": "node scripts/check-levels.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

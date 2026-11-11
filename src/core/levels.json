@@ -1,0 +1,317 @@
+[
+  {
+    "rows": [
+      "~~~# ~~",
+      "~#  . #",
+      "~  $ ~#",
+      "#   ~~#",
+      "#~~ $ .",
+      "~@    #",
+      "~  ~~~~"
+    ],
+    "solutionLength": 12,
+    "solution": "RRURRLLUULUR"
+  },
+  {
+    "rows": [
+      "####~~",
+      "#.  ~~",
+      "#    #",
+      "# $  #",
+      "#@   #",
+      "######"
+    ],
+    "solutionLength": 6,
+    "solution": "RUURUL"
+  },
+  {
+    "rows": [
+      "######",
+      "#   .#",
+      "#   @#",
+      "# $  #",
+      "#   ~~",
+      "####~~"
+    ],
+    "solutionLength": 10,
+    "solution": "DLDLUULURR"
+  },
+  {
+    "rows": [
+      "######",
+      "#    #",
+      "#    #",
+      "# $ @#",
+      "# . ~~",
+      "####~~"
+    ],
+    "solutionLength": 4,
+    "solution": "ULLD"
+  },
+  {
+    "rows": [
+      "~~####",
+      "~~   #",
+      "#  $ #",
+      "# @  #",
+      "# ##.#",
+      "######"
+    ],
+    "solutionLength": 6,
+    "solution": "URURDD"
+  },
+  {
+    "rows": [
+      "######",
+      "#  @ #",
+      "# .  #",
+      "## $ #",
+      "#   ~~",
+      "####~~"
+    ],
+    "solutionLength": 7,
+    "solution": "RDDLDLU"
+  },
+  {
+    "rows": [
+      "~~#####",
+      "~~    #",
+      "# $   #",
+      "#    .#",
+      "#     #",
+      "#@#   #",
+      "#######"
+    ],
+    "solutionLength": 9,
+    "solution": "UUURRRURD"
+  },
+  {
+    "rows": [
+      "#######",
+      "# .@$ #",
+      "#     #",
+      "#     #",
+      "#     #",
+      "##   ~~",
+      "#####~~"
+    ],
+    "solutionLength": 6,
+    "solution": "DRRULL"
+  },
+  {
+    "rows": [
+      "~~###~~",
+      "~~   ~~",
+      "#    .#",
+      "# $   #",
+      "#   @ #",
+      "#     #",
+      "#######"
+    ],
+    "solutionLength": 8,
+    "solution": "LLULURRR"
+  },
+  {
+    "rows": [
+      "#####~~",
+      "#  # ~~",
+      "#  @$ #",
+      "#.   .#",
+      "##  $ #",
+      "#    ~~",
+      "#####~~"
+    ],
+    "solutionLength": 18,
+    "solution": "DDDRURUULLDRULLULD"
+  },
+  {
+    "rows": [
+      "#######",
+      "##   .#",
+      "#   $ #",
+      "#  .$ #",
+      "#  @  #",
+      "~~   ~~",
+      "~~###~~"
+    ],
+    "solutionLength": 8,
+    "solution": "RRULULUR"
+  },
+  {
+    "rows": [
+      "#######",
+      "#     #",
+      "#     #",
+      "# $@# #",
+      "# ..$ #",
+      "~~#  ~~",
+      "~~###~~"
+    ],
+    "solutionLength": 10,
+    "solution": "ULDURRRDDL"
+  },
+  {
+    "rows": [
+      "#####~~",
+      "#.   ~~",
+      "#  $  #",
+      "#$    #",
+      "#   . #",
+      "#@  #~~",
+      "#####~~"
+    ],
+    "solutionLength": 9,
+    "solution": "UUURRURDD"
+  },
+  {
+    "rows": [
+      "~~###~~",
+      "~~  #~~",
+      "#   . #",
+      "# $  ##",
+      "#  $  #",
+      "##@  .#",
+      "#######"
+    ],
+    "solutionLength": 12,
+    "solution": "UULURRDDLDRR"
+  },
+  {
+    "rows": [
+      "#####~~",
+      "#    ~~",
+      "# #   #",
+      "# . @$#",
+      "##$   #",
+      "~~  #.#",
+      "~~#####"
+    ],
+    "solutionLength": 9,
+    "solution": "URDDLLDLU"
+  },
+  {
+    "rows": [
+      "~~#####",
+      "~~    #",
+      "#   # #",
+      "# $.$ #",
+      "#   @##",
+      "##  .~~",
+      "#####~~"
+    ],
+    "solutionLength": 18,
+    "solution": "LUULDLDRRUUURRDDLD"
+  },
+  {
+    "rows": [
+      "~~####~~",
+      "~~.   ~~",
+      "#    $ #",
+      "#      #",
+      "#. $   #",
+      "#      #",
+      "#@    ~~",
+      "######~~"
+    ],
+    "solutionLength": 19,
+    "solution": "UUURRRRRULLLRDDLLUU"
+  },
+  {
+    "rows": [
+      "~~####~~",
+      "~~    ~~",
+      "#@ $   #",
+      "# $    #",
+      "#    # #",
+      "#     ##",
+      "~~  .. #",
+      "~~######"
+    ],
+    "solutionLength": 22,
+    "solution": "DRURDDDLDRRUUURUULDDDD"
+  },
+  {
+    "rows": [
+      "######~~",
+      "#     ~~",
+      "#      #",
+      "#   @ $#",
+      "#    #.#",
+      "#    $.#",
+      "~~    ~~",
+      "~~####~~"
+    ],
+    "solutionLength": 9,
+    "solution": "URRDLLDDR"
+  },
+  {
+    "rows": [
+      "######~~",
+      "#   ..~~",
+      "#@$$$  #",
+      "#    . #",
+      "#      #",
+      "#  #   #",
+      "~~    ~~",
+      "~~####~~"
+    ],
+    "solutionLength": 15,
+    "solution": "DRULURRRLDLDRRU"
+  },
+  {
+    "rows": [
+      "######~~",
+      "#     ~~",
+      "#@   $ #",
+      "#  .   #",
+      "#  $   #",
+      "#  $ . #",
+      "~~.   ~~",
+      "~~####~~"
+    ],
+    "solutionLength": 14,
+    "solution": "URRRRDDDLDLULD"
+  },
+  {
+    "rows": [
+      "~~######",
+      "~~  .$ #",
+      "##.  @ #",
+      "#     ##",
+      "##   $ #",
+      "##$ .  #",
+      "~~    ~~",
+      "~~####~~"
+    ],
+    "solutionLength": 16,
+    "solution": "RULDDDRDLDLLLUUU"
+  },
+  {
+    "rows": [
+      "~~####~~",
+      "~~ .$ ~~",
+      "#      #",
+      "# @    #",
+      "#   $ .#",
+      "#      #",
+      "~~  .$ #",
+      "~~######"
+    ],
+    "solutionLength": 14,
+    "solution": "RDRRDRDLUUUUUL"
+  },
+  {
+    "rows": [
+      "~~####~~",
+      "~~.$  ~~",
+      "#      #",
+      "#   .  #",
+      "#  $ $ #",
+      "# .   @#",
+      "# #   ~~",
+      "######~~"
+    ],
+    "solutionLength": 15,
+    "solution": "ULDLULUURULDDLD"
+  }
+]
